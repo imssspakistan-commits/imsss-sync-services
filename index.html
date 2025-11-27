@@ -4,14 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IMSSS AI Synchronization Services | ISO 42001 & EU AI Act Compliance</title>
-    <!-- Tailwind CSS CDN for professional styling -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Load React and ReactDOM Libraries -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <!-- Load Babel for on-the-fly JSX transformation -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <!-- Lucide Icons for professional icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #f7f9fc; }
@@ -27,7 +23,6 @@
 <body>
     <div id="root"></div>
 
-    <!-- The complete React/JSX application logic (IMSSS Assessor) is embedded here -->
     <script type="text/babel">
         // --- REACT COMPONENT SETUP ---
         const { useState, useMemo, useEffect } = React;
@@ -52,17 +47,38 @@
 
         // --- UTILITY COMPONENTS ---
 
-        const StepHeader = ({ icon: Icon, title, description, color = 'blue' }) => (
-          <div className={`flex items-start space-x-4 mb-6 p-4 bg-${color}-50 rounded-xl`}>
-            <Icon className={`w-8 h-8 text-${color}-600 mt-1 flex-shrink-0`} />
-            <div>
-              <h2 className="text-xl font-bold text-gray-800">{title}</h2>
-              <p className="text-sm text-gray-500">{description}</p>
-            </div>
-          </div>
-        );
+        // Fix: Use switch statement or predefined maps to avoid JIT issues with dynamic class names
+        const StepHeader = ({ icon: Icon, title, description, color = 'blue' }) => {
+            let bgColor = 'bg-blue-50';
+            let textColor = 'text-blue-600';
 
-        const Button = ({ children, onClick, primary = true, disabled = false, className = '' }) => (
+            switch (color) {
+                case 'red':
+                    bgColor = 'bg-red-50';
+                    textColor = 'text-red-600';
+                    break;
+                case 'indigo':
+                    bgColor = 'bg-indigo-50';
+                    textColor = 'text-indigo-600';
+                    break;
+                case 'blue':
+                default:
+                    // default classes already set
+            }
+
+            return (
+              <div className={`flex items-start space-x-4 mb-6 p-4 ${bgColor} rounded-xl`}>
+                <Icon className={`w-8 h-8 ${textColor} mt-1 flex-shrink-0`} />
+                <div>
+                  <h2 className="text-xl font-bold text-gray-800">{title}</h2>
+                  <p className="text-sm text-gray-500">{description}</p>
+                </div>
+              </div>
+            );
+        };
+
+        // Improvement: Accept and pass through all extra props (like style)
+        const Button = ({ children, onClick, primary = true, disabled = false, className = '', ...props }) => (
           <button
             onClick={onClick}
             disabled={disabled}
@@ -71,6 +87,7 @@
                 ? 'bg-gradient-to-r from-blue-600 to-indigo-700 text-white hover:from-blue-700 hover:to-indigo-800'
                 : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
             } ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}
+            {...props}
           >
             {children}
           </button>
@@ -87,6 +104,7 @@
           const isHighRisk = useMemo(() => RISK_QUESTIONS.some(q => riskAnswers[q.id]), [riskAnswers]);
           
           const highRiskScore = useMemo(() => {
+            // Score is only relevant for high-risk systems
             if (!isHighRisk) return 0;
             const answeredCount = MATURITY_CHECK_QUESTIONS.length;
             const compliantCount = MATURITY_CHECK_QUESTIONS.filter(q => maturityAnswers[q.id]).length;
@@ -441,4 +459,3 @@
     </script>
 </body>
 </html>
-
