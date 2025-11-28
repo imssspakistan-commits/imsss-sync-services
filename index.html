@@ -9,6 +9,7 @@
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
+        /* Custom Scrollbar Styles for Review Panel */
         .custom-scroll::-webkit-scrollbar {
             width: 8px;
         }
@@ -49,12 +50,12 @@
         const Breadcrumb = ({ currentStep, onStepClick, isAssessmentStarted, isAssessmentFinished }) => {
             useLucideIcons();
             
+            // Define the 4 setup steps
             const steps = [
                 { id: 1, name: "Start", icon: "Rocket" },
                 { id: 2, name: "Type", icon: "LayoutGrid" },
                 { id: 3, name: "Storage", icon: "Database" },
                 { id: 4, name: "Review", icon: "CheckCircle" },
-                { id: 5, name: "Results", icon: "Trophy" } // Added Results step
             ];
             
             let statusBanner = null;
@@ -75,11 +76,12 @@
                 return statusBanner;
             }
 
-            // Only render setup steps for breadcrumb
+            // Render setup steps
             return e('nav', { className: "flex items-center justify-center space-x-2 mb-8" },
-                steps.slice(0, 4).map((stepItem) => {
+                steps.map((stepItem) => {
                     const isActive = stepItem.id === currentStep;
-                    const isCompleted = stepItem.id < currentStep;
+                    // A step is completed if its ID is less than the current step ID
+                    const isCompleted = stepItem.id < currentStep; 
                     
                     const classes = `
                         flex flex-col items-center p-3 rounded-xl transition duration-300 w-1/4
@@ -135,12 +137,12 @@
             );
         };
 
-        // --- COMPONENT: Step1 (Assessment Type - Now Step 2) ---
+        // --- COMPONENT: Step1 (Assessment Type - Step 2) ---
         const Step1 = ({ onNext, assessmentType, setAssessmentType }) => {
             useLucideIcons();
             
+            // Using the Follow-up/Ad-Hoc options from the previous stable code
             const assessmentOptions = [
-                // Updated Options
                 { id: 'baseline', name: 'Baseline Assessment', icon: 'HardHat', 
                   description: 'A quick, high-level review of foundational security controls. Focuses on critical gaps.' },
                 { id: 'follow_up', name: 'Follow-up Assessment', icon: 'ClockHistory', 
@@ -187,14 +189,14 @@
                             }
                         `
                     },
-                        "Continue to Step 3",
+                        "Continue to Step 3", // Corrected button label
                         e('span', { 'data-lucide': "ArrowRight", className: "inline-block w-4 h-4 ml-2" })
                     )
                 )
             );
         };
 
-        // --- UPDATED COMPONENT: Step2 (Persistence Mechanism - Now Step 3) ---
+        // --- COMPONENT: Step2 (Persistence Mechanism - Step 3) ---
         const Step2 = ({ onNext, onPrevious, persistenceMechanism, setPersistenceMechanism }) => {
             useLucideIcons();
 
@@ -210,7 +212,6 @@
             return e('div', { className: "p-8 bg-white rounded-xl shadow-lg border border-gray-200" },
                 e('h2', { className: "text-2xl font-bold text-gray-700 mb-6" }, "Step 3: Choose Data Persistence"),
                 
-                // *** New Grid Layout for Options ***
                 e('div', { className: "grid grid-cols-1 md:grid-cols-3 gap-6" },
                     persistenceOptions.map(option => 
                         e('div', {
@@ -225,21 +226,17 @@
                             `
                         },
                             e('div', { className: "flex flex-col items-center text-center h-full" }, 
-                                // Icon styling from your suggestion
                                 e('span', {
                                     'data-lucide': option.icon, 
                                     className: `w-8 h-8 mb-3 ${persistenceMechanism === option.id ? 'text-indigo-600' : 'text-gray-500'}`
                                 }),
-                                // Title styling from your suggestion
                                 e('h3', { className: "text-xl font-bold text-gray-700" }, option.name),
-                                // Description styling
                                 e('p', { className: "mt-3 text-gray-500 text-sm flex-grow" }, option.description)
                             )
                         )
                     )
                 ),
 
-                // Navigation Buttons
                 e('div', { className: "flex justify-between pt-8 border-t mt-8" }, 
                     e('button', {
                         onClick: onPrevious,
@@ -259,14 +256,14 @@
                             }
                         `
                     }, 
-                        "Continue to Step 4", // Updated button text
+                        "Continue to Step 4", 
                         e('span', { 'data-lucide': "ArrowRight", className: "inline-block w-4 h-4 ml-2" })
                     )
                 )
             );
         };
 
-        // --- NEW COMPONENT: Step 3 (Review/Ready - Now Step 4) - FIX FOR BLANK SCREEN ---
+        // --- COMPONENT: Step3 (Review/Ready - Step 4) ---
         const Step3 = ({ onStartAssessment, assessmentType, persistenceMechanism, onPrevious }) => {
             useLucideIcons();
             
@@ -433,7 +430,7 @@
             );
         };
         
-        // --- NEW COMPONENT: ResultsView ---
+        // --- ResultsView ---
         const ResultsView = ({ answers, ASSESSMENT_QUESTIONS, onStartNewAssessment }) => {
             useLucideIcons();
             
@@ -516,7 +513,7 @@
             const [assessmentType, setAssessmentType] = useState(null);
             const [persistenceMechanism, setPersistenceMechanism] = useState(null);
             const [isAssessmentStarted, setIsAssessmentStarted] = useState(false);
-            const [isAssessmentFinished, setIsAssessmentFinished] = useState(false); // New state for results view
+            const [isAssessmentFinished, setIsAssessmentFinished] = useState(false); 
             const [answers, setAnswers] = useState({});
 
 
@@ -533,21 +530,20 @@
                         if (data.assessmentType) {
                             setAssessmentType(data.assessmentType);
                         }
-                        // Load answers if they exist
                         if (data.answers) {
                             setAnswers(data.answers);
                         }
                         
-                        // If any data was found, skip the ToS and jump to Step 2
+                        // If setup data was found, start at step 2, assuming Step 1 (ToS) was accepted
                         if ((data.persistenceMechanism || data.assessmentType) && !isAssessmentStarted && !isAssessmentFinished) {
                             setStep(2); 
-                            console.log("Loaded setup data from Local Storage. Skipping initial steps.");
+                            console.log("Loaded setup data from Local Storage. Skipping initial ToS step.");
                         }
                     }
                 } catch (error) {
                     console.error("Error loading state from Local Storage:", error);
                 }
-            }, []); // Runs once on mount
+            }, []); 
 
             // --- Data Saving Effect (Runs when choices or answers change) ---
             useEffect(() => {
@@ -564,12 +560,11 @@
                         console.error("Error saving state to Local Storage:", error);
                     }
                 }
-                // If the mechanism is NOT local storage, clear old local storage data to be safe
                 else if (persistenceMechanism && persistenceMechanism !== 'local_storage') {
                     localStorage.removeItem(STORAGE_KEY);
                     console.log("Cleared Local Storage data.");
                 }
-            }, [assessmentType, persistenceMechanism, answers]); // Runs whenever these states change
+            }, [assessmentType, persistenceMechanism, answers]); 
 
             // Function to navigate between steps
             const nextStep = () => setStep(prev => prev + 1);
@@ -577,6 +572,7 @@
             
             // Function to handle breadcrumb clicks (must not exceed current step)
             const handleBreadcrumbClick = (targetStep) => {
+                // Allows navigation backward only if the target step has been completed
                 if (targetStep < step && targetStep >= 1) {
                     setStep(targetStep);
                 }
@@ -585,13 +581,15 @@
             // Assessment phase functions
             const startAssessment = () => {
                 setIsAssessmentStarted(true);
-                setIsAssessmentFinished(false); // Ensure this is false when starting
+                setIsAssessmentFinished(false); 
+                // Set step high so the setup breadcrumb hides, letting the banner appear
+                setStep(5); 
             }
 
             const endAssessment = () => {
                 setIsAssessmentStarted(false); 
                 setIsAssessmentFinished(true); // Switch to Results View
-                // Note: We don't clear state here, we keep answers to show results.
+                setStep(6); // Set step high for results state
                 console.log("Assessment Ended. Showing results.");
             };
             
@@ -629,35 +627,36 @@
                     });
                 }
                 
-                // 3. Otherwise, show setup steps
+                // 3. Otherwise, show setup steps (Step 1 to 4)
                 switch (step) {
                     case 1:
-                        return e(TermsOfService, { // STEP 1: ToS
+                        return e(TermsOfService, { 
                             onAccept: nextStep,
                         });
                     case 2:
-                        return e(Step1, { // STEP 2: Assessment Type
+                        return e(Step1, { 
                             onNext: nextStep,
                             assessmentType: assessmentType,
                             setAssessmentType: setAssessmentType,
                         });
                     case 3:
-                        return e(Step2, { // STEP 3: Persistence Mechanism
+                        return e(Step2, { 
                             onNext: nextStep,
                             onPrevious: previousStep,
                             persistenceMechanism: persistenceMechanism,
                             setPersistenceMechanism: setPersistenceMechanism,
                         });
-                    case 4: // STEP 4: Final Summary - FIXED
-                        return e(Step3, {
+                    case 4: // This is the final Review step before starting the Assessment
+                        return e(Step3, { 
                             onStartAssessment: startAssessment,
                             onPrevious: previousStep,
                             assessmentType: assessmentType,
                             persistenceMechanism: persistenceMechanism,
                         });
                     default:
+                        // Default case should only be reached if step is > 4 without isAssessmentStarted/isAssessmentFinished flags set
                         return e('div', { className: "text-center p-12 bg-red-100 rounded-xl shadow-lg text-red-700 font-bold" },
-                            "Error: Unknown Step"
+                            "Error: Unknown Setup Step or Step index out of range."
                         );
                 }
             };
