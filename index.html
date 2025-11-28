@@ -141,7 +141,7 @@
         const Step1 = ({ onNext, assessmentType, setAssessmentType }) => {
             useLucideIcons();
             
-            // Using the Follow-up/Ad-Hoc options from the previous stable code
+            // Using the Follow-up/Ad-Hoc options as confirmed stable.
             const assessmentOptions = [
                 { id: 'baseline', name: 'Baseline Assessment', icon: 'HardHat', 
                   description: 'A quick, high-level review of foundational security controls. Focuses on critical gaps.' },
@@ -189,7 +189,7 @@
                             }
                         `
                     },
-                        "Continue to Step 3", // Corrected button label
+                        "Continue to Step 3", // Correct button label
                         e('span', { 'data-lucide': "ArrowRight", className: "inline-block w-4 h-4 ml-2" })
                     )
                 )
@@ -338,8 +338,8 @@
             useLucideIcons();
             
             // Format configuration details for display
-            const displayType = assessmentType.replace('_', ' ').toUpperCase();
-            const displayPersistence = persistenceMechanism.replace('_', ' ').toUpperCase();
+            const displayType = assessmentType ? assessmentType.replace('_', ' ').toUpperCase() : 'N/A';
+            const displayPersistence = persistenceMechanism ? persistenceMechanism.replace('_', ' ').toUpperCase() : 'N/A';
 
             // The possible score labels (0 to 4)
             const scoreLabels = [
@@ -356,7 +356,7 @@
 
             // Check if all questions have been answered (Answered count equals total questions)
             const totalQuestions = ASSESSMENT_QUESTIONS.length;
-            const answeredCount = Object.keys(answers).length;
+            const answeredCount = Object.keys(answers).filter(key => answers[key] !== undefined).length;
             const isComplete = answeredCount === totalQuestions;
 
             return e('div', { className: "space-y-6" },
@@ -472,7 +472,8 @@
                     e('p', { className: "text-sm text-gray-500 mb-4" }, "The score breakdown shows how your answers contribute to the final maturity level:"),
                     e('div', { className: "text-sm text-gray-800 space-y-2 p-4 border rounded-lg bg-white shadow-sm" },
                         ASSESSMENT_QUESTIONS.map((q) => {
-                            const score = answers[q.id] || 0;
+                            // Ensure score is defined, default to 0
+                            const score = answers[q.id] !== undefined ? answers[q.id] : 0; 
                             return e('div', { key: q.id, className: "flex justify-between items-center py-1 border-b last:border-b-0" },
                                 e('span', { className: "truncate w-3/4" }, `Q${q.id}: ${q.text}`),
                                 e('span', { className: "font-bold text-indigo-600" }, `${score} / ${q.maxScore}`)
@@ -547,6 +548,7 @@
 
             // --- Data Saving Effect (Runs when choices or answers change) ---
             useEffect(() => {
+                // Only save if a persistence method is selected AND it is local storage
                 if (persistenceMechanism === 'local_storage') {
                     try {
                         const dataToStore = JSON.stringify({
@@ -555,14 +557,15 @@
                             answers 
                         });
                         localStorage.setItem(STORAGE_KEY, dataToStore);
-                        console.log("Saved state to Local Storage.");
+                        // console.log("Saved state to Local Storage.");
                     } catch (error) {
                         console.error("Error saving state to Local Storage:", error);
                     }
                 }
+                // Clear local storage if a non-local storage persistence method is chosen
                 else if (persistenceMechanism && persistenceMechanism !== 'local_storage') {
                     localStorage.removeItem(STORAGE_KEY);
-                    console.log("Cleared Local Storage data.");
+                    // console.log("Cleared Local Storage data.");
                 }
             }, [assessmentType, persistenceMechanism, answers]); 
 
@@ -590,7 +593,7 @@
                 setIsAssessmentStarted(false); 
                 setIsAssessmentFinished(true); // Switch to Results View
                 setStep(6); // Set step high for results state
-                console.log("Assessment Ended. Showing results.");
+                // console.log("Assessment Ended. Showing results.");
             };
             
             const startNewAssessment = () => {
@@ -602,7 +605,7 @@
                 setIsAssessmentStarted(false);
                 setIsAssessmentFinished(false);
                 setStep(1); 
-                console.log("Starting new assessment, state reset.");
+                // console.log("Starting new assessment, state reset.");
             }
 
             const renderStep = () => {
