@@ -50,6 +50,51 @@
         // Helper function for React.createElement
         const e = React.createElement;
 
+        // --- NEW COMPONENT: Breadcrumb Navigation ---
+        const Breadcrumb = ({ currentStep, onStepClick, isAssessmentStarted }) => {
+            if (isAssessmentStarted) return null; // Hide breadcrumbs when assessment is running
+
+            const steps = [
+                { id: 1, name: "Terms", isOptional: false },
+                { id: 2, name: "Type", isOptional: false },
+                { id: 3, name: "Persistence", isOptional: false },
+                { id: 4, name: "Summary", isOptional: false },
+            ];
+
+            return e('nav', { className: "flex justify-center mb-10" },
+                e('ol', { className: "flex items-center space-x-4 p-3 bg-gray-100 rounded-lg shadow-inner" },
+                    steps.map((s) => {
+                        const isCurrent = s.id === currentStep;
+                        const isCompleted = s.id < currentStep;
+                        const isClickable = s.id <= currentStep && s.id !== currentStep;
+
+                        return e('li', { key: s.id, className: "flex items-center" },
+                            e('button', {
+                                onClick: isClickable ? () => onStepClick(s.id) : undefined,
+                                disabled: !isClickable,
+                                className: `
+                                    flex items-center space-x-2 text-sm font-medium transition-colors duration-200
+                                    ${isCurrent ? 'text-indigo-600' : isCompleted ? 'text-green-600 hover:text-green-800 cursor-pointer' : 'text-gray-400 cursor-not-allowed'}
+                                `
+                            },
+                                e('span', {
+                                    className: `
+                                        w-8 h-8 rounded-full flex items-center justify-center border-2
+                                        ${isCurrent ? 'bg-indigo-600 border-indigo-600 text-white' : isCompleted ? 'bg-green-500 border-green-500 text-white' : 'bg-white border-gray-300 text-gray-500'}
+                                    `
+                                }, isCompleted ? e('span', { 'data-lucide': "Check", className: "w-4 h-4" }) : s.id),
+                                e('span', { className: "hidden sm:inline" }, s.name)
+                            ),
+                            s.id < steps.length && e('svg', { className: "w-5 h-5 text-gray-300 mx-2 hidden sm:block", fill: "currentColor", viewBox: "0 0 20 20" },
+                                e('path', { d: "M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z", clipRule: "evenodd", fillRule: "evenodd" })
+                            )
+                        );
+                    })
+                )
+            );
+        };
+
+
         // --- STEP 1 COMPONENT: Terms of Service ---
         const TermsOfService = ({ onAccept }) => {
             const [isAccepted, setIsAccepted] = useState(false);
@@ -351,6 +396,13 @@
             const nextStep = () => setStep(prev => prev + 1);
             const previousStep = () => setStep(prev => prev - 1);
             
+            // Function to handle breadcrumb clicks (must not exceed current step)
+            const handleBreadcrumbClick = (targetStep) => {
+                if (targetStep < step && targetStep >= 1) {
+                    setStep(targetStep);
+                }
+            };
+            
             // New assessment phase functions
             const startAssessment = () => setIsAssessmentStarted(true);
             const endAssessment = () => {
@@ -429,12 +481,17 @@
 
             // Progress Bar Logic
             const progressSteps = 4;
-            // When assessment starts, we hide the standard progress bar by using the !isAssessmentStarted check in the return block
-            const progressPercent = (step / progressSteps) * 100;
-
+            
             return e('div', { className: "max-w-4xl mx-auto bg-white p-6 md:p-10 rounded-2xl shadow-2xl custom-scroll" },
                 e('h1', { className: "text-3xl font-extrabold text-indigo-700 mb-6 border-b-4 border-indigo-200 pb-2" }, "IMSSS Assessor Setup Wizard"),
                 
+                // Breadcrumb Component (NEWLY ADDED)
+                e(Breadcrumb, { 
+                    currentStep: step, 
+                    onStepClick: handleBreadcrumbClick,
+                    isAssessmentStarted: isAssessmentStarted
+                }),
+
                 // Progress Bar (Only visible during setup steps 1-4)
                 !isAssessmentStarted && e('div', { className: "mb-8" },
                     e('div', { className: "flex justify-between text-sm font-medium text-gray-500 mb-2" },
