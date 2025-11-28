@@ -3,29 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IMSSS AI Synchronization Services | ISO 42001 & EU AI Act Compliance</title>
+    <title>IMSSS AI Synchronization Services</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
     <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f7f9fc; }
-        /* Custom scrollbar style for modern feel */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #e0e7ff; }
-        ::-webkit-scrollbar-thumb { background: #4f46e5; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #4338ca; }
-        /* Smooth scrolling for anchor links */
-        html { scroll-behavior: smooth; }
-    </style>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        indigo: {
+                            50: '#eef2ff',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            800: '#3730a3',
+                        },
+                        blue: {
+                            600: '#2563eb',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
 </head>
-<body>
+<body class="bg-gray-50 min-h-screen">
+    
     <div id="root"></div>
 
-    <script type="text/babel">
-        // --- REACT COMPONENT SETUP ---
+    <script id="main-react-code" type="text/template">
         const { useState, useMemo, useEffect } = React;
+        // This is safe now because the Lucide CDN has already loaded globally.
         const { Shield, TrendingUp, Zap, Clock, UserCheck, ScrollText, AlertTriangle, CheckCircle, Package, Briefcase, Award, Globe, User, History } = lucide;
 
         // --- CONFIGURATION DATA ---
@@ -44,293 +59,295 @@
           { id: 104, text: "Are all changes to the AI model's code, data, and configuration tracked in a detailed audit log/system?", requirement: "Record Keeping" },
           { id: 105, text: "Is a senior manager formally designated and responsible for the overall compliance of the AI system (AI Management System ownership)?", requirement: "Governance" },
         ];
+        
+        const COLOR_MAP = {
+            red: { bgColor: 'bg-red-50', textColor: 'text-red-600' },
+            indigo: { bgColor: 'bg-indigo-50', textColor: 'text-indigo-600' },
+            blue: { bgColor: 'bg-blue-50', textColor: 'text-blue-600' },
+        };
 
-        // --- UTILITY COMPONENTS ---
-
-        // Fix: Use switch statement or predefined maps to avoid JIT issues with dynamic class names
         const StepHeader = ({ icon: Icon, title, description, color = 'blue' }) => {
-            let bgColor = 'bg-blue-50';
-            let textColor = 'text-blue-600';
-
-            switch (color) {
-                case 'red':
-                    bgColor = 'bg-red-50';
-                    textColor = 'text-red-600';
-                    break;
-                case 'indigo':
-                    bgColor = 'bg-indigo-50';
-                    textColor = 'text-indigo-600';
-                    break;
-                case 'blue':
-                default:
-                    // default classes already set
-            }
+            const { bgColor, textColor } = COLOR_MAP[color] || COLOR_MAP['blue'];
 
             return (
-              <div className={`flex items-start space-x-4 mb-6 p-4 ${bgColor} rounded-xl`}>
-                <Icon className={`w-8 h-8 ${textColor} mt-1 flex-shrink-0`} />
-                <div>
-                  <h2 className="text-xl font-bold text-gray-800">{title}</h2>
-                  <p className="text-sm text-gray-500">{description}</p>
+                <div className={`flex items-start space-x-4 mb-6 p-4 ${bgColor} rounded-xl`}>
+                    <Icon className={`w-8 h-8 ${textColor} mt-1 flex-shrink-0`} />
+                    <div>
+                        <h2 className="text-xl font-bold text-gray-800">{title}</h2>
+                        <p className="text-sm text-gray-500">{description}</p>
+                    </div>
                 </div>
-              </div>
             );
         };
 
-        // Improvement: Accept and pass through all extra props (like style)
-        const Button = ({ children, onClick, primary = true, disabled = false, className = '', ...props }) => (
-          <button
-            onClick={onClick}
-            disabled={disabled}
-            className={`px-6 py-3 rounded-xl font-semibold transition duration-300 transform active:scale-95 shadow-lg ${
-              primary
+        const Button = ({ children, onClick, primary = true, disabled = false, className = '', ...props }) => {
+            const baseClasses = `px-6 py-3 rounded-xl font-semibold transition duration-300 transform active:scale-95 shadow-lg ${className}`;
+            const colorClasses = primary
                 ? 'bg-gradient-to-r from-blue-600 to-indigo-700 text-white hover:from-blue-700 hover:to-indigo-800'
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-            } ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}
-            {...props}
-          >
-            {children}
-          </button>
-        );
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300';
+            const disabledClasses = disabled ? 'opacity-50 cursor-not-allowed' : '';
+            
+            if (props.href) {
+                return (
+                    <a
+                        href={props.href}
+                        className={`${baseClasses} ${colorClasses} ${disabledClasses} inline-block text-center`}
+                        {...props}
+                    >
+                        {children}
+                    </a>
+                );
+            }
+
+            return (
+                <button
+                    onClick={onClick}
+                    disabled={disabled}
+                    className={`${baseClasses} ${colorClasses} ${disabledClasses}`}
+                    {...props}
+                >
+                    {children}
+                </button>
+            );
+        };
 
         // --- ASSESSOR LOGIC ---
 
         const AssessorContainer = () => {
-          const [step, setStep] = useState(1);
-          const [riskAnswers, setRiskAnswers] = useState(RISK_QUESTIONS.reduce((acc, q) => ({ ...acc, [q.id]: false }), {}));
-          const [maturityAnswers, setMaturityAnswers] = useState(MATURITY_CHECK_QUESTIONS.reduce((acc, q) => ({ ...acc, [q.id]: false }), {}));
-          const [systemName, setSystemName] = useState('');
+            const [step, setStep] = useState(1);
+            const [riskAnswers, setRiskAnswers] = useState(RISK_QUESTIONS.reduce((acc, q) => ({ ...acc, [q.id]: false }), {}));
+            const [maturityAnswers, setMaturityAnswers] = useState(MATURITY_CHECK_QUESTIONS.reduce((acc, q) => ({ ...acc, [q.id]: false }), {}));
+            const [systemName, setSystemName] = useState('');
 
-          const isHighRisk = useMemo(() => RISK_QUESTIONS.some(q => riskAnswers[q.id]), [riskAnswers]);
-          
-          const highRiskScore = useMemo(() => {
-            // Score is only relevant for high-risk systems
-            if (!isHighRisk) return 0;
-            const answeredCount = MATURITY_CHECK_QUESTIONS.length;
-            const compliantCount = MATURITY_CHECK_QUESTIONS.filter(q => maturityAnswers[q.id]).length;
-            return Math.round((compliantCount / answeredCount) * 100);
-          }, [isHighRisk, maturityAnswers]);
+            const isHighRisk = useMemo(() => RISK_QUESTIONS.some(q => riskAnswers[q.id]), [riskAnswers]);
+            
+            const highRiskScore = useMemo(() => {
+                const answeredCount = MATURITY_CHECK_QUESTIONS.length;
+                const compliantCount = MATURITY_CHECK_QUESTIONS.filter(q => maturityAnswers[q.id]).length;
+                return Math.round((compliantCount / answeredCount) * 100);
+            }, [maturityAnswers]);
 
-          const handleNext = () => setStep(prev => prev + 1);
-          const handleBack = () => setStep(prev => prev - 1);
+            const handleNext = () => setStep(prev => prev + 1);
+            const handleBack = () => setStep(prev => prev - 1);
 
-          const handleRiskChange = (id) => setRiskAnswers(prev => ({ ...prev, [id]: !prev[id] }));
-          const handleMaturityChange = (id) => setMaturityAnswers(prev => ({ ...prev, [id]: !prev[id] }));
+            const handleRiskChange = (id) => setRiskAnswers(prev => ({ ...prev, [id]: !prev[id] }));
+            const handleMaturityChange = (id) => setMaturityAnswers(prev => ({ ...prev, [id]: !prev[id] }));
 
-          const onReset = () => {
-             setStep(1);
-             setRiskAnswers(RISK_QUESTIONS.reduce((acc, q) => ({ ...acc, [q.id]: false }), {}));
-             setMaturityAnswers(MATURITY_CHECK_QUESTIONS.reduce((acc, q) => ({ ...acc, [q.id]: false }), {}));
-             setSystemName('');
-          };
+            const onReset = () => {
+                setStep(1);
+                setRiskAnswers(RISK_QUESTIONS.reduce((acc, q) => ({ ...acc, [q.id]: false }), {}));
+                setMaturityAnswers(MATURITY_CHECK_QUESTIONS.reduce((acc, q) => ({ ...acc, [q.id]: false }), {}));
+                setSystemName('');
+            };
 
 
-          if (step === 4) {
-            return (
-                <Report 
-                    systemName={systemName} 
-                    highRiskScore={highRiskScore} 
-                    isHighRisk={isHighRisk}
-                    onReset={onReset}
-                />
-            );
-          }
-
-          const renderStep = () => {
-            switch (step) {
-              case 1:
+            if (step === 4) {
                 return (
-                  <>
-                    <StepHeader
-                      icon={Package}
-                      title="Step 1/3: System Identification"
-                      description="Name your AI system to personalize the risk report."
+                    <Report 
+                        systemName={systemName} 
+                        highRiskScore={highRiskScore} 
+                        isHighRisk={isHighRisk}
+                        onReset={onReset}
                     />
-                    <input
-                      type="text"
-                      value={systemName}
-                      onChange={(e) => setSystemName(e.target.value)}
-                      placeholder="e.g., TalentMatch Recruiting AI"
-                      className="w-full p-3 border border-gray-300 rounded-xl shadow-inner focus:ring-blue-500 focus:border-blue-500 transition"
-                    />
-                    <div className="mt-8 flex justify-end">
-                      <Button onClick={handleNext} disabled={!systemName.trim()}>
-                        Next: Assess Risk <span aria-hidden="true">&rarr;</span>
-                      </Button>
-                    </div>
-                  </>
                 );
-
-              case 2:
-                return (
-                  <>
-                    <StepHeader
-                      icon={AlertTriangle}
-                      title="Step 2/3: EU AI Act Risk Classification"
-                      description="Answer YES if your system is used in any of these critical, high-risk areas (Annex III)."
-                      color="red"
-                    />
-                    <div className="space-y-4">
-                      {RISK_QUESTIONS.map(q => (
-                        <div key={q.id} className="p-4 border border-gray-200 rounded-xl bg-white shadow-sm hover:shadow-md">
-                          <label className="flex items-center space-x-3 cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={riskAnswers[q.id]}
-                              onChange={() => handleRiskChange(q.id)}
-                              className="form-checkbox h-5 w-5 text-red-600 rounded focus:ring-red-500"
-                            />
-                            <span className="text-gray-800 font-medium">{q.text}</span>
-                          </label>
-                          <p className="text-xs text-gray-500 mt-1 ml-8 italic">Category: {q.category}</p>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="mt-8 flex justify-between">
-                      <Button onClick={handleBack} primary={false}>&larr; Back</Button>
-                      <Button onClick={handleNext}>Next: Maturity Check &rarr;</Button>
-                    </div>
-                  </>
-                );
-
-              case 3:
-                return (
-                  <>
-                    <StepHeader
-                      icon={Shield}
-                      title="Step 3/3: Synchronization Maturity Check (ISO 42001)"
-                      description="Answer YES only if you have robust, documented processes in place for these core requirements."
-                      color="indigo"
-                    />
-                    {isHighRisk && (
-                        <div className="mb-6 p-4 bg-red-100 border-l-4 border-red-500 text-red-700 rounded-lg shadow-inner">
-                            <p className="font-bold">Urgent:</p>
-                            <p className="text-sm">Since your system is High-Risk, a 'NO' answer indicates a critical failure point under the EU AI Act.</p>
-                        </div>
-                    )}
-                    <div className="space-y-4">
-                      {MATURITY_CHECK_QUESTIONS.map(q => (
-                        <div key={q.id} className="p-4 border border-gray-200 rounded-xl bg-white shadow-sm hover:shadow-md">
-                          <label className="flex items-center space-x-3 cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={maturityAnswers[q.id]}
-                              onChange={() => handleMaturityChange(q.id)}
-                              className="form-checkbox h-5 w-5 text-indigo-600 rounded focus:ring-indigo-500"
-                            />
-                            <span className="text-gray-800 font-medium">{q.text}</span>
-                          </label>
-                          <p className="text-xs text-gray-500 mt-1 ml-8 italic">Requirement: {q.requirement}</p>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="mt-8 flex justify-between">
-                      <Button onClick={handleBack} primary={false}>&larr; Back</Button>
-                      <Button onClick={() => setStep(4)}>View Final Report &rarr;</Button>
-                    </div>
-                  </>
-                );
-
-              default: return null;
             }
-          };
 
-          return (
-            <div className="p-6 bg-white rounded-2xl shadow-xl border border-gray-100">
-                <div className="mb-6">
-                    <div className="w-full bg-gray-200 rounded-full h-2.5 mt-1">
-                        <div
-                            className="bg-blue-600 h-2.5 rounded-full transition-all duration-500"
-                            style={{ width: `${(step / 3) * 100}%` }}
-                        ></div>
+            const renderStep = () => {
+                switch (step) {
+                    case 1:
+                        return (
+                            <>
+                                <StepHeader
+                                    icon={Package}
+                                    title="Step 1/3: System Identification"
+                                    description="Name your AI system to personalize the risk report."
+                                />
+                                <input
+                                    type="text"
+                                    value={systemName}
+                                    onChange={(e) => setSystemName(e.target.value)}
+                                    placeholder="e.g., TalentMatch Recruiting AI"
+                                    className="w-full p-3 border border-gray-300 rounded-xl shadow-inner focus:ring-blue-500 focus:border-blue-500 transition"
+                                />
+                                <div className="mt-8 flex justify-end">
+                                    <Button onClick={handleNext} disabled={!systemName.trim()}>
+                                        Next: Assess Risk <span aria-hidden="true">&rarr;</span>
+                                    </Button>
+                                </div>
+                            </>
+                        );
+
+                    case 2:
+                        return (
+                            <>
+                                <StepHeader
+                                    icon={AlertTriangle}
+                                    title="Step 2/3: EU AI Act Risk Classification"
+                                    description="Answer YES if your system is used in any of these critical, high-risk areas (Annex III)."
+                                    color="red"
+                                />
+                                <div className="space-y-4">
+                                    {RISK_QUESTIONS.map(q => (
+                                        <div key={q.id} className="p-4 border border-gray-200 rounded-xl bg-white shadow-sm hover:shadow-md">
+                                            <label className="flex items-center space-x-3 cursor-pointer">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={riskAnswers[q.id]}
+                                                    onChange={() => handleRiskChange(q.id)}
+                                                    className="form-checkbox h-5 w-5 text-red-600 rounded focus:ring-red-500"
+                                                />
+                                                <span className="text-gray-800 font-medium">{q.text}</span>
+                                            </label>
+                                            <p className="text-xs text-gray-500 mt-1 ml-8 italic">Category: {q.category}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="mt-8 flex justify-between">
+                                    <Button onClick={handleBack} primary={false}>&larr; Back</Button>
+                                    <Button onClick={handleNext}>Next: Maturity Check &rarr;</Button>
+                                </div>
+                            </>
+                        );
+
+                    case 3:
+                        return (
+                            <>
+                                <StepHeader
+                                    icon={Shield}
+                                    title="Step 3/3: Synchronization Maturity Check (ISO 42001)"
+                                    description="Answer YES only if you have robust, documented processes in place for these core requirements."
+                                    color="indigo"
+                                />
+                                {isHighRisk && (
+                                        <div className="mb-6 p-4 bg-red-100 border-l-4 border-red-500 text-red-700 rounded-lg shadow-inner">
+                                            <p className="font-bold">Urgent:</p>
+                                            <p className="text-sm">Since your system is **High-Risk**, a 'NO' answer indicates a critical failure point under the EU AI Act.</p>
+                                        </div>
+                                )}
+                                <div className="space-y-4">
+                                    {MATURITY_CHECK_QUESTIONS.map(q => (
+                                        <div key={q.id} className="p-4 border border-gray-200 rounded-xl bg-white shadow-sm hover:shadow-md">
+                                            <label className="flex items-center space-x-3 cursor-pointer">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={maturityAnswers[q.id]}
+                                                    onChange={() => handleMaturityChange(q.id)}
+                                                    className="form-checkbox h-5 w-5 text-indigo-600 rounded focus:ring-indigo-500"
+                                                />
+                                                <span className="text-gray-800 font-medium">{q.text}</span>
+                                            </label>
+                                            <p className="text-xs text-gray-500 mt-1 ml-8 italic">Requirement: {q.requirement}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="mt-8 flex justify-between">
+                                    <Button onClick={handleBack} primary={false}>&larr; Back</Button>
+                                    <Button onClick={() => setStep(4)}>View Final Report &rarr;</Button>
+                                </div>
+                            </>
+                        );
+
+                    default: return null;
+                }
+            };
+
+            return (
+                <div className="p-6 bg-white rounded-2xl shadow-xl border border-gray-100">
+                    {/* Progress Bar */}
+                    <div className="mb-6">
+                        <div className="w-full bg-gray-200 rounded-full h-2.5 mt-1">
+                            <div
+                                className="bg-blue-600 h-2.5 rounded-full transition-all duration-500"
+                                style={{ width: `${(step / 3) * 100}%` }}
+                            ></div>
+                        </div>
                     </div>
+                    {renderStep()}
                 </div>
-                {renderStep()}
-            </div>
-          );
+            );
         };
 
         // --- REPORT COMPONENT ---
 
         const Report = ({ systemName, highRiskScore, isHighRisk, onReset }) => {
-          const scoreColor = highRiskScore >= 80 ? 'text-green-600' : highRiskScore >= 50 ? 'text-yellow-600' : 'text-red-600';
-          const riskColor = isHighRisk ? 'bg-red-50 text-red-700 border-red-500' : 'bg-green-50 text-green-700 border-green-500';
-          const riskIcon = isHighRisk ? <AlertTriangle className="w-5 h-5 mr-2" /> : <CheckCircle className="w-5 h-5 mr-2" />;
+            const scoreColor = highRiskScore >= 80 ? 'text-green-600' : highRiskScore >= 50 ? 'text-yellow-600' : 'text-red-600';
+            const riskColor = isHighRisk ? 'bg-red-50 text-red-700 border-red-500' : 'bg-green-50 text-green-700 border-green-500';
+            const riskIcon = isHighRisk ? <AlertTriangle className="w-5 h-5 mr-2" /> : <CheckCircle className="w-5 h-5 mr-2" />;
 
-          const riskLevel = isHighRisk ? 'High-Risk' : 'Minimal/Limited Risk';
+            const riskLevel = isHighRisk ? 'High-Risk' : 'Minimal/Limited Risk';
 
-          const advice = useMemo(() => {
-            if (isHighRisk) {
-                if (highRiskScore < 50) return { title: "CRITICAL FAILURE POINT", content: "Your AI system is classified as High-Risk but lacks basic governance in over 50% of critical areas. Immediate compliance action is required to avoid EU market exclusion and severe financial penalties (up to €35M)." };
-                if (highRiskScore < 80) return { title: "SIGNIFICANT GAPS DETECTED", content: "You are not ready for a Conformity Assessment and require structured remediation to meet the EU AI Act mandates." };
-                return { title: "AUDIT READINESS (BETA)", content: "Your system demonstrates high compliance maturity. Minor adjustments and the final IMSSS AIMS Manual implementation are needed before seeking formal certification." };
-            }
-            return { title: "LOW RISK, HIGH TRUST OPPORTUNITY", content: "Your system is Minimal Risk. Achieving ISO 42001 certification voluntarily will still increase customer trust and future-proof your product." };
-          }, [isHighRisk, highRiskScore]);
+            const advice = useMemo(() => {
+                if (isHighRisk) {
+                    if (highRiskScore < 50) return { title: "CRITICAL FAILURE POINT", content: "Your AI system is classified as High-Risk but lacks basic governance in over 50% of critical areas. Immediate compliance action is required to avoid EU market exclusion and severe financial penalties (up to €35M)." };
+                    if (highRiskScore < 80) return { title: "SIGNIFICANT GAPS DETECTED", content: "You are not ready for a Conformity Assessment and require structured remediation to meet the EU AI Act mandates." };
+                    return { title: "AUDIT READINESS (BETA)", content: "Your system demonstrates high compliance maturity. Minor adjustments and the final IMSSS AIMS Manual implementation are needed before seeking formal certification." };
+                }
+                return { title: "LOW RISK, HIGH TRUST OPPORTUNITY", content: "Your system is Minimal Risk. Achieving ISO 42001 certification voluntarily will still increase customer trust and future-proof your product." };
+            }, [isHighRisk, highRiskScore]);
 
-          return (
-            <div className="space-y-6">
-              <StepHeader
-                icon={ScrollText}
-                title="Synchronization Readiness Report"
-                description={`Results for the AI System: ${systemName}`}
-              />
+            return (
+                <div className="space-y-6">
+                    <StepHeader
+                        icon={ScrollText}
+                        title="Synchronization Readiness Report"
+                        description={`Results for the AI System: ${systemName}`}
+                    />
 
-              {/* Risk Classification Panel */}
-              <div className={`p-5 rounded-xl shadow-lg border-l-4 ${riskColor}`}>
-                <h3 className="font-bold text-lg flex items-center mb-2">
-                  <Zap className="w-5 h-5 mr-2" />
-                  EU AI Act Risk Classification
-                </h3>
-                <div className="mt-3 inline-flex items-center px-4 py-2 font-semibold text-white rounded-full shadow-md" style={{ backgroundColor: isHighRisk ? '#dc2626' : '#10b981' }}>
-                  {riskIcon}
-                  {riskLevel}
-                </div>
-              </div>
+                    {/* Risk Classification Panel */}
+                    <div className={`p-5 rounded-xl shadow-lg border-l-4 ${riskColor}`}>
+                        <h3 className="font-bold text-lg flex items-center mb-2">
+                            <Zap className="w-5 h-5 mr-2" />
+                            EU AI Act Risk Classification
+                        </h3>
+                        <div className="mt-3 inline-flex items-center px-4 py-2 font-semibold text-white rounded-full shadow-md" style={{ backgroundColor: isHighRisk ? '#dc2626' : '#10b981' }}>
+                            {riskIcon}
+                            {riskLevel}
+                        </div>
+                    </div>
 
-              {/* Maturity Score Panel */}
-              <div className="p-5 rounded-xl shadow-lg border border-gray-200 bg-white">
-                <h3 className="font-bold text-lg flex items-center mb-2 text-gray-800">
-                  <Clock className="w-5 h-5 mr-2 text-blue-600" />
-                  IMSSS Synchronization Maturity Score
-                </h3>
-                <div className="flex items-center justify-between">
-                    <p className="text-sm text-gray-600">Compliance Readiness against ISO/IEC 42001 & EU AI Act.</p>
-                    <div className={`text-4xl font-extrabold ${scoreColor} p-2 rounded-lg`}>
-                        {highRiskScore}%
+                    {/* Maturity Score Panel */}
+                    <div className="p-5 rounded-xl shadow-lg border border-gray-200 bg-white">
+                        <h3 className="font-bold text-lg flex items-center mb-2 text-gray-800">
+                            <Clock className="w-5 h-5 mr-2 text-blue-600" />
+                            IMSSS Synchronization Maturity Score
+                        </h3>
+                        <div className="flex items-center justify-between">
+                            <p className="text-sm text-gray-600">Compliance Readiness against ISO/IEC 42001 & EU AI Act.</p>
+                            <div className={`text-4xl font-extrabold ${scoreColor} p-2 rounded-lg`}>
+                                {highRiskScore}%
+                            </div>
+                        </div>
+
+                        <div className="mt-4 w-full bg-gray-200 rounded-full h-3">
+                            <div
+                                className={`h-3 rounded-full transition-all duration-700 ${highRiskScore >= 80 ? 'bg-green-500' : highRiskScore >= 50 ? 'bg-yellow-500' : 'bg-red-500'}`}
+                                style={{ width: `${highRiskScore}%` }}
+                            ></div>
+                        </div>
+                    </div>
+
+                    {/* Strategic Advice Panel */}
+                    <div className={`p-5 rounded-xl shadow-lg border-l-4 border-indigo-500 bg-indigo-50`}>
+                        <h3 className="font-bold text-lg flex items-center mb-2 text-indigo-700">
+                            <UserCheck className="w-5 h-5 mr-2" />
+                            Strategic Recommendation
+                        </h3>
+                        <p className="text-md font-semibold text-indigo-800 mb-2">{advice.title}</p>
+                        <p className="text-sm text-indigo-700">{advice.content}</p>
+
+                        <div className="mt-4 pt-4 border-t border-indigo-200">
+                            <h4 className="text-sm font-bold mb-2">Your Next Step: IMSSS Assessment</h4>
+                            <p className="text-sm text-indigo-700 font-bold">The IMSSS Synchronization Readiness Assessment (PKR 1.2M) provides the full AIMS Manual and the roadmap to 100% compliance. Contact us below to schedule your briefing.</p>
+                        </div>
+                    </div>
+
+                    <div className="mt-8 flex justify-center">
+                        <Button onClick={onReset} primary={false}>
+                            <span aria-hidden="true">↺</span> Start New Assessment
+                        </Button>
                     </div>
                 </div>
-
-                <div className="mt-4 w-full bg-gray-200 rounded-full h-3">
-                    <div
-                        className={`h-3 rounded-full transition-all duration-700 ${highRiskScore >= 80 ? 'bg-green-500' : highRiskScore >= 50 ? 'bg-yellow-500' : 'bg-red-500'}`}
-                        style={{ width: `${highRiskScore}%` }}
-                    ></div>
-                </div>
-              </div>
-
-              {/* Strategic Advice Panel */}
-              <div className={`p-5 rounded-xl shadow-lg border-l-4 border-indigo-500 bg-indigo-50`}>
-                <h3 className="font-bold text-lg flex items-center mb-2 text-indigo-700">
-                  <UserCheck className="w-5 h-5 mr-2" />
-                  Strategic Recommendation
-                </h3>
-                <p className="text-md font-semibold text-indigo-800 mb-2">{advice.title}</p>
-                <p className="text-sm text-indigo-700">{advice.content}</p>
-
-                <div className="mt-4 pt-4 border-t border-indigo-200">
-                    <h4 className="text-sm font-bold mb-2">Your Next Step: IMSSS Assessment</h4>
-                    <p className="text-sm text-indigo-700 font-bold">The IMSSS Synchronization Readiness Assessment (PKR 1.2M) provides the full AIMS Manual and the roadmap to 100% compliance. Contact us below to schedule your briefing.</p>
-                </div>
-              </div>
-
-              <div className="mt-8 flex justify-center">
-                <Button onClick={onReset} primary={false}>
-                  <span aria-hidden="true">↺</span> Start New Assessment
-                </Button>
-              </div>
-            </div>
-          );
+            );
         };
 
         // --- MAIN PAGE LAYOUT ---
@@ -355,107 +372,63 @@
                         The EU AI Act is mandatory. We provide the synchronization framework to ensure your system achieves global certification readiness (ISO 42001) and secures your European market access.
                     </p>
                     <div className="mt-6 text-center">
-                        <a href="#assessor">
-                            <Button className="w-full sm:w-auto text-lg" primary={false} style={{ backgroundColor: 'white', color: '#4f46e5' }}>
-                                Start Your Free Risk Check Now &darr;
-                            </Button>
-                        </a>
+                        <Button 
+                            href="#assessor" 
+                            className="w-full sm:w-auto text-lg" 
+                            primary={false} 
+                            style={{ backgroundColor: 'white', color: '#4f46e5' }}
+                        >
+                            Start Your Free Risk Check Now &darr;
+                        </Button>
                     </div>
                 </section>
 
                 {/* Free Assessor Section (Primary CTA) */}
                 <section id="assessor" className="mb-12 pt-8">
-                    <h3 className="text-3xl font-bold text-gray-800 mb-6 flex items-center">
-                        <UserCheck className="w-7 h-7 mr-3 text-red-500" />
-                        Free 5-Minute Synchronization Readiness Check
-                    </h3>
                     <AssessorContainer />
                 </section>
 
-                {/* Paid Service Proposal Summary */}
-                <section id="services" className="mb-12 py-8 bg-white rounded-2xl shadow-xl">
-                    <h3 className="text-3xl font-bold text-gray-800 mb-6 px-6 flex items-center">
-                        <Briefcase className="w-7 h-7 mr-3 text-blue-600" />
-                        The Synchronization Readiness Assessment (PKR 1.2M)
-                    </h3>
-                    <div className="grid md:grid-cols-3 gap-6 px-6">
-                        <div className="p-4 bg-gray-50 rounded-xl border border-gray-200 shadow-sm">
-                            <Zap className="w-6 h-6 text-red-500 mb-2" />
-                            <h4 className="font-semibold text-lg mb-1">Risk Mitigation & Fines</h4>
-                            <p className="text-sm text-gray-600">We quantify your specific legal exposure and provide the roadmap to eliminate the risk of the €35M penalty.</p>
-                        </div>
-                        <div className="p-4 bg-gray-50 rounded-xl border border-gray-200 shadow-sm">
-                            <Globe className="w-6 h-6 text-green-500 mb-2" />
-                            <h4 className="font-semibold text-lg mb-1">ISO 42001 Synchronization</h4>
-                            <p className="text-sm text-gray-600">We implement your proprietary AIMS Manual, delivering 100% readiness for your formal ISO/IEC 42001 audit.</p>
-                        </div>
-                        <div className="p-4 bg-gray-50 rounded-xl border border-gray-200 shadow-sm">
-                            <Award className="w-6 h-6 text-yellow-500 mb-2" />
-                            <h4 className="font-semibold text-lg mb-1">E-Justice & Bias Audit</h4>
-                            <p className="text-sm text-gray-600">Expert analysis of your core metrics to prevent discriminatory outcomes, a mandatory requirement for CE Marking.</p>
-                        </div>
-                    </div>
-                    <div className="text-center mt-8 px-6">
-                        <a href="#contact">
-                            <Button className="w-full sm:w-auto" primary={true}>
-                                Request the Full Proposal (PKR 1.2M)
-                            </Button>
-                        </a>
-                    </div>
-                </section>
-
-                {/* Authority/History Section */}
-                <section id="authority" className="mb-12 py-8">
-                    <h3 className="text-3xl font-bold text-gray-800 mb-6 text-center flex items-center justify-center">
-                        <History className="w-7 h-7 mr-3 text-gray-500" />
-                        IMSSS: Two Decades of Trusted Expertise
-                    </h3>
-                    <div className="max-w-4xl mx-auto bg-white p-6 rounded-2xl shadow-xl">
-                        <p className="text-lg text-gray-700 leading-relaxed mb-4">
-                            Founded in **January 2004**, IMSSS has built a 20-year history of providing essential security and risk management consultancy to high-stakes environments. Our specialization evolved directly from auditing complex, high-risk systems for major international bodies.
-                        </p>
-                        <ul className="list-disc pl-5 text-gray-600 space-y-2">
-                            <li>**20+ Years** of continuous operation (since 2004).</li>
-                            <li>Experienced in protocols for **USAID, World Bank, and EU-funded programs.**</li>
-                            <li>Registered member of the **Islamabad Chamber of Commerce and Industry (ICCI).**</li>
-                            <li>Now focused exclusively on providing the specialized **AI Governance** required for global export.</li>
-                        </ul>
-                    </div>
-                </section>
-
-                {/* Contact Section */}
-                <section id="contact" className="py-12 bg-gray-900 text-white rounded-2xl shadow-2xl">
-                    <h3 className="text-3xl font-bold mb-6 text-center">
-                        Contact Sakibb Saleem
-                    </h3>
-                    <div className="text-center text-xl space-y-2">
-                        <p>
-                            <User className="inline w-6 h-6 mr-2 text-indigo-400" />
-                            Proprietor & Security Risk Strategist
-                        </p>
-                        <p>
-                            <a href="mailto:contact@imsss.pk" className="text-indigo-400 hover:text-indigo-300 transition">
-                                contact@imsss.pk
-                            </a>
-                        </p>
-                        <p>
-                            <span className="text-indigo-400">NTN: [Your NTN Placeholder]</span> | <span className="text-indigo-400">ICCI: [Your ICCI # Placeholder]</span>
-                        </p>
-                        <p className="pt-4 text-sm text-gray-400">
-                            Book a high-priority consultation today to secure your EU market access.
-                        </p>
-                    </div>
-                </section>
-
-                {/* Footer */}
-                <footer className="text-center text-xs text-gray-500 mt-8 pb-4">
-                    <p>&copy; {new Date().getFullYear()} IMSSS (Independent Multiple Safety and Security Solutions). All Rights Reserved.</p>
+                {/* Footer Section */}
+                <footer className="text-center py-6 text-gray-500 text-sm border-t mt-12">
+                    © 2025 IMSSS Synchronization Services.
                 </footer>
             </div>
         );
+    </script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                // A. Get the raw JSX code from the template block
+                const codeBlock = document.getElementById('main-react-code');
+                if (!codeBlock) {
+                    console.error("Error: main-react-code script block not found.");
+                    return;
+                }
+                const code = codeBlock.textContent;
 
-        // Mount the application
-        ReactDOM.createRoot(document.getElementById('root')).render(<MainApp />);
+                // B. Use Babel to transform the JSX into executable JavaScript
+                // We use presets: ['react'] to handle the JSX syntax.
+                const compiledCode = Babel.transform(code, { 
+                    presets: ['react'] 
+                }).code;
+
+                // C. Execute the compiled code in the global scope
+                // This defines the MainApp function and all other components globally.
+                eval(compiledCode);
+                
+                // D. Manually mount the React App
+                const rootElement = document.getElementById('root');
+                if (rootElement && typeof MainApp !== 'undefined') {
+                    ReactDOM.createRoot(rootElement).render(React.createElement(MainApp));
+                    console.log("IMSSS App successfully compiled and rendered!");
+                } else {
+                    console.error("Root element not found or MainApp component not defined.");
+                }
+            } catch (error) {
+                console.error("An error occurred during Babel compilation or React rendering:", error);
+            }
+        });
     </script>
 </body>
 </html>
