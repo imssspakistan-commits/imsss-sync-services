@@ -3,431 +3,315 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IMSSS AI Synchronization Services</title>
-    
+    <title>IMSSS Assessment Workflow</title>
+
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
-    
+
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    
+
     <script src="https://unpkg.com/lucide@latest"></script>
 
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        indigo: {
-                            50: '#eef2ff',
-                            600: '#4f46e5',
-                            700: '#4338ca',
-                            800: '#3730a3',
-                        },
-                        blue: {
-                            600: '#2563eb',
-                        }
-                    }
-                }
-            }
+    <style>
+        /* Base styles */
+        body {
+            font-family: ui-sans-serif, system-ui, sans-serif;
+            background-color: #f8f9fa; /* Light background */
+            min-height: 100vh;
         }
-    </script>
+        /* Custom scrollbar for better look in the main container */
+        .custom-scroll::-webkit-scrollbar {
+            width: 8px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1; /* slate-300 */
+            border-radius: 4px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background-color: #f1f5f9; /* slate-100 */
+        }
+    </style>
 </head>
-<body class="bg-gray-50 min-h-screen">
-    
-    <div id="root"></div>
+<body>
 
-    <script id="main-react-code" type="text/template">
-        const { useState, useMemo, useEffect } = React;
-        // This is safe now because the Lucide CDN has already loaded globally.
-        const { Shield, TrendingUp, Zap, Clock, UserCheck, ScrollText, AlertTriangle, CheckCircle, Package, Briefcase, Award, Globe, User, History } = lucide;
+    <div id="root" class="p-4 md:p-8"></div>
 
-        // --- CONFIGURATION DATA ---
-        const RISK_QUESTIONS = [
-          { id: 1, text: "Does your AI system manage, evaluate, or select candidates for employment, career advancement, or task allocation?", category: "HR & Labor" },
-          { id: 2, text: "Is your system used for evaluating the creditworthiness or establishing collateral for loans, insurance, or other vital public/private services?", category: "Access to Services" },
-          { id: 3, text: "Is your system intended for use in the administration of justice (e.g., influencing legal rulings or providing evidence)?", category: "E-Justice" },
-          { id: 4, text: "Is your system used for real-time remote biometric identification (e.g., facial recognition in public spaces)?", category: "Law Enforcement" },
-          { id: 5, text: "Is your system used to evaluate or influence the outcome of elections or referenda?", category: "Democracy" },
-        ];
+    <script type="text/template" id="main-react-code">
+        const { useState, useEffect, useMemo, useCallback } = React;
 
-        const MATURITY_CHECK_QUESTIONS = [
-          { id: 101, text: "Do you have formal, documented procedures for identifying and mitigating risks of bias (e.g., gender, ethnicity) in your training data?", requirement: "Data Governance" },
-          { id: 102, text: "Is there a clear, documented mechanism for a human to review and overturn critical decisions made by the AI system?", requirement: "Human Oversight" },
-          { id: 103, text: "Do you provide end-users with clear, technical documentation on the system’s purpose, accuracy, and operational limitations?", requirement: "Transparency & Documentation" },
-          { id: 104, text: "Are all changes to the AI model's code, data, and configuration tracked in a detailed audit log/system?", requirement: "Record Keeping" },
-          { id: 105, text: "Is a senior manager formally designated and responsible for the overall compliance of the AI system (AI Management System ownership)?", requirement: "Governance" },
-        ];
-        
-        const COLOR_MAP = {
-            red: { bgColor: 'bg-red-50', textColor: 'text-red-600' },
-            indigo: { bgColor: 'bg-indigo-50', textColor: 'text-indigo-600' },
-            blue: { bgColor: 'bg-blue-50', textColor: 'text-blue-600' },
+        // Custom Hook to load Lucide Icons globally
+        const useLucideIcons = () => {
+            useEffect(() => {
+                if (window.lucide) {
+                    window.lucide.createIcons();
+                }
+            }, []);
         };
 
-        const StepHeader = ({ icon: Icon, title, description, color = 'blue' }) => {
-            const { bgColor, textColor } = COLOR_MAP[color] || COLOR_MAP['blue'];
+        // --- STEP 1 COMPONENT ---
+        const Step1 = ({ onNext, assessmentType, setAssessmentType }) => {
+            useLucideIcons();
+            
+            const handleSelection = (type) => {
+                setAssessmentType(type);
+            };
+
+            const typeOptions = [
+                { id: 'baseline', name: 'Baseline Assessment', description: 'Initial assessment to establish current state and needs.', icon: 'CheckCircle' },
+                { id: 'followup', name: 'Follow-up Assessment', description: 'Re-assessment after interventions or changes.', icon: 'Repeat2' },
+                { id: 'ad_hoc', name: 'Ad-Hoc Assessment', description: 'Targeted assessment for a specific issue or incident.', icon: 'AlertTriangle' },
+            ];
 
             return (
-                <div className={`flex items-start space-x-4 mb-6 p-4 ${bgColor} rounded-xl`}>
-                    <Icon className={`w-8 h-8 ${textColor} mt-1 flex-shrink-0`} />
-                    <div>
-                        <h2 className="text-xl font-bold text-gray-800">{title}</h2>
-                        <p className="text-sm text-gray-500">{description}</p>
+                <div className="space-y-6">
+                    <h2 className="text-2xl font-semibold text-gray-800 border-b pb-3 mb-4">
+                        Step 1: Select Assessment Type
+                    </h2>
+                    
+                    <div className="grid md:grid-cols-3 gap-6">
+                        {typeOptions.map((option) => (
+                            <div
+                                key={option.id}
+                                onClick={() => handleSelection(option.id)}
+                                className={`
+                                    p-6 border-2 rounded-xl shadow-lg cursor-pointer transition-all duration-200
+                                    ${assessmentType === option.id 
+                                        ? 'border-indigo-600 bg-indigo-50 shadow-indigo-200' 
+                                        : 'border-gray-200 bg-white hover:border-indigo-400 hover:shadow-md'
+                                    }
+                                `}
+                            >
+                                <div className="flex items-center space-x-4">
+                                    <div 
+                                        data-lucide={option.icon} 
+                                        className={`w-8 h-8 ${assessmentType === option.id ? 'text-indigo-600' : 'text-gray-500'}`}
+                                    ></div>
+                                    <h3 className="text-xl font-bold text-gray-700">{option.name}</h3>
+                                </div>
+                                <p className="mt-3 text-gray-500 text-sm">{option.description}</p>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="flex justify-end pt-4">
+                        <button
+                            onClick={onNext}
+                            disabled={!assessmentType}
+                            className={`
+                                px-6 py-2 text-white font-medium rounded-lg transition duration-150
+                                ${assessmentType 
+                                    ? 'bg-indigo-600 hover:bg-indigo-700' 
+                                    : 'bg-gray-400 cursor-not-allowed'
+                                }
+                            `}
+                        >
+                            Continue to Step 2
+                        </button>
                     </div>
                 </div>
             );
         };
 
-        const Button = ({ children, onClick, primary = true, disabled = false, className = '', ...props }) => {
-            const baseClasses = `px-6 py-3 rounded-xl font-semibold transition duration-300 transform active:scale-95 shadow-lg ${className}`;
-            const colorClasses = primary
-                ? 'bg-gradient-to-r from-blue-600 to-indigo-700 text-white hover:from-blue-700 hover:to-indigo-800'
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300';
-            const disabledClasses = disabled ? 'opacity-50 cursor-not-allowed' : '';
-            
-            if (props.href) {
-                return (
-                    <a
-                        href={props.href}
-                        className={`${baseClasses} ${colorClasses} ${disabledClasses} inline-block text-center`}
-                        {...props}
-                    >
-                        {children}
-                    </a>
-                );
-            }
+        // --- STEP 2 COMPONENT ---
+        const Step2 = ({ onNext, onPrevious, persistenceMechanism, setPersistenceMechanism }) => {
+            useLucideIcons();
+
+            const handleSelection = (mechanism) => {
+                setPersistenceMechanism(mechanism);
+            };
+
+            const mechanismOptions = [
+                { id: 'local_storage', name: 'Local Storage', description: 'Data is saved in the browser, allowing resume on the same device.', icon: 'HardDrive' },
+                { id: 'server_db', name: 'Server Database', description: 'Data is stored remotely, enabling cross-device access and collaboration.', icon: 'Database' },
+                { id: 'print_pdf', name: 'Print/PDF Only', description: 'No digital persistence; data is captured by printing or saving as PDF.', icon: 'Printer' },
+            ];
 
             return (
-                <button
-                    onClick={onClick}
-                    disabled={disabled}
-                    className={`${baseClasses} ${colorClasses} ${disabledClasses}`}
-                    {...props}
-                >
-                    {children}
-                </button>
+                <div className="space-y-6">
+                    <h2 className="text-2xl font-semibold text-gray-800 border-b pb-3 mb-4">
+                        Step 2: Select Persistence Mechanism
+                    </h2>
+                    
+                    <div className="grid md:grid-cols-3 gap-6">
+                        {mechanismOptions.map((option) => (
+                            <div
+                                key={option.id}
+                                onClick={() => handleSelection(option.id)}
+                                className={`
+                                    p-6 border-2 rounded-xl shadow-lg cursor-pointer transition-all duration-200
+                                    ${persistenceMechanism === option.id 
+                                        ? 'border-indigo-600 bg-indigo-50 shadow-indigo-200' 
+                                        : 'border-gray-200 bg-white hover:border-indigo-400 hover:shadow-md'
+                                    }
+                                `}
+                            >
+                                <div className="flex items-center space-x-4">
+                                    <div 
+                                        data-lucide={option.icon} 
+                                        className={`w-8 h-8 ${persistenceMechanism === option.id ? 'text-indigo-600' : 'text-gray-500'}`}
+                                    ></div>
+                                    <h3 className="text-xl font-bold text-gray-700">{option.name}</h3>
+                                </div>
+                                <p className="mt-3 text-gray-500 text-sm">{option.description}</p>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="flex justify-between pt-4">
+                        <button
+                            onClick={onPrevious}
+                            className="px-6 py-2 text-gray-600 bg-gray-200 hover:bg-gray-300 font-medium rounded-lg transition duration-150"
+                        >
+                            <span data-lucide="ArrowLeft" className="inline-block w-4 h-4 mr-2"></span>
+                            Back to Step 1
+                        </button>
+                        <button
+                            onClick={onNext}
+                            disabled={!persistenceMechanism}
+                            className={`
+                                px-6 py-2 text-white font-medium rounded-lg transition duration-150
+                                ${persistenceMechanism 
+                                    ? 'bg-indigo-600 hover:bg-indigo-700' 
+                                    : 'bg-gray-400 cursor-not-allowed'
+                                }
+                            `}
+                        >
+                            Complete Setup
+                            <span data-lucide="Check" className="inline-block w-4 h-4 ml-2"></span>
+                        </button>
+                    </div>
+                </div>
             );
         };
 
-        // --- ASSESSOR LOGIC ---
-
+        // --- IMSSS CONTAINER COMPONENT ---
         const AssessorContainer = () => {
+            // State for the application flow
             const [step, setStep] = useState(1);
-            const [riskAnswers, setRiskAnswers] = useState(RISK_QUESTIONS.reduce((acc, q) => ({ ...acc, [q.id]: false }), {}));
-            const [maturityAnswers, setMaturityAnswers] = useState(MATURITY_CHECK_QUESTIONS.reduce((acc, q) => ({ ...acc, [q.id]: false }), {}));
-            const [systemName, setSystemName] = useState('');
+            const [assessmentType, setAssessmentType] = useState(null);
+            const [persistenceMechanism, setPersistenceMechanism] = useState(null);
 
-            const isHighRisk = useMemo(() => RISK_QUESTIONS.some(q => riskAnswers[q.id]), [riskAnswers]);
-            
-            const highRiskScore = useMemo(() => {
-                const answeredCount = MATURITY_CHECK_QUESTIONS.length;
-                const compliantCount = MATURITY_CHECK_QUESTIONS.filter(q => maturityAnswers[q.id]).length;
-                return Math.round((compliantCount / answeredCount) * 100);
-            }, [maturityAnswers]);
-
-            const handleNext = () => setStep(prev => prev + 1);
-            const handleBack = () => setStep(prev => prev - 1);
-
-            const handleRiskChange = (id) => setRiskAnswers(prev => ({ ...prev, [id]: !prev[id] }));
-            const handleMaturityChange = (id) => setMaturityAnswers(prev => ({ ...prev, [id]: !prev[id] }));
-
-            const onReset = () => {
-                setStep(1);
-                setRiskAnswers(RISK_QUESTIONS.reduce((acc, q) => ({ ...acc, [q.id]: false }), {}));
-                setMaturityAnswers(MATURITY_CHECK_QUESTIONS.reduce((acc, q) => ({ ...acc, [q.id]: false }), {}));
-                setSystemName('');
-            };
-
-
-            if (step === 4) {
-                return (
-                    <Report 
-                        systemName={systemName} 
-                        highRiskScore={highRiskScore} 
-                        isHighRisk={isHighRisk}
-                        onReset={onReset}
-                    />
-                );
-            }
+            // Function to navigate between steps
+            const nextStep = () => setStep(prev => prev + 1);
+            const previousStep = () => setStep(prev => prev - 1);
 
             const renderStep = () => {
                 switch (step) {
                     case 1:
                         return (
-                            <>
-                                <StepHeader
-                                    icon={Package}
-                                    title="Step 1/3: System Identification"
-                                    description="Name your AI system to personalize the risk report."
-                                />
-                                <input
-                                    type="text"
-                                    value={systemName}
-                                    onChange={(e) => setSystemName(e.target.value)}
-                                    placeholder="e.g., TalentMatch Recruiting AI"
-                                    className="w-full p-3 border border-gray-300 rounded-xl shadow-inner focus:ring-blue-500 focus:border-blue-500 transition"
-                                />
-                                <div className="mt-8 flex justify-end">
-                                    <Button onClick={handleNext} disabled={!systemName.trim()}>
-                                        Next: Assess Risk <span aria-hidden="true">&rarr;</span>
-                                    </Button>
-                                </div>
-                            </>
+                            <Step1
+                                onNext={nextStep}
+                                assessmentType={assessmentType}
+                                setAssessmentType={setAssessmentType}
+                            />
                         );
-
                     case 2:
                         return (
-                            <>
-                                <StepHeader
-                                    icon={AlertTriangle}
-                                    title="Step 2/3: EU AI Act Risk Classification"
-                                    description="Answer YES if your system is used in any of these critical, high-risk areas (Annex III)."
-                                    color="red"
-                                />
-                                <div className="space-y-4">
-                                    {RISK_QUESTIONS.map(q => (
-                                        <div key={q.id} className="p-4 border border-gray-200 rounded-xl bg-white shadow-sm hover:shadow-md">
-                                            <label className="flex items-center space-x-3 cursor-pointer">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={riskAnswers[q.id]}
-                                                    onChange={() => handleRiskChange(q.id)}
-                                                    className="form-checkbox h-5 w-5 text-red-600 rounded focus:ring-red-500"
-                                                />
-                                                <span className="text-gray-800 font-medium">{q.text}</span>
-                                            </label>
-                                            <p className="text-xs text-gray-500 mt-1 ml-8 italic">Category: {q.category}</p>
-                                        </div>
-                                    ))}
-                                </div>
-                                <div className="mt-8 flex justify-between">
-                                    <Button onClick={handleBack} primary={false}>&larr; Back</Button>
-                                    <Button onClick={handleNext}>Next: Maturity Check &rarr;</Button>
-                                </div>
-                            </>
+                            <Step2
+                                onNext={nextStep}
+                                onPrevious={previousStep}
+                                persistenceMechanism={persistenceMechanism}
+                                setPersistenceMechanism={setPersistenceMechanism}
+                            />
                         );
-
                     case 3:
                         return (
-                            <>
-                                <StepHeader
-                                    icon={Shield}
-                                    title="Step 3/3: Synchronization Maturity Check (ISO 42001)"
-                                    description="Answer YES only if you have robust, documented processes in place for these core requirements."
-                                    color="indigo"
-                                />
-                                {isHighRisk && (
-                                        <div className="mb-6 p-4 bg-red-100 border-l-4 border-red-500 text-red-700 rounded-lg shadow-inner">
-                                            <p className="font-bold">Urgent:</p>
-                                            <p className="text-sm">Since your system is **High-Risk**, a 'NO' answer indicates a critical failure point under the EU AI Act.</p>
-                                        </div>
-                                )}
-                                <div className="space-y-4">
-                                    {MATURITY_CHECK_QUESTIONS.map(q => (
-                                        <div key={q.id} className="p-4 border border-gray-200 rounded-xl bg-white shadow-sm hover:shadow-md">
-                                            <label className="flex items-center space-x-3 cursor-pointer">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={maturityAnswers[q.id]}
-                                                    onChange={() => handleMaturityChange(q.id)}
-                                                    className="form-checkbox h-5 w-5 text-indigo-600 rounded focus:ring-indigo-500"
-                                                />
-                                                <span className="text-gray-800 font-medium">{q.text}</span>
-                                            </label>
-                                            <p className="text-xs text-gray-500 mt-1 ml-8 italic">Requirement: {q.requirement}</p>
-                                        </div>
-                                    ))}
-                                </div>
-                                <div className="mt-8 flex justify-between">
-                                    <Button onClick={handleBack} primary={false}>&larr; Back</Button>
-                                    <Button onClick={() => setStep(4)}>View Final Report &rarr;</Button>
-                                </div>
-                            </>
+                            <div className="text-center p-12 bg-green-50 rounded-xl shadow-lg">
+                                <span data-lucide="Award" className="w-16 h-16 text-green-600 mx-auto block mb-4"></span>
+                                <h2 className="text-3xl font-bold text-green-800">Setup Complete!</h2>
+                                <p className="mt-2 text-lg text-green-700">
+                                    IMSSS Assessor is now configured with:
+                                </p>
+                                <ul className="mt-4 space-y-2 text-left inline-block">
+                                    <li className="text-gray-700 font-medium">
+                                        Assessment Type: <span className="text-indigo-600 capitalize">{assessmentType.replace('_', ' ')}</span>
+                                    </li>
+                                    <li className="text-gray-700 font-medium">
+                                        Persistence Method: <span className="text-indigo-600 capitalize">{persistenceMechanism.replace('_', ' ')}</span>
+                                    </li>
+                                </ul>
+                                <button
+                                    onClick={() => setStep(1)}
+                                    className="mt-8 px-6 py-2 text-white bg-indigo-600 hover:bg-indigo-700 font-medium rounded-lg transition duration-150"
+                                >
+                                    Start Over
+                                </button>
+                            </div>
                         );
-
-                    default: return null;
+                    default:
+                        return null;
                 }
             };
 
             return (
-                <div className="p-6 bg-white rounded-2xl shadow-xl border border-gray-100">
+                <div className="max-w-4xl mx-auto bg-white p-6 md:p-10 rounded-2xl shadow-2xl custom-scroll">
+                    <h1 className="text-3xl font-extrabold text-indigo-700 mb-6 border-b-4 border-indigo-200 pb-2">
+                        IMSSS Assessor Setup Wizard
+                    </h1>
+                    
                     {/* Progress Bar */}
-                    <div className="mb-6">
-                        <div className="w-full bg-gray-200 rounded-full h-2.5 mt-1">
-                            <div
-                                className="bg-blue-600 h-2.5 rounded-full transition-all duration-500"
+                    <div className="mb-8">
+                        <div className="flex justify-between text-sm font-medium text-gray-500 mb-2">
+                            <span>Step {step} of 3</span>
+                            <span className="text-indigo-600">{step === 3 ? 'Finished' : 'Setup in Progress'}</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2.5">
+                            <div 
+                                className="bg-indigo-600 h-2.5 rounded-full transition-all duration-500" 
                                 style={{ width: `${(step / 3) * 100}%` }}
                             ></div>
                         </div>
                     </div>
+
                     {renderStep()}
                 </div>
             );
         };
 
-        // --- REPORT COMPONENT ---
-
-        const Report = ({ systemName, highRiskScore, isHighRisk, onReset }) => {
-            const scoreColor = highRiskScore >= 80 ? 'text-green-600' : highRiskScore >= 50 ? 'text-yellow-600' : 'text-red-600';
-            const riskColor = isHighRisk ? 'bg-red-50 text-red-700 border-red-500' : 'bg-green-50 text-green-700 border-green-500';
-            const riskIcon = isHighRisk ? <AlertTriangle className="w-5 h-5 mr-2" /> : <CheckCircle className="w-5 h-5 mr-2" />;
-
-            const riskLevel = isHighRisk ? 'High-Risk' : 'Minimal/Limited Risk';
-
-            const advice = useMemo(() => {
-                if (isHighRisk) {
-                    if (highRiskScore < 50) return { title: "CRITICAL FAILURE POINT", content: "Your AI system is classified as High-Risk but lacks basic governance in over 50% of critical areas. Immediate compliance action is required to avoid EU market exclusion and severe financial penalties (up to €35M)." };
-                    if (highRiskScore < 80) return { title: "SIGNIFICANT GAPS DETECTED", content: "You are not ready for a Conformity Assessment and require structured remediation to meet the EU AI Act mandates." };
-                    return { title: "AUDIT READINESS (BETA)", content: "Your system demonstrates high compliance maturity. Minor adjustments and the final IMSSS AIMS Manual implementation are needed before seeking formal certification." };
-                }
-                return { title: "LOW RISK, HIGH TRUST OPPORTUNITY", content: "Your system is Minimal Risk. Achieving ISO 42001 certification voluntarily will still increase customer trust and future-proof your product." };
-            }, [isHighRisk, highRiskScore]);
-
+        // --- MAIN APP COMPONENT ---
+        const MainApp = () => {
             return (
-                <div className="space-y-6">
-                    <StepHeader
-                        icon={ScrollText}
-                        title="Synchronization Readiness Report"
-                        description={`Results for the AI System: ${systemName}`}
-                    />
-
-                    {/* Risk Classification Panel */}
-                    <div className={`p-5 rounded-xl shadow-lg border-l-4 ${riskColor}`}>
-                        <h3 className="font-bold text-lg flex items-center mb-2">
-                            <Zap className="w-5 h-5 mr-2" />
-                            EU AI Act Risk Classification
-                        </h3>
-                        <div className="mt-3 inline-flex items-center px-4 py-2 font-semibold text-white rounded-full shadow-md" style={{ backgroundColor: isHighRisk ? '#dc2626' : '#10b981' }}>
-                            {riskIcon}
-                            {riskLevel}
-                        </div>
-                    </div>
-
-                    {/* Maturity Score Panel */}
-                    <div className="p-5 rounded-xl shadow-lg border border-gray-200 bg-white">
-                        <h3 className="font-bold text-lg flex items-center mb-2 text-gray-800">
-                            <Clock className="w-5 h-5 mr-2 text-blue-600" />
-                            IMSSS Synchronization Maturity Score
-                        </h3>
-                        <div className="flex items-center justify-between">
-                            <p className="text-sm text-gray-600">Compliance Readiness against ISO/IEC 42001 & EU AI Act.</p>
-                            <div className={`text-4xl font-extrabold ${scoreColor} p-2 rounded-lg`}>
-                                {highRiskScore}%
-                            </div>
-                        </div>
-
-                        <div className="mt-4 w-full bg-gray-200 rounded-full h-3">
-                            <div
-                                className={`h-3 rounded-full transition-all duration-700 ${highRiskScore >= 80 ? 'bg-green-500' : highRiskScore >= 50 ? 'bg-yellow-500' : 'bg-red-500'}`}
-                                style={{ width: `${highRiskScore}%` }}
-                            ></div>
-                        </div>
-                    </div>
-
-                    {/* Strategic Advice Panel */}
-                    <div className={`p-5 rounded-xl shadow-lg border-l-4 border-indigo-500 bg-indigo-50`}>
-                        <h3 className="font-bold text-lg flex items-center mb-2 text-indigo-700">
-                            <UserCheck className="w-5 h-5 mr-2" />
-                            Strategic Recommendation
-                        </h3>
-                        <p className="text-md font-semibold text-indigo-800 mb-2">{advice.title}</p>
-                        <p className="text-sm text-indigo-700">{advice.content}</p>
-
-                        <div className="mt-4 pt-4 border-t border-indigo-200">
-                            <h4 className="text-sm font-bold mb-2">Your Next Step: IMSSS Assessment</h4>
-                            <p className="text-sm text-indigo-700 font-bold">The IMSSS Synchronization Readiness Assessment (PKR 1.2M) provides the full AIMS Manual and the roadmap to 100% compliance. Contact us below to schedule your briefing.</p>
-                        </div>
-                    </div>
-
-                    <div className="mt-8 flex justify-center">
-                        <Button onClick={onReset} primary={false}>
-                            <span aria-hidden="true">↺</span> Start New Assessment
-                        </Button>
-                    </div>
+                <div className="h-full w-full">
+                    <AssessorContainer />
                 </div>
             );
         };
-
-        // --- MAIN PAGE LAYOUT ---
-        const MainApp = () => (
-            <div className="container mx-auto p-4 sm:p-8">
-                {/* Header Section */}
-                <header className="text-center py-8 bg-white rounded-xl shadow-lg mb-8">
-                    <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-900 leading-tight">
-                        IMSSS AI Synchronization Services
-                    </h1>
-                    <p className="mt-2 text-xl font-medium text-indigo-600">
-                        ISO 42001 & EU AI Act Compliance
-                    </p>
-                </header>
-
-                {/* Hero / High-Impact Headline Section */}
-                <section className="bg-indigo-700 text-white p-6 sm:p-10 rounded-2xl shadow-2xl mb-12">
-                    <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-                        🚨 PKR 1.2M: Guaranteed Avoidance of €35 Million EU AI Fines for High-Risk Systems.
-                    </h2>
-                    <p className="text-lg font-light">
-                        The EU AI Act is mandatory. We provide the synchronization framework to ensure your system achieves global certification readiness (ISO 42001) and secures your European market access.
-                    </p>
-                    <div className="mt-6 text-center">
-                        <Button 
-                            href="#assessor" 
-                            className="w-full sm:w-auto text-lg" 
-                            primary={false} 
-                            style={{ backgroundColor: 'white', color: '#4f46e5' }}
-                        >
-                            Start Your Free Risk Check Now &darr;
-                        </Button>
-                    </div>
-                </section>
-
-                {/* Free Assessor Section (Primary CTA) */}
-                <section id="assessor" className="mb-12 pt-8">
-                    <AssessorContainer />
-                </section>
-
-                {/* Footer Section */}
-                <footer className="text-center py-6 text-gray-500 text-sm border-t mt-12">
-                    © 2025 IMSSS Synchronization Services.
-                </footer>
-            </div>
-        );
     </script>
-    
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            try {
-                // A. Get the raw JSX code from the template block
-                const codeBlock = document.getElementById('main-react-code');
-                if (!codeBlock) {
-                    console.error("Error: main-react-code script block not found.");
-                    return;
-                }
-                const code = codeBlock.textContent;
+            // A small delay to ensure all CDNs (Babel/Lucide) are globally defined.
+            setTimeout(function() {
+                try {
+                    const codeBlock = document.getElementById('main-react-code');
+                    if (!codeBlock) {
+                        console.error("Error: main-react-code script block not found.");
+                        return;
+                    }
+                    
+                    // Use Babel to transform the JSX into executable JavaScript
+                    const compiledCode = Babel.transform(codeBlock.textContent, { 
+                        presets: ['react'] 
+                    }).code;
 
-                // B. Use Babel to transform the JSX into executable JavaScript
-                // We use presets: ['react'] to handle the JSX syntax.
-                const compiledCode = Babel.transform(code, { 
-                    presets: ['react'] 
-                }).code;
-
-                // C. Execute the compiled code in the global scope
-                // This defines the MainApp function and all other components globally.
-                eval(compiledCode);
-                
-                // D. Manually mount the React App
-                const rootElement = document.getElementById('root');
-                if (rootElement && typeof MainApp !== 'undefined') {
-                    ReactDOM.createRoot(rootElement).render(React.createElement(MainApp));
-                    console.log("IMSSS App successfully compiled and rendered!");
-                } else {
-                    console.error("Root element not found or MainApp component not defined.");
+                    // Execute the compiled code in the global scope, defining MainApp
+                    eval(compiledCode);
+                    
+                    // Manually mount the React App
+                    const rootElement = document.getElementById('root');
+                    if (rootElement && typeof MainApp !== 'undefined') {
+                        ReactDOM.createRoot(rootElement).render(React.createElement(MainApp));
+                        console.log("IMSSS App successfully compiled and rendered!");
+                    } else {
+                        console.error("Root element not found or MainApp component not defined.");
+                        console.error("Babel likely crashed. Please check the code in 'main-react-code' for syntax errors.");
+                    }
+                } catch (error) {
+                    // This will catch the syntax error if Babel fails!
+                    console.error("A CRITICAL ERROR OCCURRED during Babel compilation or React rendering:", error);
                 }
-            } catch (error) {
-                console.error("An error occurred during Babel compilation or React rendering:", error);
-            }
+            }, 100); 
         });
     </script>
 </body>
