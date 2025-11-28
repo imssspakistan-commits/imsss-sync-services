@@ -266,14 +266,77 @@
             );
         };
 
+        // --- NEW COMPONENT: Step 3 (Review/Ready - Now Step 4) - FIX FOR BLANK SCREEN ---
+        const Step3 = ({ onStartAssessment, assessmentType, persistenceMechanism, onPrevious }) => {
+            useLucideIcons();
+            
+            const getTypeLabel = (id) => {
+                const options = {
+                    'baseline': 'Baseline Assessment (High-Level)',
+                    'follow_up': 'Follow-up Assessment (Remediation Check)',
+                    'ad_hoc': 'Ad-Hoc Assessment (Targeted Review)'
+                };
+                return options[id] || id.toUpperCase();
+            };
+
+            const getPersistenceLabel = (id) => {
+                const options = {
+                    'local_storage': 'Browser Local Storage',
+                    'server_database': 'Remote Server Database',
+                    'no_persistence': 'No Persistence (Session Only)'
+                };
+                return options[id] || id.toUpperCase();
+            };
+
+            return e('div', { className: "p-8 bg-white rounded-xl shadow-lg border border-gray-200" },
+                e('h2', { className: "text-3xl font-bold text-indigo-700 mb-6 flex items-center" }, 
+                    e('span', { 'data-lucide': "CheckCircle", className: "inline-block w-6 h-6 mr-3" }),
+                    "Step 4: Review and Start"
+                ),
+
+                e('div', { className: "space-y-4 p-6 bg-indigo-50 rounded-lg border border-indigo-200 mb-8" },
+                    e('h3', { className: "text-xl font-semibold text-gray-700 border-b pb-2 mb-4" }, "Assessment Configuration Summary"),
+                    e('div', { className: "flex justify-between py-2 border-b border-indigo-100" },
+                        e('span', { className: "font-medium text-gray-600" }, "Assessment Type:"),
+                        e('span', { className: "font-bold text-indigo-800" }, getTypeLabel(assessmentType))
+                    ),
+                    e('div', { className: "flex justify-between py-2" },
+                        e('span', { className: "font-medium text-gray-600" }, "Data Persistence:"),
+                        e('span', { className: "font-bold text-indigo-800" }, getPersistenceLabel(persistenceMechanism))
+                    )
+                ),
+
+                e('div', { className: "text-center p-4 bg-yellow-50 rounded-lg border border-yellow-200" },
+                    e('p', { className: "font-semibold text-yellow-800" }, "Click 'Start Assessment' to proceed to the questionnaire.")
+                ),
+
+                e('div', { className: "flex justify-between pt-8 border-t mt-8" }, 
+                    e('button', {
+                        onClick: onPrevious,
+                        className: "px-6 py-2 text-gray-600 bg-gray-200 hover:bg-gray-300 font-medium rounded-lg transition duration-150 flex items-center"
+                    }, 
+                        e('span', { 'data-lucide': "ArrowLeft", className: "inline-block w-4 h-4 mr-2" }),
+                        "Back to Step 3"
+                    ),
+                    e('button', {
+                        onClick: onStartAssessment,
+                        className: "px-8 py-3 text-white bg-green-600 hover:bg-green-700 font-medium rounded-lg shadow-md transition duration-150 flex items-center"
+                    }, 
+                        "Start Assessment",
+                        e('span', { 'data-lucide': "Play", className: "inline-block w-4 h-4 ml-2" })
+                    )
+                )
+            );
+        };
+
         // --- AssessmentView (THE MAIN SURVEY) ---
         const AssessmentView = ({ 
             assessmentType, 
             persistenceMechanism, 
             onEndAssessment, 
             ASSESSMENT_QUESTIONS, 
-            answers,          
-            setAnswers         
+            answers, 
+            setAnswers 
         }) => {
             useLucideIcons();
             
@@ -562,7 +625,7 @@
                         onEndAssessment: endAssessment,
                         ASSESSMENT_QUESTIONS: ASSESSMENT_QUESTIONS,         
                         answers: answers,                   
-                        setAnswers: setAnswers,                 
+                        setAnswers: setAnswers,             
                     });
                 }
                 
@@ -585,89 +648,44 @@
                             persistenceMechanism: persistenceMechanism,
                             setPersistenceMechanism: setPersistenceMechanism,
                         });
-                    case 4: // STEP 4: Final Summary 
-                        return e('div', { className: "text-center p-12 bg-green-50 rounded-xl shadow-lg" },
-                            useLucideIcons(), 
-                            e('span', { 'data-lucide': "Award", className: "w-16 h-16 text-green-600 mx-auto block mb-4" }),
-                            e('h2', { className: "text-3xl font-bold text-green-800" }, "Setup Complete!"),
-                            e('p', { className: "mt-2 text-lg text-green-700" }, "IMSSS Assessor is now configured with:"),
-                            e('ul', { className: "mt-4 space-y-2 text-left inline-block" },
-                                e('li', { className: "text-gray-700 font-medium" }, 
-                                    "Assessment Type: ", 
-                                    e('span', { className: "text-indigo-600 capitalize" }, assessmentType.replace('_', ' '))
-                                ),
-                                e('li', { className: "text-gray-700 font-medium" }, 
-                                    "Persistence Method: ", 
-                                    e('span', { className: "text-indigo-600 capitalize" }, persistenceMechanism.replace('_', ' '))
-                                )
-                            ),
-                            e('div', { className: "mt-8 flex justify-center space-x-4" },
-                                e('button', {
-                                    onClick: startAssessment, 
-                                    className: "px-6 py-2 text-white bg-indigo-600 hover:bg-indigo-700 font-medium rounded-lg shadow-md transition duration-150 flex items-center"
-                                }, 
-                                    e('span', { 'data-lucide': "Zap", className: "inline-block w-4 h-4 mr-2" }),
-                                    "Start Assessment"
-                                ),
-                                e('button', {
-                                    onClick: () => setStep(1),
-                                    className: "px-6 py-2 text-gray-600 bg-gray-200 hover:bg-gray-300 font-medium rounded-lg transition duration-150"
-                                }, "Start Over")
-                            )
-                        );
+                    case 4: // STEP 4: Final Summary - FIXED
+                        return e(Step3, {
+                            onStartAssessment: startAssessment,
+                            onPrevious: previousStep,
+                            assessmentType: assessmentType,
+                            persistenceMechanism: persistenceMechanism,
+                        });
                     default:
-                        // Fallback: If step is out of bounds, return to step 1 (Terms of Service)
-                        return e(TermsOfService, { onAccept: nextStep });
+                        return e('div', { className: "text-center p-12 bg-red-100 rounded-xl shadow-lg text-red-700 font-bold" },
+                            "Error: Unknown Step"
+                        );
                 }
             };
 
-            // Progress Bar Logic
-            const progressSteps = 4;
-            
-            return e('div', { className: "max-w-4xl mx-auto bg-white p-6 md:p-10 rounded-2xl shadow-2xl custom-scroll" },
-                e('h1', { className: "text-3xl font-extrabold text-indigo-700 mb-6 border-b-4 border-indigo-200 pb-2" }, "IMSSS Assessor Setup Wizard"),
-                
-                // Breadcrumb Component
-                e(Breadcrumb, { 
-                    currentStep: step, 
-                    onStepClick: handleBreadcrumbClick,
-                    isAssessmentStarted: isAssessmentStarted,
-                    isAssessmentFinished: isAssessmentFinished // Pass new state
-                }),
-
-                // Progress Bar (Only visible during setup steps 1-4)
-                !isAssessmentStarted && !isAssessmentFinished && e('div', { className: "mb-8" },
-                    e('div', { className: "flex justify-between text-sm font-medium text-gray-500 mb-2" },
-                        e('span', null, `Step ${step} of 4`),
-                        e('span', { className: "text-indigo-600" }, step === 4 ? 'Ready to Start' : 'Setup in Progress')
-                    ),
-                    e('div', { className: "w-full bg-gray-200 rounded-full h-2.5" },
-                        e('div', { 
-                            className: "bg-indigo-600 h-2.5 rounded-full transition-all duration-500", 
-                            style: { width: `${(step / 4) * 100}%` }
-                        })
-                    )
+            return e('div', { className: "max-w-4xl w-full mx-auto" },
+                e('header', { className: "text-center mb-6" },
+                    e('h1', { className: "text-4xl font-extrabold text-gray-800" }, "IMSSS Assessor Setup Wizard"),
+                    e('p', { className: "text-gray-500 mt-2" }, "Internal Maturity Self-Scoring System")
                 ),
                 
-                renderStep()
+                e(Breadcrumb, { 
+                    currentStep: step, 
+                    onStepClick: handleBreadcrumbClick, 
+                    isAssessmentStarted: isAssessmentStarted,
+                    isAssessmentFinished: isAssessmentFinished
+                }),
+                
+                e('main', { className: "bg-white p-6 rounded-2xl shadow-2xl" },
+                    renderStep()
+                )
             );
         };
 
-        // --- MAIN APP COMPONENT ---
-        const MainApp = () => {
-            return e('div', { className: "h-full w-full" }, e(AssessorContainer));
-        };
-        
-        // --- MANUAL MOUNT (No Babel needed) ---
-        document.addEventListener('DOMContentLoaded', function() {
-            const rootElement = document.getElementById('root');
-            if (rootElement) {
-                ReactDOM.createRoot(rootElement).render(e(MainApp));
-                console.log("IMSSS App successfully rendered using pure JavaScript!");
-            } else {
-                console.error("Root element not found.");
-            }
-        });
+        // Render the main component
+        ReactDOM.render(
+            e(AssessorContainer),
+            document.getElementById('root')
+        );
     </script>
 </body>
 </html>
