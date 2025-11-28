@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IMSSS Assessment Workflow</title>
+    <title>IMSSS Assessment Workflow - Pure JS</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
 
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <script src="https://unpkg.com/lucide@latest"></script>
 
@@ -20,16 +19,15 @@
             background-color: #f8f9fa; /* Light background */
             min-height: 100vh;
         }
-        /* Custom scrollbar for better look in the main container */
         .custom-scroll::-webkit-scrollbar {
             width: 8px;
         }
         .custom-scroll::-webkit-scrollbar-thumb {
-            background-color: #cbd5e1; /* slate-300 */
+            background-color: #cbd5e1;
             border-radius: 4px;
         }
         .custom-scroll::-webkit-scrollbar-track {
-            background-color: #f1f5f9; /* slate-100 */
+            background-color: #f1f5f9;
         }
     </style>
 </head>
@@ -37,7 +35,7 @@
 
     <div id="root" class="p-4 md:p-8"></div>
 
-    <script type="text/template" id="main-react-code">
+    <script>
         const { useState, useEffect, useMemo, useCallback } = React;
 
         // Custom Hook to load Lucide Icons globally
@@ -48,6 +46,9 @@
                 }
             }, []);
         };
+
+        // Helper function for React.createElement
+        const e = React.createElement;
 
         // --- STEP 1 COMPONENT ---
         const Step1 = ({ onNext, assessmentType, setAssessmentType }) => {
@@ -63,53 +64,47 @@
                 { id: 'ad_hoc', name: 'Ad-Hoc Assessment', description: 'Targeted assessment for a specific issue or incident.', icon: 'AlertTriangle' },
             ];
 
-            return (
-                <div className="space-y-6">
-                    <h2 className="text-2xl font-semibold text-gray-800 border-b pb-3 mb-4">
-                        Step 1: Select Assessment Type
-                    </h2>
-                    
-                    <div className="grid md:grid-cols-3 gap-6">
-                        {typeOptions.map((option) => (
-                            <div
-                                key={option.id}
-                                onClick={() => handleSelection(option.id)}
-                                className={`
-                                    p-6 border-2 rounded-xl shadow-lg cursor-pointer transition-all duration-200
-                                    ${assessmentType === option.id 
-                                        ? 'border-indigo-600 bg-indigo-50 shadow-indigo-200' 
-                                        : 'border-gray-200 bg-white hover:border-indigo-400 hover:shadow-md'
-                                    }
-                                `}
-                            >
-                                <div className="flex items-center space-x-4">
-                                    <div 
-                                        data-lucide={option.icon} 
-                                        className={`w-8 h-8 ${assessmentType === option.id ? 'text-indigo-600' : 'text-gray-500'}`}
-                                    ></div>
-                                    <h3 className="text-xl font-bold text-gray-700">{option.name}</h3>
-                                </div>
-                                <p className="mt-3 text-gray-500 text-sm">{option.description}</p>
-                            </div>
-                        ))}
-                    </div>
-
-                    <div className="flex justify-end pt-4">
-                        <button
-                            onClick={onNext}
-                            disabled={!assessmentType}
-                            className={`
-                                px-6 py-2 text-white font-medium rounded-lg transition duration-150
-                                ${assessmentType 
-                                    ? 'bg-indigo-600 hover:bg-indigo-700' 
-                                    : 'bg-gray-400 cursor-not-allowed'
+            return e('div', { className: "space-y-6" },
+                e('h2', { className: "text-2xl font-semibold text-gray-800 border-b pb-3 mb-4" }, "Step 1: Select Assessment Type"),
+                
+                e('div', { className: "grid md:grid-cols-3 gap-6" },
+                    typeOptions.map((option) => (
+                        e('div', {
+                            key: option.id,
+                            onClick: () => handleSelection(option.id),
+                            className: `
+                                p-6 border-2 rounded-xl shadow-lg cursor-pointer transition-all duration-200
+                                ${assessmentType === option.id 
+                                    ? 'border-indigo-600 bg-indigo-50 shadow-indigo-200' 
+                                    : 'border-gray-200 bg-white hover:border-indigo-400 hover:shadow-md'
                                 }
-                            `}
-                        >
-                            Continue to Step 2
-                        </button>
-                    </div>
-                </div>
+                            `
+                        },
+                            e('div', { className: "flex items-center space-x-4" },
+                                e('div', { 
+                                    'data-lucide': option.icon, 
+                                    className: `w-8 h-8 ${assessmentType === option.id ? 'text-indigo-600' : 'text-gray-500'}`
+                                }),
+                                e('h3', { className: "text-xl font-bold text-gray-700" }, option.name)
+                            ),
+                            e('p', { className: "mt-3 text-gray-500 text-sm" }, option.description)
+                        )
+                    ))
+                ),
+
+                e('div', { className: "flex justify-end pt-4" },
+                    e('button', {
+                        onClick: onNext,
+                        disabled: !assessmentType,
+                        className: `
+                            px-6 py-2 text-white font-medium rounded-lg transition duration-150
+                            ${assessmentType 
+                                ? 'bg-indigo-600 hover:bg-indigo-700' 
+                                : 'bg-gray-400 cursor-not-allowed'
+                            }
+                        `
+                    }, "Continue to Step 2")
+                )
             );
         };
 
@@ -127,61 +122,57 @@
                 { id: 'print_pdf', name: 'Print/PDF Only', description: 'No digital persistence; data is captured by printing or saving as PDF.', icon: 'Printer' },
             ];
 
-            return (
-                <div className="space-y-6">
-                    <h2 className="text-2xl font-semibold text-gray-800 border-b pb-3 mb-4">
-                        Step 2: Select Persistence Mechanism
-                    </h2>
-                    
-                    <div className="grid md:grid-cols-3 gap-6">
-                        {mechanismOptions.map((option) => (
-                            <div
-                                key={option.id}
-                                onClick={() => handleSelection(option.id)}
-                                className={`
-                                    p-6 border-2 rounded-xl shadow-lg cursor-pointer transition-all duration-200
-                                    ${persistenceMechanism === option.id 
-                                        ? 'border-indigo-600 bg-indigo-50 shadow-indigo-200' 
-                                        : 'border-gray-200 bg-white hover:border-indigo-400 hover:shadow-md'
-                                    }
-                                `}
-                            >
-                                <div className="flex items-center space-x-4">
-                                    <div 
-                                        data-lucide={option.icon} 
-                                        className={`w-8 h-8 ${persistenceMechanism === option.id ? 'text-indigo-600' : 'text-gray-500'}`}
-                                    ></div>
-                                    <h3 className="text-xl font-bold text-gray-700">{option.name}</h3>
-                                </div>
-                                <p className="mt-3 text-gray-500 text-sm">{option.description}</p>
-                            </div>
-                        ))}
-                    </div>
-
-                    <div className="flex justify-between pt-4">
-                        <button
-                            onClick={onPrevious}
-                            className="px-6 py-2 text-gray-600 bg-gray-200 hover:bg-gray-300 font-medium rounded-lg transition duration-150"
-                        >
-                            <span data-lucide="ArrowLeft" className="inline-block w-4 h-4 mr-2"></span>
-                            Back to Step 1
-                        </button>
-                        <button
-                            onClick={onNext}
-                            disabled={!persistenceMechanism}
-                            className={`
-                                px-6 py-2 text-white font-medium rounded-lg transition duration-150
-                                ${persistenceMechanism 
-                                    ? 'bg-indigo-600 hover:bg-indigo-700' 
-                                    : 'bg-gray-400 cursor-not-allowed'
+            return e('div', { className: "space-y-6" },
+                e('h2', { className: "text-2xl font-semibold text-gray-800 border-b pb-3 mb-4" }, "Step 2: Select Persistence Mechanism"),
+                
+                e('div', { className: "grid md:grid-cols-3 gap-6" },
+                    mechanismOptions.map((option) => (
+                        e('div', {
+                            key: option.id,
+                            onClick: () => handleSelection(option.id),
+                            className: `
+                                p-6 border-2 rounded-xl shadow-lg cursor-pointer transition-all duration-200
+                                ${persistenceMechanism === option.id 
+                                    ? 'border-indigo-600 bg-indigo-50 shadow-indigo-200' 
+                                    : 'border-gray-200 bg-white hover:border-indigo-400 hover:shadow-md'
                                 }
-                            `}
-                        >
-                            Complete Setup
-                            <span data-lucide="Check" className="inline-block w-4 h-4 ml-2"></span>
-                        </button>
-                    </div>
-                </div>
+                            `
+                        },
+                            e('div', { className: "flex items-center space-x-4" },
+                                e('div', { 
+                                    'data-lucide': option.icon, 
+                                    className: `w-8 h-8 ${persistenceMechanism === option.id ? 'text-indigo-600' : 'text-gray-500'}`
+                                }),
+                                e('h3', { className: "text-xl font-bold text-gray-700" }, option.name)
+                            ),
+                            e('p', { className: "mt-3 text-gray-500 text-sm" }, option.description)
+                        )
+                    ))
+                ),
+
+                e('div', { className: "flex justify-between pt-4" },
+                    e('button', {
+                        onClick: onPrevious,
+                        className: "px-6 py-2 text-gray-600 bg-gray-200 hover:bg-gray-300 font-medium rounded-lg transition duration-150"
+                    }, 
+                        e('span', { 'data-lucide': "ArrowLeft", className: "inline-block w-4 h-4 mr-2" }),
+                        "Back to Step 1"
+                    ),
+                    e('button', {
+                        onClick: onNext,
+                        disabled: !persistenceMechanism,
+                        className: `
+                            px-6 py-2 text-white font-medium rounded-lg transition duration-150
+                            ${persistenceMechanism 
+                                ? 'bg-indigo-600 hover:bg-indigo-700' 
+                                : 'bg-gray-400 cursor-not-allowed'
+                            }
+                        `
+                    }, 
+                        "Complete Setup",
+                        e('span', { 'data-lucide': "Check", className: "inline-block w-4 h-4 ml-2" })
+                    )
+                )
             );
         };
 
@@ -199,119 +190,78 @@
             const renderStep = () => {
                 switch (step) {
                     case 1:
-                        return (
-                            <Step1
-                                onNext={nextStep}
-                                assessmentType={assessmentType}
-                                setAssessmentType={setAssessmentType}
-                            />
-                        );
+                        return e(Step1, {
+                            onNext: nextStep,
+                            assessmentType: assessmentType,
+                            setAssessmentType: setAssessmentType,
+                        });
                     case 2:
-                        return (
-                            <Step2
-                                onNext={nextStep}
-                                onPrevious={previousStep}
-                                persistenceMechanism={persistenceMechanism}
-                                setPersistenceMechanism={setPersistenceMechanism}
-                            />
-                        );
+                        return e(Step2, {
+                            onNext: nextStep,
+                            onPrevious: previousStep,
+                            persistenceMechanism: persistenceMechanism,
+                            setPersistenceMechanism: setPersistenceMechanism,
+                        });
                     case 3:
-                        return (
-                            <div className="text-center p-12 bg-green-50 rounded-xl shadow-lg">
-                                <span data-lucide="Award" className="w-16 h-16 text-green-600 mx-auto block mb-4"></span>
-                                <h2 className="text-3xl font-bold text-green-800">Setup Complete!</h2>
-                                <p className="mt-2 text-lg text-green-700">
-                                    IMSSS Assessor is now configured with:
-                                </p>
-                                <ul className="mt-4 space-y-2 text-left inline-block">
-                                    <li className="text-gray-700 font-medium">
-                                        Assessment Type: <span className="text-indigo-600 capitalize">{assessmentType.replace('_', ' ')}</span>
-                                    </li>
-                                    <li className="text-gray-700 font-medium">
-                                        Persistence Method: <span className="text-indigo-600 capitalize">{persistenceMechanism.replace('_', ' ')}</span>
-                                    </li>
-                                </ul>
-                                <button
-                                    onClick={() => setStep(1)}
-                                    className="mt-8 px-6 py-2 text-white bg-indigo-600 hover:bg-indigo-700 font-medium rounded-lg transition duration-150"
-                                >
-                                    Start Over
-                                </button>
-                            </div>
+                        return e('div', { className: "text-center p-12 bg-green-50 rounded-xl shadow-lg" },
+                            e('span', { 'data-lucide': "Award", className: "w-16 h-16 text-green-600 mx-auto block mb-4" }),
+                            e('h2', { className: "text-3xl font-bold text-green-800" }, "Setup Complete!"),
+                            e('p', { className: "mt-2 text-lg text-green-700" }, "IMSSS Assessor is now configured with:"),
+                            e('ul', { className: "mt-4 space-y-2 text-left inline-block" },
+                                e('li', { className: "text-gray-700 font-medium" }, 
+                                    "Assessment Type: ", 
+                                    e('span', { className: "text-indigo-600 capitalize" }, assessmentType.replace('_', ' '))
+                                ),
+                                e('li', { className: "text-gray-700 font-medium" }, 
+                                    "Persistence Method: ", 
+                                    e('span', { className: "text-indigo-600 capitalize" }, persistenceMechanism.replace('_', ' '))
+                                )
+                            ),
+                            e('button', {
+                                onClick: () => setStep(1),
+                                className: "mt-8 px-6 py-2 text-white bg-indigo-600 hover:bg-indigo-700 font-medium rounded-lg transition duration-150"
+                            }, "Start Over")
                         );
                     default:
                         return null;
                 }
             };
 
-            return (
-                <div className="max-w-4xl mx-auto bg-white p-6 md:p-10 rounded-2xl shadow-2xl custom-scroll">
-                    <h1 className="text-3xl font-extrabold text-indigo-700 mb-6 border-b-4 border-indigo-200 pb-2">
-                        IMSSS Assessor Setup Wizard
-                    </h1>
-                    
-                    {/* Progress Bar */}
-                    <div className="mb-8">
-                        <div className="flex justify-between text-sm font-medium text-gray-500 mb-2">
-                            <span>Step {step} of 3</span>
-                            <span className="text-indigo-600">{step === 3 ? 'Finished' : 'Setup in Progress'}</span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2.5">
-                            <div 
-                                className="bg-indigo-600 h-2.5 rounded-full transition-all duration-500" 
-                                style={{ width: `${(step / 3) * 100}%` }}
-                            ></div>
-                        </div>
-                    </div>
+            return e('div', { className: "max-w-4xl mx-auto bg-white p-6 md:p-10 rounded-2xl shadow-2xl custom-scroll" },
+                e('h1', { className: "text-3xl font-extrabold text-indigo-700 mb-6 border-b-4 border-indigo-200 pb-2" }, "IMSSS Assessor Setup Wizard"),
+                
+                // Progress Bar
+                e('div', { className: "mb-8" },
+                    e('div', { className: "flex justify-between text-sm font-medium text-gray-500 mb-2" },
+                        e('span', null, `Step ${step} of 3`),
+                        e('span', { className: "text-indigo-600" }, step === 3 ? 'Finished' : 'Setup in Progress')
+                    ),
+                    e('div', { className: "w-full bg-gray-200 rounded-full h-2.5" },
+                        e('div', { 
+                            className: "bg-indigo-600 h-2.5 rounded-full transition-all duration-500", 
+                            style: { width: `${(step / 3) * 100}%` }
+                        })
+                    )
+                ),
 
-                    {renderStep()}
-                </div>
+                renderStep()
             );
         };
 
         // --- MAIN APP COMPONENT ---
         const MainApp = () => {
-            return (
-                <div className="h-full w-full">
-                    <AssessorContainer />
-                </div>
-            );
+            return e('div', { className: "h-full w-full" }, e(AssessorContainer));
         };
-    </script>
-
-    <script>
+        
+        // --- MANUAL MOUNT (No Babel needed) ---
         document.addEventListener('DOMContentLoaded', function() {
-            // A small delay to ensure all CDNs (Babel/Lucide) are globally defined.
-            setTimeout(function() {
-                try {
-                    const codeBlock = document.getElementById('main-react-code');
-                    if (!codeBlock) {
-                        console.error("Error: main-react-code script block not found.");
-                        return;
-                    }
-                    
-                    // Use Babel to transform the JSX into executable JavaScript
-                    const compiledCode = Babel.transform(codeBlock.textContent, { 
-                        presets: ['react'] 
-                    }).code;
-
-                    // Execute the compiled code in the global scope, defining MainApp
-                    eval(compiledCode);
-                    
-                    // Manually mount the React App
-                    const rootElement = document.getElementById('root');
-                    if (rootElement && typeof MainApp !== 'undefined') {
-                        ReactDOM.createRoot(rootElement).render(React.createElement(MainApp));
-                        console.log("IMSSS App successfully compiled and rendered!");
-                    } else {
-                        console.error("Root element not found or MainApp component not defined.");
-                        console.error("Babel likely crashed. Please check the code in 'main-react-code' for syntax errors.");
-                    }
-                } catch (error) {
-                    // This will catch the syntax error if Babel fails!
-                    console.error("A CRITICAL ERROR OCCURRED during Babel compilation or React rendering:", error);
-                }
-            }, 100); 
+            const rootElement = document.getElementById('root');
+            if (rootElement) {
+                ReactDOM.createRoot(rootElement).render(e(MainApp));
+                console.log("IMSSS App successfully rendered using pure JavaScript!");
+            } else {
+                console.error("Root element not found.");
+            }
         });
     </script>
 </body>
