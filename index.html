@@ -50,7 +50,56 @@
         // Helper function for React.createElement
         const e = React.createElement;
 
-        // --- STEP 1 COMPONENT ---
+        // --- NEW COMPONENT: Terms of Service (STEP 1) ---
+        const TermsOfService = ({ onAccept }) => {
+            const [isAccepted, setIsAccepted] = useState(false);
+            
+            return e('div', { className: "space-y-6 p-6" },
+                e('h2', { className: "text-2xl font-semibold text-gray-800 border-b pb-3 mb-4" }, "Step 1: Accept Terms of Service"),
+                
+                e('div', { className: "bg-gray-100 p-4 rounded-lg h-60 overflow-y-scroll border border-gray-300" },
+                    e('p', { className: "text-sm text-gray-700" }, 
+                        e('h3', { className: "font-bold mb-2" }, "IMSSS Assessor Terms and Conditions"),
+                        "1. **Data Confidentiality:** All assessment data collected through this tool is highly confidential and must be treated according to your organization's security policy. Do not share raw assessment results without proper authorization.",
+                        e('br'), e('br'),
+                        "2. **Tool Ownership:** This tool is the intellectual property of your organization. Unauthorized distribution, modification, or reverse engineering is strictly prohibited.",
+                        e('br'), e('br'),
+                        "3. **Purpose:** This tool is intended solely for internal risk assessment and maturity scoring (IMSSS). It is not a guarantee of security compliance.",
+                        e('br'), e('br'),
+                        "4. **User Responsibility:** You are responsible for the accuracy of the data entered. Misrepresentation of security posture may lead to incorrect risk modeling.",
+                        e('br'), e('br'),
+                        "By proceeding, you acknowledge these terms."
+                    )
+                ),
+                
+                e('div', { className: "flex items-center mt-4" },
+                    e('input', {
+                        type: 'checkbox',
+                        id: 'acceptTerms',
+                        checked: isAccepted,
+                        onChange: (e) => setIsAccepted(e.target.checked),
+                        className: 'h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500'
+                    }),
+                    e('label', { htmlFor: 'acceptTerms', className: 'ml-2 block text-sm text-gray-900' }, "I have read and agree to the Terms of Service.")
+                ),
+
+                e('div', { className: "flex justify-end pt-4" },
+                    e('button', {
+                        onClick: onAccept,
+                        disabled: !isAccepted,
+                        className: `
+                            px-6 py-2 text-white font-medium rounded-lg transition duration-150
+                            ${isAccepted 
+                                ? 'bg-indigo-600 hover:bg-indigo-700' 
+                                : 'bg-gray-400 cursor-not-allowed'
+                            }
+                        `
+                    }, "Proceed to Assessment Setup")
+                )
+            );
+        };
+
+        // --- STEP 2 COMPONENT (Previously Step 1) ---
         const Step1 = ({ onNext, assessmentType, setAssessmentType }) => {
             useLucideIcons();
             
@@ -65,7 +114,7 @@
             ];
 
             return e('div', { className: "space-y-6" },
-                e('h2', { className: "text-2xl font-semibold text-gray-800 border-b pb-3 mb-4" }, "Step 1: Select Assessment Type"),
+                e('h2', { className: "text-2xl font-semibold text-gray-800 border-b pb-3 mb-4" }, "Step 2: Select Assessment Type"),
                 
                 e('div', { className: "grid md:grid-cols-3 gap-6" },
                     typeOptions.map((option) => (
@@ -103,12 +152,12 @@
                                 : 'bg-gray-400 cursor-not-allowed'
                             }
                         `
-                    }, "Continue to Step 2")
+                    }, "Continue to Step 3")
                 )
             );
         };
 
-        // --- STEP 2 COMPONENT ---
+        // --- STEP 3 COMPONENT (Previously Step 2) ---
         const Step2 = ({ onNext, onPrevious, persistenceMechanism, setPersistenceMechanism }) => {
             useLucideIcons();
 
@@ -123,7 +172,7 @@
             ];
 
             return e('div', { className: "space-y-6" },
-                e('h2', { className: "text-2xl font-semibold text-gray-800 border-b pb-3 mb-4" }, "Step 2: Select Persistence Mechanism"),
+                e('h2', { className: "text-2xl font-semibold text-gray-800 border-b pb-3 mb-4" }, "Step 3: Select Persistence Mechanism"),
                 
                 e('div', { className: "grid md:grid-cols-3 gap-6" },
                     mechanismOptions.map((option) => (
@@ -156,7 +205,7 @@
                         className: "px-6 py-2 text-gray-600 bg-gray-200 hover:bg-gray-300 font-medium rounded-lg transition duration-150"
                     }, 
                         e('span', { 'data-lucide': "ArrowLeft", className: "inline-block w-4 h-4 mr-2" }),
-                        "Back to Step 1"
+                        "Back to Step 2"
                     ),
                     e('button', {
                         onClick: onNext,
@@ -190,19 +239,23 @@
             const renderStep = () => {
                 switch (step) {
                     case 1:
-                        return e(Step1, {
+                        return e(TermsOfService, { // <-- NEW STEP 1: ToS
+                            onAccept: nextStep,
+                        });
+                    case 2:
+                        return e(Step1, { // <-- STEP 2: Assessment Type
                             onNext: nextStep,
                             assessmentType: assessmentType,
                             setAssessmentType: setAssessmentType,
                         });
-                    case 2:
-                        return e(Step2, {
+                    case 3:
+                        return e(Step2, { // <-- STEP 3: Persistence Mechanism
                             onNext: nextStep,
                             onPrevious: previousStep,
                             persistenceMechanism: persistenceMechanism,
                             setPersistenceMechanism: setPersistenceMechanism,
                         });
-                    case 3:
+                    case 4: // <-- NEW STEP 4: Final Summary
                         return e('div', { className: "text-center p-12 bg-green-50 rounded-xl shadow-lg" },
                             e('span', { 'data-lucide': "Award", className: "w-16 h-16 text-green-600 mx-auto block mb-4" }),
                             e('h2', { className: "text-3xl font-bold text-green-800" }, "Setup Complete!"),
@@ -230,16 +283,16 @@
             return e('div', { className: "max-w-4xl mx-auto bg-white p-6 md:p-10 rounded-2xl shadow-2xl custom-scroll" },
                 e('h1', { className: "text-3xl font-extrabold text-indigo-700 mb-6 border-b-4 border-indigo-200 pb-2" }, "IMSSS Assessor Setup Wizard"),
                 
-                // Progress Bar
+                // Progress Bar (UPDATED to 4 steps)
                 e('div', { className: "mb-8" },
                     e('div', { className: "flex justify-between text-sm font-medium text-gray-500 mb-2" },
-                        e('span', null, `Step ${step} of 3`),
-                        e('span', { className: "text-indigo-600" }, step === 3 ? 'Finished' : 'Setup in Progress')
+                        e('span', null, `Step ${step} of 4`), // <-- CHANGED TO 4
+                        e('span', { className: "text-indigo-600" }, step === 4 ? 'Finished' : 'Setup in Progress')
                     ),
                     e('div', { className: "w-full bg-gray-200 rounded-full h-2.5" },
                         e('div', { 
                             className: "bg-indigo-600 h-2.5 rounded-full transition-all duration-500", 
-                            style: { width: `${(step / 3) * 100}%` }
+                            style: { width: `${(step / 4) * 100}%` } // <-- CHANGED TO / 4
                         })
                     )
                 ),
