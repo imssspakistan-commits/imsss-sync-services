@@ -3,254 +3,222 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IMSSS Assessment Workflow - Pure JS</title>
-
+    <title>IMSSS Assessor Setup</title>
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-
     <style>
-        /* Base styles */
-        body {
-            font-family: ui-sans-serif, system-ui, sans-serif;
-            background-color: #f8f9fa; /* Light background */
-            min-height: 100vh;
-        }
         .custom-scroll::-webkit-scrollbar {
             width: 8px;
         }
         .custom-scroll::-webkit-scrollbar-thumb {
-            background-color: #cbd5e1;
+            background-color: #a5b4fc; /* indigo-300 */
             border-radius: 4px;
         }
         .custom-scroll::-webkit-scrollbar-track {
-            background-color: #f1f5f9;
+            background: #e0e7ff; /* indigo-100 */
         }
     </style>
 </head>
-<body>
-
-    <div id="root" class="p-4 md:p-8"></div>
+<body class="bg-gray-100 min-h-screen p-4 flex items-center justify-center">
+    <div id="root" class="w-full"></div>
 
     <script>
-        const { useState, useEffect, useMemo, useCallback } = React;
-
-        // Custom Hook to load Lucide Icons globally
-        const useLucideIcons = () => {
-            useEffect(() => {
-                if (window.lucide) {
-                    window.lucide.createIcons();
-                }
-            }, []);
-        };
-
-        // Helper function for React.createElement
+        // Aliases for React functions
+        const { useState, useEffect, useMemo } = React;
         const e = React.createElement;
 
-        // --- NEW COMPONENT: Breadcrumb Navigation ---
+        // --- GLOBAL UTILITY: Lucide Icons Rendering ---
+        const useLucideIcons = () => {
+            useEffect(() => {
+                lucide.createIcons();
+            }, []);
+        };
+        
+        // --- COMPONENT: Breadcrumb (Step Indicator) ---
         const Breadcrumb = ({ currentStep, onStepClick, isAssessmentStarted }) => {
-            if (isAssessmentStarted) return null; // Hide breadcrumbs when assessment is running
-
+            useLucideIcons();
+            
             const steps = [
-                { id: 1, name: "Terms", isOptional: false },
-                { id: 2, name: "Type", isOptional: false },
-                { id: 3, name: "Persistence", isOptional: false },
-                { id: 4, name: "Summary", isOptional: false },
+                { id: 1, name: "Start", icon: "Rocket" },
+                { id: 2, name: "Type", icon: "LayoutGrid" },
+                { id: 3, name: "Storage", icon: "Database" },
+                { id: 4, name: "Review", icon: "CheckCircle" },
+                { id: 5, name: "Assessment", icon: "FlaskConical" } // Placeholder for assessment phase
             ];
-
-            return e('nav', { className: "flex justify-center mb-10" },
-                e('ol', { className: "flex items-center space-x-4 p-3 bg-gray-100 rounded-lg shadow-inner" },
-                    steps.map((s) => {
-                        const isCurrent = s.id === currentStep;
-                        const isCompleted = s.id < currentStep;
-                        const isClickable = s.id <= currentStep && s.id !== currentStep;
-
-                        return e('li', { key: s.id, className: "flex items-center" },
-                            e('button', {
-                                onClick: isClickable ? () => onStepClick(s.id) : undefined,
-                                disabled: !isClickable,
-                                className: `
-                                    flex items-center space-x-2 text-sm font-medium transition-colors duration-200
-                                    ${isCurrent ? 'text-indigo-600' : isCompleted ? 'text-green-600 hover:text-green-800 cursor-pointer' : 'text-gray-400 cursor-not-allowed'}
-                                `
-                            },
-                                e('span', {
-                                    className: `
-                                        w-8 h-8 rounded-full flex items-center justify-center border-2
-                                        ${isCurrent ? 'bg-indigo-600 border-indigo-600 text-white' : isCompleted ? 'bg-green-500 border-green-500 text-white' : 'bg-white border-gray-300 text-gray-500'}
-                                    `
-                                }, isCompleted ? e('span', { 'data-lucide': "Check", className: "w-4 h-4" }) : s.id),
-                                e('span', { className: "hidden sm:inline" }, s.name)
-                            ),
-                            s.id < steps.length && e('svg', { className: "w-5 h-5 text-gray-300 mx-2 hidden sm:block", fill: "currentColor", viewBox: "0 0 20 20" },
-                                e('path', { d: "M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z", clipRule: "evenodd", fillRule: "evenodd" })
-                            )
-                        );
-                    })
-                )
+            
+            if (isAssessmentStarted) {
+                return e('div', { className: "text-center text-lg font-bold text-green-600 mb-8 p-3 bg-green-50 rounded-lg shadow-inner" },
+                    e('span', { 'data-lucide': "FlaskConical", className: "inline-block w-5 h-5 mr-2 align-text-bottom" }),
+                    "Assessment In Progress"
+                );
+            }
+            
+            return e('nav', { className: "flex items-center justify-center space-x-2 mb-8" },
+                steps.slice(0, 4).map((stepItem) => {
+                    const isActive = stepItem.id === currentStep;
+                    const isCompleted = stepItem.id < currentStep;
+                    
+                    const classes = `
+                        flex flex-col items-center p-3 rounded-xl transition duration-300 w-1/4
+                        ${isActive 
+                            ? 'bg-indigo-600 shadow-lg text-white font-bold transform scale-105' 
+                            : isCompleted 
+                                ? 'bg-indigo-100 text-indigo-700 cursor-pointer hover:bg-indigo-200' 
+                                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        }
+                    `;
+                    
+                    return e('div', { 
+                        key: stepItem.id,
+                        onClick: isCompleted ? () => onStepClick(stepItem.id) : null,
+                        className: classes
+                    },
+                        e('span', { 'data-lucide': isCompleted ? "Check" : stepItem.icon, className: "w-6 h-6 mb-1" }),
+                        e('span', { className: "text-xs font-medium" }, `Step ${stepItem.id}: ${stepItem.name}`)
+                    );
+                })
             );
         };
 
-
-        // --- STEP 1 COMPONENT: Terms of Service ---
+        // --- COMPONENT: TermsOfService (Step 1) ---
         const TermsOfService = ({ onAccept }) => {
-            const [isAccepted, setIsAccepted] = useState(false);
+            useLucideIcons();
             
-            return e('div', { className: "space-y-6 p-6" },
-                e('h2', { className: "text-2xl font-semibold text-gray-800 border-b pb-3 mb-4" }, "Step 1: Accept Terms of Service"),
-                
-                e('div', { className: "bg-gray-100 p-4 rounded-lg h-60 overflow-y-scroll border border-gray-300" },
-                    e('p', { className: "text-sm text-gray-700" }, 
-                        e('h3', { className: "font-bold mb-2" }, "IMSSS Assessor Terms and Conditions"),
-                        "1. **Data Confidentiality:** All assessment data collected through this tool is highly confidential and must be treated according to your organization's security policy. Do not share raw assessment results without proper authorization.",
-                        e('br'), e('br'),
-                        "2. **Tool Ownership:** This tool is the intellectual property of your organization. Unauthorized distribution, modification, or reverse engineering is strictly prohibited.",
-                        e('br'), e('br'),
-                        "3. **Purpose:** This tool is intended solely for internal risk assessment and maturity scoring (IMSSS). It is not a guarantee of security compliance.",
-                        e('br'), e('br'),
-                        "4. **User Responsibility:** You are responsible for the accuracy of the data entered. Misrepresentation of security posture may lead to incorrect risk modeling.",
-                        e('br'), e('br'),
-                        "By proceeding, you acknowledge these terms."
-                    )
+            return e('div', { className: "p-8 bg-white rounded-xl shadow-lg border border-gray-200" },
+                e('h2', { className: "text-3xl font-bold text-indigo-700 mb-4 flex items-center" }, 
+                    e('span', { 'data-lucide': "FileText", className: "inline-block w-6 h-6 mr-3" }),
+                    "Terms of Service"
                 ),
-                
-                e('div', { className: "flex items-center mt-4" },
-                    e('input', {
-                        type: 'checkbox',
-                        id: 'acceptTerms',
-                        checked: isAccepted,
-                        onChange: (e) => setIsAccepted(e.target.checked),
-                        className: 'h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500'
-                    }),
-                    e('label', { htmlFor: 'acceptTerms', className: 'ml-2 block text-sm text-gray-900' }, "I have read and agree to the Terms of Service.")
+                e('div', { className: "h-64 overflow-y-auto p-4 bg-gray-50 border rounded-lg text-sm text-gray-600 leading-relaxed" },
+                    e('p', { className: "mb-3 font-semibold" }, "Welcome to the IMSSS Assessor."),
+                    e('p', { className: "mb-3" }, "This tool is designed to help you perform a preliminary assessment based on security maturity levels. By accepting these terms, you acknowledge the following:"),
+                    e('ul', { className: "list-disc list-inside ml-4 space-y-2" },
+                        e('li', null, "The results are for **informational purposes only** and do not constitute a certified security audit."),
+                        e('li', null, "The data collected will be stored based on your chosen persistence mechanism (e.g., Local Storage or Server)."),
+                        e('li', null, "You are responsible for the accuracy of the information provided during the assessment."),
+                        e('li', null, "The assessment framework is based on the **IMSSS** (Internal Maturity Self-Scoring System) model."),
+                    ),
+                    e('p', { className: "mt-4 font-semibold text-red-600" }, "Do not use this tool with highly sensitive or confidential information unless you are fully aware of and accept the risks associated with the selected persistence method."),
                 ),
-
-                e('div', { className: "flex justify-end pt-4" },
+                e('div', { className: "flex justify-end mt-6" },
                     e('button', {
                         onClick: onAccept,
-                        disabled: !isAccepted,
-                        className: `
-                            px-6 py-2 text-white font-medium rounded-lg transition duration-150
-                            ${isAccepted 
-                                ? 'bg-indigo-600 hover:bg-indigo-700' 
-                                : 'bg-gray-400 cursor-not-allowed'
-                            }
-                        `
-                    }, "Proceed to Assessment Setup")
+                        className: "px-8 py-3 text-white bg-indigo-600 hover:bg-indigo-700 font-medium rounded-lg shadow-md transition duration-150 flex items-center"
+                    }, 
+                        "Accept and Continue",
+                        e('span', { 'data-lucide': "ArrowRight", className: "inline-block w-4 h-4 ml-2" })
+                    )
                 )
             );
         };
 
-        // --- STEP 2 COMPONENT: Assessment Type ---
+        // --- COMPONENT: Step1 (Assessment Type) ---
         const Step1 = ({ onNext, assessmentType, setAssessmentType }) => {
             useLucideIcons();
             
-            const handleSelection = (type) => {
-                setAssessmentType(type);
-            };
-
-            const typeOptions = [
-                { id: 'baseline', name: 'Baseline Assessment', description: 'Initial assessment to establish current state and needs.', icon: 'CheckCircle' },
-                { id: 'followup', name: 'Follow-up Assessment', description: 'Re-assessment after interventions or changes.', icon: 'Repeat2' },
-                { id: 'ad_hoc', name: 'Ad-Hoc Assessment', description: 'Targeted assessment for a specific issue or incident.', icon: 'AlertTriangle' },
+            const assessmentOptions = [
+                { id: 'baseline', name: 'Baseline Assessment', icon: 'HardHat', 
+                  description: 'A quick, high-level review of foundational security controls. Focuses on critical gaps.' },
+                { id: 'comprehensive', name: 'Comprehensive Audit', icon: 'Microscope', 
+                  description: 'A deep dive into technical and procedural controls. Provides a granular maturity score.' },
+                { id: 'compliance_check', name: 'Compliance Check (ISO/NIST)', icon: 'Scale', 
+                  description: 'Measures readiness against common regulatory or industry standards.' }
             ];
 
-            return e('div', { className: "space-y-6" },
-                e('h2', { className: "text-2xl font-semibold text-gray-800 border-b pb-3 mb-4" }, "Step 2: Select Assessment Type"),
-                
-                e('div', { className: "grid md:grid-cols-3 gap-6" },
-                    typeOptions.map((option) => (
+            return e('div', { className: "p-8 bg-white rounded-xl shadow-lg border border-gray-200" },
+                e('h2', { className: "text-2xl font-bold text-gray-700 mb-6" }, "Step 1: Select Assessment Type"),
+                e('div', { className: "space-y-4" },
+                    assessmentOptions.map(option => 
                         e('div', {
                             key: option.id,
-                            onClick: () => handleSelection(option.id),
+                            onClick: () => setAssessmentType(option.id),
                             className: `
-                                p-6 border-2 rounded-xl shadow-lg cursor-pointer transition-all duration-200
+                                p-5 rounded-xl border-2 cursor-pointer transition duration-200
                                 ${assessmentType === option.id 
-                                    ? 'border-indigo-600 bg-indigo-50 shadow-indigo-200' 
-                                    : 'border-gray-200 bg-white hover:border-indigo-400 hover:shadow-md'
+                                    ? 'border-indigo-600 bg-indigo-50 shadow-md ring-4 ring-indigo-200' 
+                                    : 'border-gray-200 hover:border-indigo-400 hover:bg-gray-50'
                                 }
                             `
                         },
                             e('div', { className: "flex items-center space-x-4" },
-                                e('div', { 
-                                    'data-lucide': option.icon, 
+                                e('span', {
+                                    'data-lucide': option.icon,
                                     className: `w-8 h-8 ${assessmentType === option.id ? 'text-indigo-600' : 'text-gray-500'}`
                                 }),
                                 e('h3', { className: "text-xl font-bold text-gray-700" }, option.name)
                             ),
                             e('p', { className: "mt-3 text-gray-500 text-sm" }, option.description)
                         )
-                    ))
+                    )
                 ),
-
-                e('div', { className: "flex justify-end pt-4" },
+                e('div', { className: "flex justify-end pt-8" },
                     e('button', {
                         onClick: onNext,
                         disabled: !assessmentType,
                         className: `
-                            px-6 py-2 text-white font-medium rounded-lg transition duration-150
+                            px-6 py-2 text-white font-medium rounded-lg transition duration-150 flex items-center
                             ${assessmentType 
                                 ? 'bg-indigo-600 hover:bg-indigo-700' 
                                 : 'bg-gray-400 cursor-not-allowed'
                             }
                         `
-                    }, "Continue to Step 3")
+                    },
+                        "Continue to Step 2",
+                        e('span', { 'data-lucide': "ArrowRight", className: "inline-block w-4 h-4 ml-2" })
+                    )
                 )
             );
         };
 
-        // --- STEP 3 COMPONENT: Persistence Mechanism ---
+        // --- COMPONENT: Step2 (Persistence Mechanism) ---
         const Step2 = ({ onNext, onPrevious, persistenceMechanism, setPersistenceMechanism }) => {
             useLucideIcons();
 
-            const handleSelection = (mechanism) => {
-                setPersistenceMechanism(mechanism);
-            };
-
-            const mechanismOptions = [
-                { id: 'local_storage', name: 'Local Storage', description: 'Data is saved in the browser, allowing resume on the same device.', icon: 'HardDrive' },
-                { id: 'server_db', name: 'Server Database', description: 'Data is stored remotely, enabling cross-device access and collaboration.', icon: 'Database' },
-                { id: 'print_pdf', name: 'Print/PDF Only', description: 'No digital persistence; data is captured by printing or saving as PDF.', icon: 'Printer' },
+            const persistenceOptions = [
+                { id: 'local_storage', name: 'Browser Local Storage', icon: 'HardDrive', 
+                  description: 'Scores are saved directly in your browser. Fast, but data is lost if storage is cleared or browser changes.' },
+                { id: 'server_database', name: 'Remote Server Database', icon: 'Cloud', 
+                  description: 'Scores are saved on a server (requires setup). Secure and persistent across devices.' },
+                { id: 'no_persistence', name: 'No Persistence (Session Only)', icon: 'ZapOff', 
+                  description: 'No data is saved between sessions. Results are calculated instantly but lost on refresh.' }
             ];
 
-            return e('div', { className: "space-y-6" },
-                e('h2', { className: "text-2xl font-semibold text-gray-800 border-b pb-3 mb-4" }, "Step 3: Select Persistence Mechanism"),
-                
-                e('div', { className: "grid md:grid-cols-3 gap-6" },
-                    mechanismOptions.map((option) => (
+            return e('div', { className: "p-8 bg-white rounded-xl shadow-lg border border-gray-200" },
+                e('h2', { className: "text-2xl font-bold text-gray-700 mb-6" }, "Step 2: Choose Data Persistence"),
+                e('div', { className: "space-y-4" },
+                    persistenceOptions.map(option => 
                         e('div', {
                             key: option.id,
-                            onClick: () => handleSelection(option.id),
+                            onClick: () => setPersistenceMechanism(option.id),
                             className: `
-                                p-6 border-2 rounded-xl shadow-lg cursor-pointer transition-all duration-200
+                                p-5 rounded-xl border-2 cursor-pointer transition duration-200
                                 ${persistenceMechanism === option.id 
-                                    ? 'border-indigo-600 bg-indigo-50 shadow-indigo-200' 
-                                    : 'border-gray-200 bg-white hover:border-indigo-400 hover:shadow-md'
+                                    ? 'border-indigo-600 bg-indigo-50 shadow-md ring-4 ring-indigo-200' 
+                                    : 'border-gray-200 hover:border-indigo-400 hover:bg-gray-50'
                                 }
                             `
                         },
                             e('div', { className: "flex items-center space-x-4" },
-                                e('div', { 
-                                    'data-lucide': option.icon, 
+                                e('span', {
+                                    'data-lucide': option.icon,
                                     className: `w-8 h-8 ${persistenceMechanism === option.id ? 'text-indigo-600' : 'text-gray-500'}`
                                 }),
                                 e('h3', { className: "text-xl font-bold text-gray-700" }, option.name)
                             ),
                             e('p', { className: "mt-3 text-gray-500 text-sm" }, option.description)
                         )
-                    ))
+                    )
                 ),
 
-                e('div', { className: "flex justify-between pt-4" },
+                e('div', { className: "flex justify-between pt-8" },
                     e('button', {
                         onClick: onPrevious,
                         className: "px-6 py-2 text-gray-600 bg-gray-200 hover:bg-gray-300 font-medium rounded-lg transition duration-150 flex items-center"
                     }, 
                         e('span', { 'data-lucide': "ArrowLeft", className: "inline-block w-4 h-4 mr-2" }),
-                        "Back to Step 2"
+                        "Back to Step 1"
                     ),
                     e('button', {
                         onClick: onNext,
@@ -271,27 +239,56 @@
         };
 
 
-        // --- NEW COMPONENT: AssessmentView (THE MAIN SURVEY) ---
-        const AssessmentView = ({ assessmentType, persistenceMechanism, onEndAssessment }) => {
+        // --- UPDATED COMPONENT: AssessmentView (THE MAIN SURVEY) ---
+        const AssessmentView = ({ 
+            assessmentType, 
+            persistenceMechanism, 
+            onEndAssessment, 
+            ASSESSMENT_QUESTIONS, // NEW PROP
+            answers,             // NEW PROP
+            setAnswers           // NEW PROP
+        }) => {
             useLucideIcons();
             
             // Format configuration details for display
             const displayType = assessmentType.replace('_', ' ').toUpperCase();
             const displayPersistence = persistenceMechanism.replace('_', ' ').toUpperCase();
 
-            // Placeholder questions array
-            const questions = [
-                "1. Do you have a documented Information Security Policy?",
-                "2. Is multifactor authentication enforced for privileged accounts?",
-                "3. How often are vulnerability scans performed?",
-                "4. Are backups performed regularly and tested for recovery?",
-                "5. Is security awareness training mandatory for all employees?",
+            // The possible score labels (0 to 4)
+            const scoreLabels = [
+                "0 (Not Implemented)", "1 (Initial)", "2 (Defined)", "3 (Managed)", "4 (Optimizing)"
             ];
+
+            // Function to handle a rating selection
+            const handleAnswer = (questionId, score) => {
+                setAnswers(prevAnswers => ({
+                    ...prevAnswers,
+                    [questionId]: score
+                }));
+            };
+
+            // Check if all questions have been answered (Answered count equals total questions)
+            const totalQuestions = ASSESSMENT_QUESTIONS.length;
+            const answeredCount = Object.keys(answers).length;
+            const isComplete = answeredCount === totalQuestions;
 
             return e('div', { className: "space-y-6" },
                 e('h2', { className: "text-3xl font-extrabold text-indigo-700 border-b-4 border-indigo-200 pb-2 mb-6" }, 
                     e('span', { 'data-lucide': "FlaskConical", className: "inline-block w-6 h-6 mr-3 align-text-bottom" }),
                     `Running IMSSS ${displayType} Assessment`
+                ),
+                
+                // Progress display during assessment
+                e('div', { className: "mb-8" },
+                    e('div', { className: "text-center text-sm font-medium text-gray-700 mb-2" }, 
+                        `Progress: ${answeredCount} / ${totalQuestions} Questions Answered`
+                    ),
+                    e('div', { className: "w-full bg-gray-200 rounded-full h-2.5" },
+                        e('div', { 
+                            className: "bg-green-500 h-2.5 rounded-full transition-all duration-500", 
+                            style: { width: `${(answeredCount / totalQuestions) * 100}%` }
+                        })
+                    )
                 ),
 
                 e('div', { className: "p-4 bg-yellow-50 border-l-4 border-yellow-500 text-yellow-800 mb-6" },
@@ -303,17 +300,25 @@
                 ),
 
                 e('div', { className: "space-y-8" },
-                    questions.map((q, index) => (
-                        e('div', { key: index, className: "p-4 bg-white shadow rounded-lg border border-gray-200" },
-                            e('p', { className: "font-semibold text-lg text-gray-800 mb-3" }, `Question ${index + 1}: ${q}`),
+                    ASSESSMENT_QUESTIONS.map((q) => (
+                        e('div', { key: q.id, className: "p-4 bg-white shadow rounded-lg border border-gray-200" },
+                            e('p', { className: "font-semibold text-lg text-gray-800 mb-3" }, `Question ${q.id}: ${q.text}`),
                             
-                            // Placeholder for actual rating input (e.g., radio buttons)
                             e('div', { className: "flex flex-wrap gap-3 text-sm" },
-                                e('button', { className: "px-4 py-2 bg-gray-100 rounded hover:bg-indigo-100 hover:text-indigo-700 transition" }, "0 (Not Implemented)"),
-                                e('button', { className: "px-4 py-2 bg-gray-100 rounded hover:bg-indigo-100 hover:text-indigo-700 transition" }, "1 (Initial)"),
-                                e('button', { className: "px-4 py-2 bg-gray-100 rounded hover:bg-indigo-100 hover:text-indigo-700 transition" }, "2 (Defined)"),
-                                e('button', { className: "px-4 py-2 bg-gray-100 rounded hover:bg-indigo-100 hover:text-indigo-700 transition" }, "3 (Managed)"),
-                                e('button', { className: "px-4 py-2 bg-gray-100 rounded hover:bg-indigo-100 hover:text-indigo-700 transition" }, "4 (Optimizing)")
+                                scoreLabels.map((label, score) => {
+                                    const isSelected = answers[q.id] === score;
+                                    return e('button', {
+                                        key: score,
+                                        onClick: () => handleAnswer(q.id, score),
+                                        className: `
+                                            px-4 py-2 rounded transition-colors duration-150
+                                            ${isSelected
+                                                ? 'bg-indigo-600 text-white font-bold shadow-md'
+                                                : 'bg-gray-100 text-gray-700 hover:bg-indigo-100 hover:text-indigo-700'
+                                            }
+                                        `
+                                    }, label);
+                                })
                             )
                         )
                     ))
@@ -322,7 +327,14 @@
                 e('div', { className: "flex justify-end pt-8 border-t" },
                     e('button', {
                         onClick: onEndAssessment,
-                        className: "px-6 py-2 text-white font-medium rounded-lg bg-green-600 hover:bg-green-700 transition duration-150 flex items-center"
+                        disabled: !isComplete, // Button is disabled until all questions are answered
+                        className: `
+                            px-6 py-2 text-white font-medium rounded-lg transition duration-150 flex items-center
+                            ${isComplete
+                                ? 'bg-green-600 hover:bg-green-700'
+                                : 'bg-gray-400 cursor-not-allowed'
+                            }
+                        `
                     }, 
                         e('span', { 'data-lucide': "Trophy", className: "inline-block w-4 h-4 mr-2" }),
                         "Finish & View Results"
@@ -337,12 +349,24 @@
             // 1. LOCAL STORAGE KEY
             const STORAGE_KEY = 'imsss_setup_data';
 
+            // --- ASSESSMENT DATA (NEW) ---
+            const ASSESSMENT_QUESTIONS = useMemo(() => ([
+                { id: 1, text: "Do you have a documented Information Security Policy?", maxScore: 4 },
+                { id: 2, text: "Is multifactor authentication enforced for privileged accounts?", maxScore: 4 },
+                { id: 3, text: "How often are vulnerability scans performed?", maxScore: 4 },
+                { id: 4, text: "Are backups performed regularly and tested for recovery?", maxScore: 4 },
+                { id: 5, text: "Is security awareness training mandatory for all employees?", maxScore: 4 },
+            ]), []);
+            // -----------------------------
+
             // State for the application flow
             const [step, setStep] = useState(1);
             const [assessmentType, setAssessmentType] = useState(null);
             const [persistenceMechanism, setPersistenceMechanism] = useState(null);
             // NEW STATE to switch to the assessment phase
             const [isAssessmentStarted, setIsAssessmentStarted] = useState(false);
+            // STATE for storing answers (NEW)
+            const [answers, setAnswers] = useState({});
 
 
             // --- Data Loading Effect (Runs on initial mount) ---
@@ -358,6 +382,10 @@
                         if (data.assessmentType) {
                             setAssessmentType(data.assessmentType);
                         }
+                        // Load answers if they exist
+                        if (data.answers) {
+                            setAnswers(data.answers);
+                        }
                         
                         // If any data was found, skip the ToS and jump to Step 2
                         // We only skip to step 2 if data is found and the assessment hasn't started yet.
@@ -371,13 +399,14 @@
                 }
             }, []); // Runs once on mount
 
-            // --- Data Saving Effect (Runs when choices change) ---
+            // --- Data Saving Effect (Runs when choices or answers change) ---
             useEffect(() => {
                 if (persistenceMechanism === 'local_storage') {
                     try {
                         const dataToStore = JSON.stringify({
                             assessmentType,
                             persistenceMechanism,
+                            answers // Save answers too
                         });
                         localStorage.setItem(STORAGE_KEY, dataToStore);
                         console.log("Saved state to Local Storage.");
@@ -390,7 +419,7 @@
                     localStorage.removeItem(STORAGE_KEY);
                     console.log("Cleared Local Storage data.");
                 }
-            }, [assessmentType, persistenceMechanism]); // Runs whenever these states change
+            }, [assessmentType, persistenceMechanism, answers]); // Runs whenever these states change
 
             // Function to navigate between steps
             const nextStep = () => setStep(prev => prev + 1);
@@ -410,6 +439,7 @@
                 // Reset state for a new setup
                 setAssessmentType(null);
                 setPersistenceMechanism(null);
+                setAnswers({}); // Clear answers
                 localStorage.removeItem(STORAGE_KEY);
                 alert("Assessment Finished! Resetting setup for a new assessment.");
                 setStep(1); 
@@ -422,6 +452,9 @@
                         assessmentType: assessmentType,
                         persistenceMechanism: persistenceMechanism,
                         onEndAssessment: endAssessment,
+                        ASSESSMENT_QUESTIONS: ASSESSMENT_QUESTIONS, // NEW PROP
+                        answers: answers,                         // NEW PROP
+                        setAnswers: setAnswers,                   // NEW PROP
                     });
                 }
                 
