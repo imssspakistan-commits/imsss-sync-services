@@ -36,8 +36,17 @@
             }, []);
         };
         
+        // --- DATA / UTILITY: Maturity Level Mapping ---
+        const getMaturityLevel = (averageScore) => {
+            if (averageScore >= 3.5) return { name: "Level 4 (Optimizing)", color: "text-green-600", bg: "bg-green-100" };
+            if (averageScore >= 2.5) return { name: "Level 3 (Managed)", color: "text-blue-600", bg: "bg-blue-100" };
+            if (averageScore >= 1.5) return { name: "Level 2 (Defined)", color: "text-yellow-600", bg: "bg-yellow-100" };
+            if (averageScore >= 0.5) return { name: "Level 1 (Initial)", color: "text-orange-600", bg: "bg-orange-100" };
+            return { name: "Level 0 (Not Implemented)", color: "text-red-600", bg: "bg-red-100" };
+        };
+
         // --- COMPONENT: Breadcrumb (Step Indicator) ---
-        const Breadcrumb = ({ currentStep, onStepClick, isAssessmentStarted }) => {
+        const Breadcrumb = ({ currentStep, onStepClick, isAssessmentStarted, isAssessmentFinished }) => {
             useLucideIcons();
             
             const steps = [
@@ -45,16 +54,28 @@
                 { id: 2, name: "Type", icon: "LayoutGrid" },
                 { id: 3, name: "Storage", icon: "Database" },
                 { id: 4, name: "Review", icon: "CheckCircle" },
-                { id: 5, name: "Assessment", icon: "FlaskConical" } // Placeholder for assessment phase
+                { id: 5, name: "Results", icon: "Trophy" } // Added Results step
             ];
             
-            if (isAssessmentStarted) {
-                return e('div', { className: "text-center text-lg font-bold text-green-600 mb-8 p-3 bg-green-50 rounded-lg shadow-inner" },
+            let statusBanner = null;
+
+            if (isAssessmentFinished) {
+                 statusBanner = e('div', { className: "text-center text-lg font-bold text-green-600 mb-8 p-3 bg-green-50 rounded-lg shadow-inner" },
+                    e('span', { 'data-lucide': "Trophy", className: "inline-block w-5 h-5 mr-2 align-text-bottom" }),
+                    "Assessment Complete - View Results"
+                );
+            } else if (isAssessmentStarted) {
+                statusBanner = e('div', { className: "text-center text-lg font-bold text-green-600 mb-8 p-3 bg-green-50 rounded-lg shadow-inner" },
                     e('span', { 'data-lucide': "FlaskConical", className: "inline-block w-5 h-5 mr-2 align-text-bottom" }),
                     "Assessment In Progress"
                 );
             }
-            
+
+            if (statusBanner) {
+                return statusBanner;
+            }
+
+            // Only render setup steps for breadcrumb
             return e('nav', { className: "flex items-center justify-center space-x-2 mb-8" },
                 steps.slice(0, 4).map((stepItem) => {
                     const isActive = stepItem.id === currentStep;
@@ -89,9 +110,9 @@
             return e('div', { className: "p-8 bg-white rounded-xl shadow-lg border border-gray-200" },
                 e('h2', { className: "text-3xl font-bold text-indigo-700 mb-4 flex items-center" }, 
                     e('span', { 'data-lucide': "FileText", className: "inline-block w-6 h-6 mr-3" }),
-                    "Step 1: Terms of Service" // Updated title to match flow
+                    "Step 1: Terms of Service"
                 ),
-                e('div', { className: "h-64 overflow-y-auto p-4 bg-gray-50 border rounded-lg text-sm text-gray-600 leading-relaxed" },
+                e('div', { className: "h-64 overflow-y-auto p-4 bg-gray-50 border rounded-lg text-sm text-gray-600 leading-relaxed custom-scroll" },
                     e('p', { className: "mb-3 font-semibold" }, "Welcome to the IMSSS Assessor."),
                     e('p', { className: "mb-3" }, "This tool is designed to help you perform a preliminary assessment based on security maturity levels. By accepting these terms, you acknowledge the following:"),
                     e('ul', { className: "list-disc list-inside ml-4 space-y-2" },
@@ -119,16 +140,17 @@
             useLucideIcons();
             
             const assessmentOptions = [
+                // Updated Options
                 { id: 'baseline', name: 'Baseline Assessment', icon: 'HardHat', 
                   description: 'A quick, high-level review of foundational security controls. Focuses on critical gaps.' },
-                { id: 'comprehensive', name: 'Comprehensive Audit', icon: 'Microscope', 
-                  description: 'A deep dive into technical and procedural controls. Provides a granular maturity score.' },
-                { id: 'compliance_check', name: 'Compliance Check (ISO/NIST)', icon: 'Scale', 
-                  description: 'Measures readiness against common regulatory or industry standards.' }
+                { id: 'follow_up', name: 'Follow-up Assessment', icon: 'ClockHistory', 
+                  description: 'Review progress against a previous assessment. Checks implementation of remediation plans.' },
+                { id: 'ad_hoc', name: 'Ad-Hoc Assessment', icon: 'AlertTriangle', 
+                  description: 'A targeted review for a specific project, system, or immediate concern. Flexible scope.' }
             ];
 
             return e('div', { className: "p-8 bg-white rounded-xl shadow-lg border border-gray-200" },
-                e('h2', { className: "text-2xl font-bold text-gray-700 mb-6" }, "Step 2: Select Assessment Type"), // Corrected title
+                e('h2', { className: "text-2xl font-bold text-gray-700 mb-6" }, "Step 2: Select Assessment Type"),
                 e('div', { className: "space-y-4" },
                     assessmentOptions.map(option => 
                         e('div', {
@@ -165,7 +187,7 @@
                             }
                         `
                     },
-                        "Continue to Step 3", // Updated button text
+                        "Continue to Step 3",
                         e('span', { 'data-lucide': "ArrowRight", className: "inline-block w-4 h-4 ml-2" })
                     )
                 )
@@ -186,7 +208,7 @@
             ];
 
             return e('div', { className: "p-8 bg-white rounded-xl shadow-lg border border-gray-200" },
-                e('h2', { className: "text-2xl font-bold text-gray-700 mb-6" }, "Step 3: Choose Data Persistence"), // Corrected title
+                e('h2', { className: "text-2xl font-bold text-gray-700 mb-6" }, "Step 3: Choose Data Persistence"),
                 
                 // *** New Grid Layout for Options ***
                 e('div', { className: "grid grid-cols-1 md:grid-cols-3 gap-6" },
@@ -237,13 +259,12 @@
                             }
                         `
                     }, 
-                        "Complete Setup",
-                        e('span', { 'data-lucide': "Check", className: "inline-block w-4 h-4 ml-2" })
+                        "Continue to Step 4", // Updated button text
+                        e('span', { 'data-lucide': "ArrowRight", className: "inline-block w-4 h-4 ml-2" })
                     )
                 )
             );
         };
-
 
         // --- AssessmentView (THE MAIN SURVEY) ---
         const AssessmentView = ({ 
@@ -251,8 +272,8 @@
             persistenceMechanism, 
             onEndAssessment, 
             ASSESSMENT_QUESTIONS, 
-            answers,             
-            setAnswers           
+            answers,          
+            setAnswers         
         }) => {
             useLucideIcons();
             
@@ -305,7 +326,7 @@
                     )
                 ),
 
-                e('div', { className: "space-y-8" },
+                e('div', { className: "space-y-8 custom-scroll max-h-[60vh] overflow-y-auto p-2 -m-2" },
                     ASSESSMENT_QUESTIONS.map((q) => (
                         e('div', { key: q.id, className: "p-4 bg-white shadow rounded-lg border border-gray-200" },
                             e('p', { className: "font-semibold text-lg text-gray-800 mb-3" }, `Question ${q.id}: ${q.text}`),
@@ -330,7 +351,7 @@
                     ))
                 ),
                 
-                e('div', { className: "flex justify-end pt-8 border-t" },
+                e('div', { className: "flex justify-end pt-8 border-t mt-8" },
                     e('button', {
                         onClick: onEndAssessment,
                         disabled: !isComplete, 
@@ -348,8 +369,70 @@
                 )
             );
         };
+        
+        // --- NEW COMPONENT: ResultsView ---
+        const ResultsView = ({ answers, ASSESSMENT_QUESTIONS, onStartNewAssessment }) => {
+            useLucideIcons();
+            
+            const totalQuestions = ASSESSMENT_QUESTIONS.length;
+            const totalScore = Object.values(answers).reduce((sum, score) => sum + score, 0);
+            const maxScore = totalQuestions * 4; // Max score is 4 per question
+            const averageScore = totalQuestions > 0 ? totalScore / totalQuestions : 0;
+            const percentageScore = (totalScore / maxScore) * 100;
+            
+            const maturityLevel = getMaturityLevel(averageScore);
 
+            const MaturityIndicator = e('div', { className: `p-6 rounded-xl text-center ${maturityLevel.bg} border-4 border-dashed border-gray-300` },
+                e('p', { className: "text-2xl font-semibold text-gray-700" }, "Your Current Maturity Level is:"),
+                e('h3', { className: `text-5xl font-extrabold ${maturityLevel.color} mt-2` }, maturityLevel.name),
+                e('p', { className: "mt-4 text-gray-600" }, `Based on an average score of **${averageScore.toFixed(2)}** out of 4.0.`)
+            );
 
+            return e('div', { className: "space-y-8 p-8 bg-white rounded-xl shadow-2xl border-t-8 border-indigo-600" },
+                e('h2', { className: "text-3xl font-bold text-indigo-700 flex items-center border-b pb-4" },
+                    e('span', { 'data-lucide': "Trophy", className: "inline-block w-8 h-8 mr-3" }),
+                    "IMSSS Assessment Results"
+                ),
+
+                MaturityIndicator,
+                
+                e('div', { className: "grid grid-cols-2 gap-4 text-center" },
+                    e('div', { className: "p-4 bg-gray-50 rounded-lg shadow-inner" },
+                        e('p', { className: "text-sm text-gray-500" }, "Total Score Achieved"),
+                        e('p', { className: "text-3xl font-bold text-indigo-600 mt-1" }, `${totalScore} / ${maxScore}`)
+                    ),
+                    e('div', { className: "p-4 bg-gray-50 rounded-lg shadow-inner" },
+                        e('p', { className: "text-sm text-gray-500" }, "Overall Percentage"),
+                        e('p', { className: "text-3xl font-bold text-indigo-600 mt-1" }, `${percentageScore.toFixed(1)}%`)
+                    )
+                ),
+
+                e('div', { className: "mt-6" },
+                    e('h3', { className: "text-xl font-semibold text-gray-700 mb-3" }, "Detailed Scoring (Maturity Levels)"),
+                    e('p', { className: "text-sm text-gray-500 mb-4" }, "The score breakdown shows how your answers contribute to the final maturity level:"),
+                    e('div', { className: "text-sm text-gray-800 space-y-2 p-4 border rounded-lg bg-white shadow-sm" },
+                        ASSESSMENT_QUESTIONS.map((q) => {
+                            const score = answers[q.id] || 0;
+                            return e('div', { key: q.id, className: "flex justify-between items-center py-1 border-b last:border-b-0" },
+                                e('span', { className: "truncate w-3/4" }, `Q${q.id}: ${q.text}`),
+                                e('span', { className: "font-bold text-indigo-600" }, `${score} / ${q.maxScore}`)
+                            );
+                        })
+                    )
+                ),
+
+                e('div', { className: "flex justify-center pt-6 border-t" },
+                    e('button', {
+                        onClick: onStartNewAssessment,
+                        className: "px-8 py-3 text-white bg-indigo-600 hover:bg-indigo-700 font-medium rounded-lg shadow-md transition duration-150 flex items-center"
+                    }, 
+                        e('span', { 'data-lucide': "RefreshCw", className: "inline-block w-4 h-4 mr-2" }),
+                        "Start New Assessment"
+                    )
+                )
+            );
+        };
+        
         // --- IMSSS CONTAINER COMPONENT (MAIN APPLICATION LOGIC) ---
         const AssessorContainer = () => {
             // 1. LOCAL STORAGE KEY
@@ -370,6 +453,7 @@
             const [assessmentType, setAssessmentType] = useState(null);
             const [persistenceMechanism, setPersistenceMechanism] = useState(null);
             const [isAssessmentStarted, setIsAssessmentStarted] = useState(false);
+            const [isAssessmentFinished, setIsAssessmentFinished] = useState(false); // New state for results view
             const [answers, setAnswers] = useState({});
 
 
@@ -392,7 +476,7 @@
                         }
                         
                         // If any data was found, skip the ToS and jump to Step 2
-                        if ((data.persistenceMechanism || data.assessmentType) && !isAssessmentStarted) {
+                        if ((data.persistenceMechanism || data.assessmentType) && !isAssessmentStarted && !isAssessmentFinished) {
                             setStep(2); 
                             console.log("Loaded setup data from Local Storage. Skipping initial steps.");
                         }
@@ -435,32 +519,54 @@
                 }
             };
             
-            // New assessment phase functions
-            const startAssessment = () => setIsAssessmentStarted(true);
+            // Assessment phase functions
+            const startAssessment = () => {
+                setIsAssessmentStarted(true);
+                setIsAssessmentFinished(false); // Ensure this is false when starting
+            }
+
             const endAssessment = () => {
                 setIsAssessmentStarted(false); 
-                // Reset state for a new setup
+                setIsAssessmentFinished(true); // Switch to Results View
+                // Note: We don't clear state here, we keep answers to show results.
+                console.log("Assessment Ended. Showing results.");
+            };
+            
+            const startNewAssessment = () => {
+                // Completely reset the application state
                 setAssessmentType(null);
                 setPersistenceMechanism(null);
                 setAnswers({}); 
                 localStorage.removeItem(STORAGE_KEY);
-                alert("Assessment Finished! Resetting setup for a new assessment.");
+                setIsAssessmentStarted(false);
+                setIsAssessmentFinished(false);
                 setStep(1); 
-            };
+                console.log("Starting new assessment, state reset.");
+            }
 
             const renderStep = () => {
-                // NEW: If the assessment has started, render the AssessmentView regardless of step number
+                // 1. If finished, show results
+                if (isAssessmentFinished) {
+                    return e(ResultsView, {
+                        answers: answers,
+                        ASSESSMENT_QUESTIONS: ASSESSMENT_QUESTIONS,
+                        onStartNewAssessment: startNewAssessment
+                    });
+                }
+                
+                // 2. If started, show assessment
                 if (isAssessmentStarted) {
                     return e(AssessmentView, {
                         assessmentType: assessmentType,
                         persistenceMechanism: persistenceMechanism,
                         onEndAssessment: endAssessment,
-                        ASSESSMENT_QUESTIONS: ASSESSMENT_QUESTIONS, 
-                        answers: answers,                         
-                        setAnswers: setAnswers,                   
+                        ASSESSMENT_QUESTIONS: ASSESSMENT_QUESTIONS,         
+                        answers: answers,                   
+                        setAnswers: setAnswers,                 
                     });
                 }
                 
+                // 3. Otherwise, show setup steps
                 switch (step) {
                     case 1:
                         return e(TermsOfService, { // STEP 1: ToS
@@ -498,7 +604,7 @@
                             e('div', { className: "mt-8 flex justify-center space-x-4" },
                                 e('button', {
                                     onClick: startAssessment, 
-                                    className: "px-6 py-2 text-white bg-indigo-600 hover:bg-indigo-700 font-medium rounded-lg transition duration-150 flex items-center"
+                                    className: "px-6 py-2 text-white bg-indigo-600 hover:bg-indigo-700 font-medium rounded-lg shadow-md transition duration-150 flex items-center"
                                 }, 
                                     e('span', { 'data-lucide': "Zap", className: "inline-block w-4 h-4 mr-2" }),
                                     "Start Assessment"
@@ -525,11 +631,12 @@
                 e(Breadcrumb, { 
                     currentStep: step, 
                     onStepClick: handleBreadcrumbClick,
-                    isAssessmentStarted: isAssessmentStarted
+                    isAssessmentStarted: isAssessmentStarted,
+                    isAssessmentFinished: isAssessmentFinished // Pass new state
                 }),
 
                 // Progress Bar (Only visible during setup steps 1-4)
-                !isAssessmentStarted && e('div', { className: "mb-8" },
+                !isAssessmentStarted && !isAssessmentFinished && e('div', { className: "mb-8" },
                     e('div', { className: "flex justify-between text-sm font-medium text-gray-500 mb-2" },
                         e('span', null, `Step ${step} of 4`),
                         e('span', { className: "text-indigo-600" }, step === 4 ? 'Ready to Start' : 'Setup in Progress')
