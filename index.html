@@ -265,4 +265,209 @@
                             // Placeholder for actual rating input (e.g., radio buttons)
                             e('div', { className: "flex flex-wrap gap-3 text-sm" },
                                 e('button', { className: "px-4 py-2 bg-gray-100 rounded hover:bg-indigo-100 hover:text-indigo-700 transition" }, "0 (Not Implemented)"),
-                                e('button', { className: "px-4 py-2
+                                e('button', { className: "px-4 py-2 bg-gray-100 rounded hover:bg-indigo-100 hover:text-indigo-700 transition" }, "1 (Initial)"),
+                                e('button', { className: "px-4 py-2 bg-gray-100 rounded hover:bg-indigo-100 hover:text-indigo-700 transition" }, "2 (Defined)"),
+                                e('button', { className: "px-4 py-2 bg-gray-100 rounded hover:bg-indigo-100 hover:text-indigo-700 transition" }, "3 (Managed)"),
+                                e('button', { className: "px-4 py-2 bg-gray-100 rounded hover:bg-indigo-100 hover:text-indigo-700 transition" }, "4 (Optimizing)")
+                            )
+                        )
+                    ))
+                ),
+                
+                e('div', { className: "flex justify-end pt-8 border-t" },
+                    e('button', {
+                        onClick: onEndAssessment,
+                        className: "px-6 py-2 text-white font-medium rounded-lg bg-green-600 hover:bg-green-700 transition duration-150 flex items-center"
+                    }, 
+                        e('span', { 'data-lucide': "Trophy", className: "inline-block w-4 h-4 mr-2" }),
+                        "Finish & View Results"
+                    )
+                )
+            );
+        };
+
+
+        // --- IMSSS CONTAINER COMPONENT (MAIN APPLICATION LOGIC) ---
+        const AssessorContainer = () => {
+            // 1. LOCAL STORAGE KEY
+            const STORAGE_KEY = 'imsss_setup_data';
+
+            // State for the application flow
+            const [step, setStep] = useState(1);
+            const [assessmentType, setAssessmentType] = useState(null);
+            const [persistenceMechanism, setPersistenceMechanism] = useState(null);
+            // NEW STATE to switch to the assessment phase
+            const [isAssessmentStarted, setIsAssessmentStarted] = useState(false);
+
+
+            // --- Data Loading Effect (Runs on initial mount) ---
+            useEffect(() => {
+                try {
+                    const storedData = localStorage.getItem(STORAGE_KEY);
+                    if (storedData) {
+                        const data = JSON.parse(storedData);
+                        
+                        if (data.persistenceMechanism) {
+                            setPersistenceMechanism(data.persistenceMechanism);
+                        }
+                        if (data.assessmentType) {
+                            setAssessmentType(data.assessmentType);
+                        }
+                        
+                        // If any data was found, skip the ToS and jump to Step 2
+                        // We only skip to step 2 if data is found and the assessment hasn't started yet.
+                        if ((data.persistenceMechanism || data.assessmentType) && !isAssessmentStarted) {
+                            setStep(2); 
+                            console.log("Loaded setup data from Local Storage. Skipping initial steps.");
+                        }
+                    }
+                } catch (error) {
+                    console.error("Error loading state from Local Storage:", error);
+                }
+            }, []); // Runs once on mount
+
+            // --- Data Saving Effect (Runs when choices change) ---
+            useEffect(() => {
+                if (persistenceMechanism === 'local_storage') {
+                    try {
+                        const dataToStore = JSON.stringify({
+                            assessmentType,
+                            persistenceMechanism,
+                        });
+                        localStorage.setItem(STORAGE_KEY, dataToStore);
+                        console.log("Saved state to Local Storage.");
+                    } catch (error) {
+                        console.error("Error saving state to Local Storage:", error);
+                    }
+                }
+                // If the mechanism is NOT local storage, clear old local storage data to be safe
+                else if (persistenceMechanism && persistenceMechanism !== 'local_storage') {
+                    localStorage.removeItem(STORAGE_KEY);
+                    console.log("Cleared Local Storage data.");
+                }
+            }, [assessmentType, persistenceMechanism]); // Runs whenever these states change
+
+            // Function to navigate between steps
+            const nextStep = () => setStep(prev => prev + 1);
+            const previousStep = () => setStep(prev => prev - 1);
+            
+            // New assessment phase functions
+            const startAssessment = () => setIsAssessmentStarted(true);
+            const endAssessment = () => {
+                setIsAssessmentStarted(false); 
+                // Reset state for a new setup
+                setAssessmentType(null);
+                setPersistenceMechanism(null);
+                localStorage.removeItem(STORAGE_KEY);
+                alert("Assessment Finished! Resetting setup for a new assessment.");
+                setStep(1); 
+            };
+
+            const renderStep = () => {
+                // NEW: If the assessment has started, render the AssessmentView regardless of step number
+                if (isAssessmentStarted) {
+                    return e(AssessmentView, {
+                        assessmentType: assessmentType,
+                        persistenceMechanism: persistenceMechanism,
+                        onEndAssessment: endAssessment,
+                    });
+                }
+                
+                switch (step) {
+                    case 1:
+                        return e(TermsOfService, { // STEP 1: ToS
+                            onAccept: nextStep,
+                        });
+                    case 2:
+                        return e(Step1, { // STEP 2: Assessment Type
+                            onNext: nextStep,
+                            assessmentType: assessmentType,
+                            setAssessmentType: setAssessmentType,
+                        });
+                    case 3:
+                        return e(Step2, { // STEP 3: Persistence Mechanism
+                            onNext: nextStep,
+                            onPrevious: previousStep,
+                            persistenceMechanism: persistenceMechanism,
+                            setPersistenceMechanism: setPersistenceMechanism,
+                        });
+                    case 4: // STEP 4: Final Summary (UPDATED to include Start Assessment button)
+                        return e('div', { className: "text-center p-12 bg-green-50 rounded-xl shadow-lg" },
+                            useLucideIcons(), // Ensure icons are created for this final view
+                            e('span', { 'data-lucide': "Award", className: "w-16 h-16 text-green-600 mx-auto block mb-4" }),
+                            e('h2', { className: "text-3xl font-bold text-green-800" }, "Setup Complete!"),
+                            e('p', { className: "mt-2 text-lg text-green-700" }, "IMSSS Assessor is now configured with:"),
+                            e('ul', { className: "mt-4 space-y-2 text-left inline-block" },
+                                e('li', { className: "text-gray-700 font-medium" }, 
+                                    "Assessment Type: ", 
+                                    e('span', { className: "text-indigo-600 capitalize" }, assessmentType.replace('_', ' '))
+                                ),
+                                e('li', { className: "text-gray-700 font-medium" }, 
+                                    "Persistence Method: ", 
+                                    e('span', { className: "text-indigo-600 capitalize" }, persistenceMechanism.replace('_', ' '))
+                                )
+                            ),
+                            e('div', { className: "mt-8 flex justify-center space-x-4" },
+                                e('button', {
+                                    onClick: startAssessment, // <-- CORRECTLY calls startAssessment
+                                    className: "px-6 py-2 text-white bg-indigo-600 hover:bg-indigo-700 font-medium rounded-lg transition duration-150 flex items-center"
+                                }, 
+                                    e('span', { 'data-lucide': "Zap", className: "inline-block w-4 h-4 mr-2" }),
+                                    "Start Assessment"
+                                ),
+                                e('button', {
+                                    onClick: () => setStep(1),
+                                    className: "px-6 py-2 text-gray-600 bg-gray-200 hover:bg-gray-300 font-medium rounded-lg transition duration-150"
+                                }, "Start Over")
+                            )
+                        );
+                    default:
+                        // Fallback: If step is out of bounds, return to step 1 (Terms of Service)
+                        return e(TermsOfService, { onAccept: nextStep });
+                }
+            };
+
+            // Progress Bar Logic
+            const progressSteps = 4;
+            // When assessment starts, we hide the standard progress bar by using the !isAssessmentStarted check in the return block
+            const progressPercent = (step / progressSteps) * 100;
+
+            return e('div', { className: "max-w-4xl mx-auto bg-white p-6 md:p-10 rounded-2xl shadow-2xl custom-scroll" },
+                e('h1', { className: "text-3xl font-extrabold text-indigo-700 mb-6 border-b-4 border-indigo-200 pb-2" }, "IMSSS Assessor Setup Wizard"),
+                
+                // Progress Bar (Only visible during setup steps 1-4)
+                !isAssessmentStarted && e('div', { className: "mb-8" },
+                    e('div', { className: "flex justify-between text-sm font-medium text-gray-500 mb-2" },
+                        e('span', null, `Step ${step} of 4`),
+                        e('span', { className: "text-indigo-600" }, step === 4 ? 'Ready to Start' : 'Setup in Progress')
+                    ),
+                    e('div', { className: "w-full bg-gray-200 rounded-full h-2.5" },
+                        e('div', { 
+                            className: "bg-indigo-600 h-2.5 rounded-full transition-all duration-500", 
+                            style: { width: `${(step / 4) * 100}%` }
+                        })
+                    )
+                ),
+                
+                renderStep()
+            );
+        };
+
+        // --- MAIN APP COMPONENT ---
+        const MainApp = () => {
+            return e('div', { className: "h-full w-full" }, e(AssessorContainer));
+        };
+        
+        // --- MANUAL MOUNT (No Babel needed) ---
+        document.addEventListener('DOMContentLoaded', function() {
+            const rootElement = document.getElementById('root');
+            if (rootElement) {
+                ReactDOM.createRoot(rootElement).render(e(MainApp));
+                console.log("IMSSS App successfully rendered using pure JavaScript!");
+            } else {
+                console.error("Root element not found.");
+            }
+        });
+    </script>
+</body>
+</html>
