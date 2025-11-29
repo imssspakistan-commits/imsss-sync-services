@@ -26,7 +26,7 @@
             background-color: var(--bg-color);
             background-image: radial-gradient(circle at center, #1e293b 1px, transparent 1px);
             background-size: 50px 50px;
-            /* FIX 1: Ensure full body height for better mobile scrolling */
+            /* Ensure full body height for better mobile scrolling */
             min-height: 100vh;
             margin: 0;
             padding: 0;
@@ -35,7 +35,7 @@
         }
         
         #root {
-            /* FIX 2: Ensure root element is full height */
+            /* Ensure root element is full height */
             min-height: 100vh;
         }
 
@@ -70,7 +70,7 @@
 
         /* Ensure scrollable area is visible */
         .scrollable-summary {
-            max-height: 300px; /* Increased max-height for mobile */
+            max-height: 300px; 
             overflow-y: auto;
             padding-right: 10px;
         }
@@ -84,6 +84,8 @@
     </style>
 </head>
 <body>
+
+    <div id="announcer" aria-live="polite" class="sr-only"></div> 
 
     <div id="root" aria-live="polite">
         <div class="text-white text-center p-10">Loading Application...</div>
@@ -118,7 +120,8 @@
                         iso: "ISO 42001", eu: "EU AI Act", us: "NIST AI RMF", 
                         gov: "Governance", risk: "Risk Mgmt", data: "Data Integrity", docs: "Documentation", sec: "Security",
                         reviewTitle: "REVIEW ANSWERS", reviewSub: "Confirm your selections before finalizing the audit.", continueBtn: "FINALIZE AUDIT", editBtn: "GO BACK TO QUESTION", 
-                        exportBtn: "EXPORT PDF REPORT", anchor: "REPORT CRYPTOGRAPHIC ANCHOR", copied: "COPIED"
+                        exportBtn: "EXPORT PDF REPORT", anchor: "REPORT CRYPTOGRAPHIC ANCHOR", copied: "COPIED",
+                        ttsPrompt: "Loading Introduction Screen. Click BEGIN ASSESSMENT to start."
                     } 
                 },
                 ES: { 
@@ -130,7 +133,8 @@
                         iso: "Ley IA UE", eu: "Ley IA UE", us: "NIST IA RMF", 
                         gov: "Gobernanza", risk: "Gestión de Riesgos", data: "Integridad de Datos", docs: "Documentación", sec: "Seguridad",
                         reviewTitle: "REVISAR RESPUESTAS", reviewSub: "Confirme sus selecciones antes de finalizar la auditoría.", continueBtn: "FINALIZAR AUDITORÍA", editBtn: "VOLVER A PREGUNTA",
-                        exportBtn: "EXPORTAR REPORTE PDF", anchor: "ANCHOR CRIPTOGRÁFICO", copied: "COPIADO"
+                        exportBtn: "EXPORTAR REPORTE PDF", anchor: "ANCHOR CRIPTOGRÁFICO", copied: "COPIADO",
+                        ttsPrompt: "Cargando pantalla de introducción. Haz clic en INICIAR EVALUACIÓN para comenzar."
                     } 
                 },
                 UR: { 
@@ -142,7 +146,8 @@
                         iso: "آئی ایس او 42001", eu: "یورپی یونین AI ایکٹ", us: "NIST AI RMF", 
                         gov: "انتظامیہ", risk: "رسک مینجمنٹ", data: "ڈیٹا کی سالمیت", docs: "دستاویزات", sec: "سیکیورٹی",
                         reviewTitle: "جوابات کا جائزہ", reviewSub: "آڈٹ کو حتمی شکل دینے سے پہلے اپنی انتخابی تصدیق کریں۔", continueBtn: "آڈٹ کو حتمی شکل دیں", editBtn: "سوال پر واپس جائیں",
-                        exportBtn: "پی ڈی ایف رپورٹ ایکسپورٹ کریں", anchor: "رپورٹ کرپٹوگرافک اینکر", copied: "نقل کر لیا"
+                        exportBtn: "پی ڈی ایف رپورٹ ایکسپورٹ کریں", anchor: "رپورٹ کرپٹوگرافک اینکر", copied: "نقل کر لیا",
+                        ttsPrompt: "تعارف کی سکرین لوڈ ہو رہی ہے۔ تشخیص شروع کرنے کے لیے شروع کریں پر کلک کریں۔"
                     } 
                 }
             };
@@ -190,7 +195,41 @@
 
             var initialScores = { gov: 0, sec: 0, risk: 0, data: 0, docs: 0 };
 
-            // --- 3. UTILITIES ---
+            // --- 3. A11Y UTILITIES (Speech Synthesis) ---
+
+            var ttsActive = true; 
+            var stopSpeaking = function() {
+                if ('speechSynthesis' in window) {
+                    window.speechSynthesis.cancel();
+                }
+            };
+
+            var speakText = function(text, langCode) {
+                if (!ttsActive || !('speechSynthesis' in window)) return;
+                
+                stopSpeaking(); 
+                var utterance = new SpeechSynthesisUtterance(text);
+                
+                // Set language based on selection
+                var voiceLang = langCode === 'UR' ? 'ur-PK' : langCode === 'ES' ? 'es-ES' : 'en-US';
+                utterance.lang = voiceLang;
+
+                // Try to find a suitable voice
+                var voices = window.speechSynthesis.getVoices();
+                var voice = voices.find(function(v) { return v.lang.startsWith(voiceLang.substring(0, 2)); });
+                if (voice) {
+                    utterance.voice = voice;
+                }
+                
+                // Start speaking
+                window.speechSynthesis.speak(utterance);
+
+                // Announce to native screen readers (for redundancy)
+                var announcer = document.getElementById('announcer');
+                if (announcer) announcer.textContent = text;
+            };
+
+            // --- 4. OTHER UTILITIES ---
 
             // Function to load state from localStorage
             var loadState = function(key, defaultVal) {
@@ -341,7 +380,7 @@
             };
 
 
-            // --- 4. COMPONENTS & CORE LOGIC ---
+            // --- 5. COMPONENTS & CORE LOGIC ---
 
             var RiskRadar = function(_ref) {
                 var scores = _ref.scores,
@@ -413,8 +452,36 @@
                         "aria-pressed": current === code
                     }, langData.name);
                 });
+                
+                // TTS Toggle Button (NEW)
+                var TTSToggle = function() {
+                    var _useState11 = useState(ttsActive),
+                        isActive = _useState11[0],
+                        setIsActive = _useState11[1];
+                        
+                    var toggle = function() {
+                        if (isActive) stopSpeaking();
+                        ttsActive = !isActive;
+                        setIsActive(ttsActive);
+                    };
 
-                return e('div', { className: "absolute top-4 right-4 z-50 flex space-x-2 no-print" }, languageButtons);
+                    var icon = isActive ? "Volume2" : "VolumeX";
+                    var btnClass = isActive ? 'bg-emerald-600/50 hover:bg-emerald-500/50 border-emerald-500/50' : 'bg-red-600/50 hover:bg-red-500/50 border-red-500/50';
+
+                    return e('button', {
+                        onClick: toggle,
+                        className: "px-2 py-1 rounded text-xs font-bold transition-all border " + btnClass,
+                        "aria-label": isActive ? "Turn off text to speech" : "Turn on text to speech"
+                    }, 
+                        e('span', { 'data-lucide': icon, className: "w-4 h-4 text-white" })
+                    );
+                };
+
+
+                return e('div', { className: "absolute top-4 right-4 z-50 flex space-x-2 no-print" }, 
+                    e(TTSToggle, null), // Added TTS toggle 
+                    languageButtons
+                );
             };
 
 
@@ -505,6 +572,29 @@
                 var currentFont = currentLangData.font;
                 var dir = currentLangData.dir;
                 var langCode = lang;
+                
+                
+                // A11Y SPEAKING EFFECT
+                useEffect(function() {
+                    // This function is the primary source of TTS announcements
+                    if (!started) {
+                        speakText(t.title + ". " + t.subtitle + ". " + t.ttsPrompt, lang);
+                    } else if (!finished) {
+                        var q = AUDIT_QUESTIONS[currentQ];
+                        var qText = q[currentLangData.code.toLowerCase()] || q.en;
+                        var announceText = "Question " + (currentQ + 1) + ". " + qText;
+                        speakText(announceText, lang);
+                    } else if (finished && !reviewed) {
+                        speakText(t.reviewTitle + ". " + t.reviewSub, lang);
+                    } else if (reviewed) {
+                        speakText(t.report + ". Compliance score is " + Math.round(avg) + " percent. Projected liability is " + projectedFine, lang);
+                    }
+                    
+                // Dependency cleanup: If the question number changes, stop the previous reading.
+                return function() { stopSpeaking(); }; 
+                
+                }, [started, finished, currentQ, lang, reviewed]);
+
 
                 var handleAnswer = function(score, q) {
                     var isLastQuestion = currentQ === AUDIT_QUESTIONS.length - 1;
@@ -555,6 +645,7 @@
                     setStarted(false); setFinished(false); setCurrentQ(0); setReviewed(false);
                     setScores(initialScores); setAnswers({}); setFinalHash(null);
                     setHashStream(generateCryptoHash());
+                    stopSpeaking();
 
                     // Clear Local Storage
                     localStorage.removeItem(LS_KEY_LANG);
@@ -577,8 +668,8 @@
                 var Layout = function(_ref4) {  
                     var children = _ref4.children;
                     return e('div', {  
-                        // FIX 3: Reduced padding for better mobile fit. Using min-h-screen for initial size.
-                        className: "w-full min-h-screen flex flex-col items-center justify-start p-4 md:p-10 " + currentFont,
+                        // UX Fix: Ensuring adequate space while maintaining mobile focus
+                        className: "w-full min-h-screen flex flex-col items-center justify-start p-4 md:p-8 " + currentFont,
                         dir: dir  
                     }, children);
                 };
@@ -586,12 +677,15 @@
                 // SCREEN 1: INTRO (START)
                 if (!started && !reviewed) return e(Layout, null,
                     e(LangSwitcher, { current: lang, setLang: setLang }),
-                    e('div', { className: "glass-panel max-w-lg w-full p-10 rounded-2xl text-center border-t-4 border-blue-500 relative overflow-hidden mt-[15vh]" },
+                    // UX Fix: Added flex items-center for centering the smaller button
+                    e('div', { className: "glass-panel max-w-lg w-full p-10 rounded-2xl text-center border-t-4 border-blue-500 relative overflow-hidden mt-[15vh] flex flex-col items-center" },
                         e('h1', { className: "text-4xl font-bold text-white mb-2 neon-text" }, t.title),
                         e('p', { className: "text-slate-400 text-sm mb-8 font-mono tracking-wider" }, t.subtitle),
                         e('button', {  
                             onClick: function() { setStarted(true); setFinished(false); setCurrentQ(0); },
-                            className: "w-full py-4 bg-blue-700 hover:bg-blue-600 text-white font-bold rounded shadow-lg transition-transform transform active:scale-95"
+                            // UX Fix: Reduced width to max-w-sm and reduced vertical padding (py-3)
+                            className: "w-full max-w-sm py-3 bg-blue-700 hover:bg-blue-600 text-white font-bold rounded shadow-lg transition-transform transform active:scale-95",
+                            "aria-label": t.startBtn
                         }, t.startBtn)
                     )
                 );
@@ -599,7 +693,8 @@
                 // --- SCREEN 3: REVIEW ANSWERS (PHASE II) ---
                 if (finished && !reviewed) return e(Layout, null,
                     e(LangSwitcher, { current: lang, setLang: setLang }),
-                    e('div', { className: "glass-panel max-w-4xl w-full p-8 rounded-2xl space-y-8 mt-4 mb-4" },
+                    // UX Fix: Reduced max-w to 3xl for slightly tighter mobile experience
+                    e('div', { className: "glass-panel max-w-3xl w-full p-6 md:p-8 rounded-2xl space-y-8 mt-4 mb-4" },
                         e('h2', { className: "text-2xl font-bold text-white mb-2 flex items-center gap-3 border-b border-slate-700 pb-4" },  
                             e('span', { 'data-lucide': "ClipboardCheck", className: "w-7 h-7 text-amber-400" }), t.reviewTitle
                         ),
@@ -617,7 +712,7 @@
                                 else if (answer.score === 50) baseClass += 'bg-amber-600/10 border-amber-500/50';
                                 else baseClass += 'bg-red-600/10 border-red-500/50';
 
-                                return e('div', { key: q.id, className: baseClass },
+                                return e('div', { key: q.id, className: baseClass, role: "listitem" },
                                     e('div', { className: "w-4/5" },
                                         e('p', { className: "font-bold text-slate-200" }, domainText.toUpperCase() + ": " + qText),
                                         e('p', { className: "text-xs mt-1 font-mono " + (answer.score === 100 ? 'text-emerald-300' : answer.score === 50 ? 'text-amber-300' : 'text-red-300') }, 
@@ -626,7 +721,8 @@
                                     ),
                                     e('button', {
                                         onClick: function() { editAnswer(q.id); },
-                                        className: "flex-shrink-0 flex items-center gap-1 text-xs text-blue-400 hover:text-blue-200 border border-blue-600 px-3 py-1 rounded transition-all ml-2"
+                                        className: "flex-shrink-0 flex items-center gap-1 text-xs text-blue-400 hover:text-blue-200 border border-blue-600 px-3 py-1 rounded transition-all ml-2",
+                                        "aria-label": "Edit answer for " + qText
                                     }, 
                                         e('span', { 'data-lucide': "Edit", className: "w-4 h-4" }), t.editBtn
                                     )
@@ -636,7 +732,8 @@
                         
                         e('button', {
                             onClick: finalizeAudit,
-                            className: "w-full py-4 bg-blue-700 hover:bg-blue-600 text-white font-bold rounded shadow-lg transition-transform transform active:scale-95 mt-6"
+                            className: "w-full py-4 bg-blue-700 hover:bg-blue-600 text-white font-bold rounded shadow-lg transition-transform transform active:scale-95 mt-6",
+                            "aria-label": t.continueBtn
                         }, t.continueBtn)
                     )
                 );
@@ -665,7 +762,8 @@
                     return e(Layout, null,
                         e(LangSwitcher, { current: lang, setLang: setLang }),
                         e('div', { 
-                            className: "glass-panel max-w-5xl w-full p-6 md:p-8 rounded-2xl space-y-8 report-container mt-4 mb-4",
+                            // UX Fix: Reduced max-w to 4xl for a better mobile-to-tablet flow
+                            className: "glass-panel max-w-4xl w-full p-6 md:p-8 rounded-2xl space-y-8 report-container mt-4 mb-4",
                             id: 'report-container',
                             dir: dir
                         },
@@ -673,7 +771,7 @@
                                 e('span', { 'data-lucide': "CheckCircle", className: "w-7 h-7 text-emerald-400" }), t.report
                             ),
 
-                            // Top Metrics Grid  
+                            // Top Metrics Grid (UX Fix: ensured stacked on small screens)
                             e('div', { className:"grid grid-cols-1 md:grid-cols-4 gap-6" },
                                 // COMPLIANCE CONFIDENCE
                                 e('div', { className: "flex flex-col items-center justify-center p-4 bg-slate-900/50 rounded-xl border border-slate-700 col-span-1", role: "status" },
@@ -681,6 +779,7 @@
                                     e('div', { className: "text-3xl md:text-4xl font-black " + (passed ? 'text-emerald-400 neon-text' : 'text-amber-500') }, Math.round(avg)+"%")
                                 ),
                                 // LIABILITY EXPOSURE
+                                // UX Fix: Ensured it spans across all columns on mobile
                                 e('div', { className: "p-4 rounded-xl border border-red-800 bg-red-900/20 text-center col-span-1 md:col-span-2", role: "alert" },
                                     e('h3', { className: "text-sm font-bold text-red-400 mb-1" }, "PROJECTED EU LIABILITY"),
                                     e('p', { className: "text-white text-2xl md:text-3xl font-extrabold font-mono neon-text" }, projectedFine)
@@ -707,10 +806,10 @@
                                 ),
                                 violations.length === 0 
                                     ? e('p', { className: "text-emerald-400 font-mono text-sm" }, "ZERO CRITICAL VIOLATIONS DETECTED. SYSTEM IS ROBUST.")
-                                    : e('div', { className: "space-y-4 font-mono text-sm scrollable-summary" },  
+                                    : e('div', { className: "space-y-4 font-mono text-sm scrollable-summary", role: "list" },  
                                         violations.map(function(v, i) {  
-                                            var domainText = t[v.domain] ? t[v.domain] : v.domain;  
-                                            return e('div', { key: i, className: "border-b border-slate-700 pb-4 " + (v.domain === 'sec' ? 'border-red-500/50' : '') },
+                                            var domainText = t[v.domain] ? t.gov : v.domain;  
+                                            return e('div', { key: i, className: "border-b border-slate-700 pb-4 " + (v.domain === 'sec' ? 'border-red-500/50' : ''), role: "listitem" },
                                                 e('span', { className: "font-bold text-base " + (v.domain === 'sec' ? 'text-red-500' : 'text-amber-400') },  
                                                     domainText.toUpperCase() + " - " + (v.score === 0 ? 'FAIL' : 'PARTIAL')
                                                 ),
@@ -730,10 +829,11 @@
                             e('div', { className: "mt-6 flex flex-col md:flex-row gap-4 no-print" },
                                 e('button', { 
                                     onClick: function() { exportPdfReport(finalHash); }, 
-                                    className: "flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded flex items-center justify-center transition-transform transform active:scale-95" 
+                                    className: "flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded flex items-center justify-center transition-transform transform active:scale-95",
+                                    "aria-label": t.exportBtn
                                 }, e('span', { 'data-lucide': "Download", className: "w-5 h-5 mr-2" }), t.exportBtn),
                                 
-                                e('button', { onClick: reset, className: "flex-1 py-3 border border-slate-600 text-slate-400 hover:bg-slate-800 rounded" }, t.reset)
+                                e('button', { onClick: reset, className: "flex-1 py-3 border border-slate-600 text-slate-400 hover:bg-slate-800 rounded", "aria-label": t.reset }, t.reset)
                             )
                         )
                     );
@@ -747,7 +847,8 @@
                 return e(Layout, null,
                     e(LangSwitcher, { current: lang, setLang: setLang }),
                     // Grid layout for questions
-                    e('div', { className: "w-full max-w-5xl grid grid-cols-1 lg:grid-cols-12 gap-6 mt-4 mb-4" },  
+                    // UX Fix: Using max-w-4xl for better scaling across devices
+                    e('div', { className: "w-full max-w-4xl grid grid-cols-1 lg:grid-cols-12 gap-6 mt-4 mb-4" },  
                         // LEFT: Sidebar (Metrics/Radar)
                         e('div', { className: "hidden lg:flex lg:col-span-4 glass-panel rounded-xl p-6 flex-col justify-between h-[80vh] sticky top-4 md:hidden" },  
                             e('div', null,
@@ -776,8 +877,12 @@
                                 )
                             ),
 
-                            // Question Text
-                            e('h3', { className: "text-xl md:text-3xl font-bold text-white mb-10 leading-snug", id: "current-question" }, qText),
+                            // Question Text (A11Y Fix: added aria-describedby for explicit announcement)
+                            e('h3', { 
+                                className: "text-xl md:text-3xl font-bold text-white mb-10 leading-snug", 
+                                id: "current-question",
+                                "aria-describedby": "announcer" 
+                            }, qText),
 
                             // Answer Options (ES5 compatible map)
                             e('div', { className: "space-y-4 mt-auto", role: "group", "aria-labelledby": "current-question" },
@@ -790,7 +895,8 @@
                                     return e('button', {
                                         key: idx,
                                         onClick: function() { handleAnswer(opt.score, q); },
-                                        className: className
+                                        className: className,
+                                        "aria-label": opt.label + " for question " + (currentQ + 1)
                                     },  
                                         e('span', null, opt.label),
                                         e('span', { 'data-lucide': dir === 'rtl' ? "ChevronLeft" : "ChevronRight", className: "text-white opacity-70 group-hover:opacity-100" })
@@ -806,6 +912,13 @@
             ReactDOM.createRoot(document.getElementById('root')).render(e(App));
 
             lucide.createIcons();
+            
+            // Re-check voices after render for consistent language-specific TTS
+            if ('speechSynthesis' in window && window.speechSynthesis.onvoiceschanged !== undefined) {
+                window.speechSynthesis.onvoiceschanged = function() {
+                    console.log("Speech voices loaded."); // Log for debugging
+                };
+            }
         }
     </script>
 
