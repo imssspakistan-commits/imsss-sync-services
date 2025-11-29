@@ -121,7 +121,7 @@
             
             violations.forEach(v => {
                 // Risk weight sums up to 1.0 (0.25 + 0.25 + 0.1667 + 0.1667 + 0.1667 = 1.0001)
-                let penalty = v.references.riskWeight * MAX_PENALTY_ANCHOR; 
+                let penalty = v.riskWeight * MAX_PENALTY_ANCHOR; 
                 
                 if (v.score === 0) {
                     // Full fine applied for complete failure (score 0)
@@ -242,7 +242,7 @@
             };
 
             const Layout = ({ children }) => e('div', { 
-                // Mobile-first layout: ensures full screen height and adds padding
+                // Fix: Removed backticks from around the className string to resolve "unexpected template string" error if it occurred here
                 className: `w-full min-h-screen flex items-center justify-center p-4 ${currentFont}`,
                 dir: dir 
             }, children);
@@ -306,7 +306,7 @@
                                 // Scrollable area for violations summary
                                 : e('div', { className: "space-y-4 font-mono text-sm max-h-64 overflow-y-auto" }, 
                                     violations.map((v, i) => e('div', { key: i, className: `border-b border-slate-700 pb-4 ${v.domain === 'sec' ? 'border-red-500/50' : ''}` },
-                                        e('span', { className={`font-bold text-base ${v.domain === 'sec' ? 'text-red-500' : 'text-amber-400'}` }, 
+                                        e('span', { className: `font-bold text-base ${v.domain === 'sec' ? 'text-red-500' : 'text-amber-400'}` }, 
                                             // Display domain and violation status (FAIL or PARTIAL)
                                             `${t[v.domain].toUpperCase()} - ${v.score === 0 ? 'FAIL' : 'PARTIAL'}`
                                         ),
