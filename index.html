@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
     <title>IMSSS AI Risk Assessor</title>
 
     <script src="https://cdn.tailwindcss.com?version=3.4.4"></script>
@@ -26,7 +26,17 @@
             background-color: var(--bg-color);
             background-image: radial-gradient(circle at center, #1e293b 1px, transparent 1px);
             background-size: 50px 50px;
+            /* FIX 1: Ensure full body height for better mobile scrolling */
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
         }
+        
+        #root {
+            /* FIX 2: Ensure root element is full height */
+            min-height: 100vh;
+        }
+
 
         /* Custom Fonts */
         .font-sans { font-family: 'Roboto Mono', sans-serif; }
@@ -56,11 +66,11 @@
             100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
         }
 
-        /* Ensure scrollable area is visible (Fix for previous issue) */
+        /* Ensure scrollable area is visible */
         .scrollable-summary {
-            max-height: 250px; /* Adjusted from 256px to be safer */
+            max-height: 300px; /* Increased max-height for mobile */
             overflow-y: auto;
-            padding-right: 10px; /* Space for scrollbar */
+            padding-right: 10px;
         }
         
         /* Styles to hide components during PDF rendering */
@@ -93,7 +103,7 @@
             var LS_KEY_ANSWERS = 'imsss_answers';
             var LS_KEY_SCORES = 'imsss_scores';
             var LS_KEY_PROGRESS = 'imsss_progress';
-            var LS_KEY_HASH = 'imsss_final_hash'; // New key for the final report hash
+            var LS_KEY_HASH = 'imsss_final_hash'; 
 
             // --- 1. GLOBALIZATION ENGINE ---
             var LANGUAGES = {
@@ -520,7 +530,7 @@
 
                     // 3. Move to the next question or finish
                     if (!isLastQuestion) setCurrentQ(function(p) { return p + 1; });
-                    else setFinished(true); // Go to Review Screen
+                    else startReview(); // Go to Review Screen
                 };
                 
                 var finalizeAudit = function() {
@@ -535,6 +545,7 @@
                 
                 var editAnswer = function(qId) {
                     setFinished(false);
+                    setReviewed(false); // Ensure we go back to the question flow, not the report
                     setCurrentQ(AUDIT_QUESTIONS.findIndex(function(q) { return q.id === qId; }));
                 };
 
@@ -564,7 +575,9 @@
                 var Layout = function(_ref4) {  
                     var children = _ref4.children;
                     return e('div', {  
-                        className: "w-full min-h-screen flex items-center justify-center p-4 " + currentFont,
+                        // FIX 3: Removed min-h-screen for a better mobile flow, used h-full. 
+                        // Added flex-col to ensure content stacks vertically inside the wrapper.
+                        className: "w-full h-full flex flex-col items-center justify-start p-4 md:p-10 " + currentFont,
                         dir: dir  
                     }, children);
                 };
@@ -572,7 +585,7 @@
                 // SCREEN 1: INTRO (START)
                 if (!started && !reviewed) return e(Layout, null,
                     e(LangSwitcher, { current: lang, setLang: setLang }),
-                    e('div', { className: "glass-panel max-w-lg w-full p-10 rounded-2xl text-center border-t-4 border-blue-500 relative overflow-hidden" },
+                    e('div', { className: "glass-panel max-w-lg w-full p-10 rounded-2xl text-center border-t-4 border-blue-500 relative overflow-hidden mt-[15vh]" },
                         e('h1', { className: "text-4xl font-bold text-white mb-2 neon-text" }, t.title),
                         e('p', { className: "text-slate-400 text-sm mb-8 font-mono tracking-wider" }, t.subtitle),
                         e('button', {  
@@ -585,7 +598,7 @@
                 // --- SCREEN 3: REVIEW ANSWERS (PHASE II) ---
                 if (finished && !reviewed) return e(Layout, null,
                     e(LangSwitcher, { current: lang, setLang: setLang }),
-                    e('div', { className: "glass-panel max-w-4xl w-full p-8 rounded-2xl space-y-8" },
+                    e('div', { className: "glass-panel max-w-4xl w-full p-8 rounded-2xl space-y-8 mt-4 mb-4" },
                         e('h2', { className: "text-2xl font-bold text-white mb-2 flex items-center gap-3 border-b border-slate-700 pb-4" },  
                             e('span', { 'data-lucide': "ClipboardCheck", className: "w-7 h-7 text-amber-400" }), t.reviewTitle
                         ),
@@ -598,7 +611,7 @@
                                 var qText = q[currentLangData.code.toLowerCase()] || q.en; 
                                 var domainText = t[q.domain] ? t[q.domain] : q.domain; 
 
-                                var baseClass = "p-4 rounded-lg flex justify-between items-center text-sm border ";
+                                var baseClass = "p-4 rounded-lg flex justify-between items-start text-sm border ";
                                 if (answer.score === 100) baseClass += 'bg-emerald-600/10 border-emerald-500/50';
                                 else if (answer.score === 50) baseClass += 'bg-amber-600/10 border-amber-500/50';
                                 else baseClass += 'bg-red-600/10 border-red-500/50';
@@ -612,7 +625,7 @@
                                     ),
                                     e('button', {
                                         onClick: function() { editAnswer(q.id); },
-                                        className: "flex items-center gap-1 text-xs text-blue-400 hover:text-blue-200 border border-blue-600 px-3 py-1 rounded transition-all"
+                                        className: "flex-shrink-0 flex items-center gap-1 text-xs text-blue-400 hover:text-blue-200 border border-blue-600 px-3 py-1 rounded transition-all ml-2"
                                     }, 
                                         e('span', { 'data-lucide': "Edit", className: "w-4 h-4" }), t.editBtn
                                     )
@@ -651,7 +664,7 @@
                     return e(Layout, null,
                         e(LangSwitcher, { current: lang, setLang: setLang }),
                         e('div', { 
-                            className: "glass-panel max-w-5xl w-full p-8 rounded-2xl space-y-8 report-container",
+                            className: "glass-panel max-w-5xl w-full p-6 md:p-8 rounded-2xl space-y-8 report-container mt-4 mb-4",
                             id: 'report-container',
                             dir: dir
                         },
@@ -664,12 +677,12 @@
                                 // COMPLIANCE CONFIDENCE
                                 e('div', { className: "flex flex-col items-center justify-center p-4 bg-slate-900/50 rounded-xl border border-slate-700 col-span-1", role: "status" },
                                     e('h3', { className: "text-slate-400 text-xs tracking-widest mb-2" }, "CONFIDENCE SCORE"),
-                                    e('div', { className: "text-4xl font-black " + (passed ? 'text-emerald-400 neon-text' : 'text-amber-500') }, Math.round(avg)+"%")
+                                    e('div', { className: "text-3xl md:text-4xl font-black " + (passed ? 'text-emerald-400 neon-text' : 'text-amber-500') }, Math.round(avg)+"%")
                                 ),
                                 // LIABILITY EXPOSURE
                                 e('div', { className: "p-4 rounded-xl border border-red-800 bg-red-900/20 text-center col-span-1 md:col-span-2", role: "alert" },
                                     e('h3', { className: "text-sm font-bold text-red-400 mb-1" }, "PROJECTED EU LIABILITY"),
-                                    e('p', { className: "text-white text-3xl font-extrabold font-mono neon-text" }, projectedFine)
+                                    e('p', { className: "text-white text-2xl md:text-3xl font-extrabold font-mono neon-text" }, projectedFine)
                                 ),
                                 // RISK TOPOLOGY
                                 e('div', { className: "flex flex-col items-center justify-center p-4 glass-panel rounded-xl col-span-1" },  
@@ -679,8 +692,8 @@
                             ),
 
                             // CRYPTO ANCHOR (PHASE II)
-                            e('div', { className: "flex justify-between items-center bg-slate-950 p-3 rounded-lg border border-blue-800/50 no-print" },
-                                e('p', { className: "text-xs font-mono text-slate-300" }, t.anchor + ": " + finalHash),
+                            e('div', { className: "flex flex-col sm:flex-row justify-between items-center bg-slate-950 p-3 rounded-lg border border-blue-800/50 no-print mt-6" },
+                                e('p', { className: "text-xs font-mono text-slate-300 break-all mb-2 sm:mb-0" }, t.anchor + ": " + finalHash),
                                 e('button', { onClick: copyHash, className: copyButtonClasses }, 
                                     copyButtonText
                                 )
@@ -733,9 +746,9 @@
                 return e(Layout, null,
                     e(LangSwitcher, { current: lang, setLang: setLang }),
                     // Grid layout for questions
-                    e('div', { className: "w-full max-w-5xl grid grid-cols-1 lg:grid-cols-12 gap-6" },  
+                    e('div', { className: "w-full max-w-5xl grid grid-cols-1 lg:grid-cols-12 gap-6 mt-4 mb-4" },  
                         // LEFT: Sidebar (Metrics/Radar)
-                        e('div', { className: "hidden lg:flex lg:col-span-4 glass-panel rounded-xl p-6 flex-col justify-between h-[80vh]" },  
+                        e('div', { className: "hidden lg:flex lg:col-span-4 glass-panel rounded-xl p-6 flex-col justify-between h-[80vh] sticky top-4" },  
                             e('div', null,
                                 e('div', { className: "flex items-center gap-3 mb-6" },
                                     e('div', { className: "w-3 h-3 bg-red-500 rounded-full live-dot", role: "presentation" }),
@@ -751,7 +764,7 @@
                         ),
 
                         // RIGHT: Question Area
-                        e('div', { className: "col-span-1 lg:col-span-8 glass-panel rounded-xl p-6 md:p-10 flex flex-col relative min-h-[80vh]" },  
+                        e('div', { className: "col-span-1 lg:col-span-8 glass-panel rounded-xl p-6 md:p-10 flex flex-col relative min-h-[75vh]" },  
                             // Progress Indicator
                             e('div', { className: "mb-6 flex justify-between items-center" },  
                                 e('span', { className: "text-blue-400 text-xs font-bold font-mono tracking-widest" },  
