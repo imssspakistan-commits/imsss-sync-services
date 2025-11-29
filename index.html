@@ -108,6 +108,7 @@
             var LS_KEY_SCORES = 'imsss_scores';
             var LS_KEY_PROGRESS = 'imsss_progress';
             var LS_KEY_HASH = 'imsss_final_hash'; 
+            var LS_KEY_TTS = 'imsss_tts_active'; // NEW KEY
 
             // --- 1. GLOBALIZATION ENGINE ---
             var LANGUAGES = {
@@ -197,7 +198,6 @@
 
             // --- 3. A11Y UTILITIES (Speech Synthesis) ---
 
-            var ttsActive = true; 
             var stopSpeaking = function() {
                 if ('speechSynthesis' in window) {
                     window.speechSynthesis.cancel();
@@ -205,29 +205,33 @@
             };
 
             var speakText = function(text, langCode) {
-                if (!ttsActive || !('speechSynthesis' in window)) return;
+                // IMPORTANT: This utility is now called ONLY if the React state `ttsEnabled` is true
+                if (!('speechSynthesis' in window)) return;
                 
-                stopSpeaking(); 
-                var utterance = new SpeechSynthesisUtterance(text);
-                
-                // Set language based on selection
-                var voiceLang = langCode === 'UR' ? 'ur-PK' : langCode === 'ES' ? 'es-ES' : 'en-US';
-                utterance.lang = voiceLang;
+                // Add a small delay and force a check to help mobile devices initialize the voice API
+                setTimeout(function() {
+                    stopSpeaking(); 
+                    var utterance = new SpeechSynthesisUtterance(text);
+                    
+                    var voiceLang = langCode === 'UR' ? 'ur-PK' : langCode === 'ES' ? 'es-ES' : 'en-US';
+                    utterance.lang = voiceLang;
 
-                // Try to find a suitable voice
-                var voices = window.speechSynthesis.getVoices();
-                var voice = voices.find(function(v) { return v.lang.startsWith(voiceLang.substring(0, 2)); });
-                if (voice) {
-                    utterance.voice = voice;
-                }
-                
-                // Start speaking
-                window.speechSynthesis.speak(utterance);
+                    // Ensure voices are available before trying to select one
+                    var voices = window.speechSynthesis.getVoices();
+                    var voice = voices.find(function(v) { return v.lang.startsWith(voiceLang.substring(0, 2)); });
+                    if (voice) {
+                        utterance.voice = voice;
+                    }
+                    
+                    // Start speaking
+                    window.speechSynthesis.speak(utterance);
 
-                // Announce to native screen readers (for redundancy)
-                var announcer = document.getElementById('announcer');
-                if (announcer) announcer.textContent = text;
+                    // Announce to native screen readers (for redundancy)
+                    var announcer = document.getElementById('announcer');
+                    if (announcer) announcer.textContent = text;
+                }, 50); 
             };
+
 
             // --- 4. OTHER UTILITIES ---
 
@@ -235,7 +239,13 @@
             var loadState = function(key, defaultVal) {
                 try {
                     var serialized = localStorage.getItem(key);
-                    if (serialized === null) return defaultVal;
+                    // Handle booleans correctly: check for "true" or "false" string, otherwise return default
+                    if (typeof defaultVal === 'boolean') {
+                        if (serialized === 'true') return true;
+                        if (serialized === 'false') return false;
+                    }
+
+                    if (serialized === null || serialized === undefined) return defaultVal;
                     // Safely parse JSON or return the string if it's not an object
                     return JSON.parse(serialized) || defaultVal;
                 } catch(e) {
@@ -247,7 +257,8 @@
             // Function to save state to localStorage
             var saveState = function(key, value) {
                 try {
-                    var serialized = JSON.stringify(value);
+                    // Store booleans as strings for consistent loading
+                    var serialized = (typeof value === 'boolean') ? String(value) : JSON.stringify(value);
                     localStorage.setItem(key, serialized);
                 } catch (e) {
                     console.error("Could not save state:", key, e);
@@ -357,7 +368,7 @@
                     heightLeft -= pageHeight;
 
                     while (heightLeft >= 0) {
-                        position = heightLeft - imgHeight;
+                        position = heightLeft - imgImgHeight;
                         pdf.addPage();
                         pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
                         heightLeft -= pageHeight;
@@ -439,7 +450,9 @@
             // Language Selector Component
             var LangSwitcher = function(_ref3) {
                 var current = _ref3.current,
-                    setLang = _ref3.setLang;
+                    setLang = _ref3.setLang,
+                    ttsEnabled = _ref3.ttsEnabled, // NEW PROP
+                    setTtsEnabled = _ref3.setTtsEnabled; // NEW PROP
 
                 var languageButtons = Object.keys(LANGUAGES).map(function(code) {
                     var langData = LANGUAGES[code];
@@ -453,25 +466,21 @@
                     }, langData.name);
                 });
                 
-                // TTS Toggle Button (NEW)
+                // TTS Toggle Button (UPDATED to use state props)
                 var TTSToggle = function() {
-                    var _useState11 = useState(ttsActive),
-                        isActive = _useState11[0],
-                        setIsActive = _useState11[1];
                         
                     var toggle = function() {
-                        if (isActive) stopSpeaking();
-                        ttsActive = !isActive;
-                        setIsActive(ttsActive);
+                        stopSpeaking(); // Stop speaking immediately on toggle
+                        setTtsEnabled(!ttsEnabled); // Update state and trigger persistence
                     };
 
-                    var icon = isActive ? "Volume2" : "VolumeX";
-                    var btnClass = isActive ? 'bg-emerald-600/50 hover:bg-emerald-500/50 border-emerald-500/50' : 'bg-red-600/50 hover:bg-red-500/50 border-red-500/50';
+                    var icon = ttsEnabled ? "Volume2" : "VolumeX";
+                    var btnClass = ttsEnabled ? 'bg-emerald-600/50 hover:bg-emerald-500/50 border-emerald-500/50' : 'bg-red-600/50 hover:bg-red-500/50 border-red-500/50';
 
                     return e('button', {
                         onClick: toggle,
                         className: "px-2 py-1 rounded text-xs font-bold transition-all border " + btnClass,
-                        "aria-label": isActive ? "Turn off text to speech" : "Turn on text to speech"
+                        "aria-label": ttsEnabled ? "Turn off text to speech" : "Turn on text to speech"
                     }, 
                         e('span', { 'data-lucide': icon, className: "w-4 h-4 text-white" })
                     );
@@ -492,6 +501,8 @@
                 var initialAnswers = loadState(LS_KEY_ANSWERS, {});
                 var initialScoresFromLS = loadState(LS_KEY_SCORES, initialScores);
                 var initialFinalHash = loadState(LS_KEY_HASH, null);
+                // NEW: Load TTS preference, defaulting to FALSE (user opt-in)
+                var initialTtsEnabled = loadState(LS_KEY_TTS, false); 
 
                 // Determine starting progress:
                 var answerKeys = Object.keys(initialAnswers);
@@ -546,12 +557,18 @@
                     copied = _useState10[0],
                     setCopied = _useState10[1];
 
+                // NEW: TTS State (defaulted to false/user choice)
+                var _useState11 = useState(initialTtsEnabled), 
+                    ttsEnabled = _useState11[0],
+                    setTtsEnabled = _useState11[1];
+
 
                 // Persistence Effects (Save state on change)
                 useEffect(function() { saveState(LS_KEY_LANG, lang); }, [lang]);
                 useEffect(function() { saveState(LS_KEY_ANSWERS, answers); saveState(LS_KEY_SCORES, scores); }, [answers, scores]);
                 useEffect(function() { saveState(LS_KEY_PROGRESS, started); }, [started]);
                 useEffect(function() { saveState(LS_KEY_HASH, finalHash); }, [finalHash]);
+                useEffect(function() { saveState(LS_KEY_TTS, ttsEnabled); }, [ttsEnabled]); // NEW PERSISTENCE
 
 
                 // Hash stream animation effect (Reduced to 1000ms)
@@ -574,30 +591,48 @@
                 var langCode = lang;
                 
                 
-                // A11Y SPEAKING EFFECT
+                // A11Y SPEAKING EFFECT (Now checks ttsEnabled state)
                 useEffect(function() {
-                    // This function is the primary source of TTS announcements
+                    if (!ttsEnabled) {
+                        stopSpeaking(); 
+                        return; // Exit if user has disabled TTS
+                    }
+
+                    var announceText = "";
                     if (!started) {
-                        speakText(t.title + ". " + t.subtitle + ". " + t.ttsPrompt, lang);
+                        announceText = t.title + ". " + t.subtitle + ". " + t.ttsPrompt;
                     } else if (!finished) {
                         var q = AUDIT_QUESTIONS[currentQ];
                         var qText = q[currentLangData.code.toLowerCase()] || q.en;
-                        var announceText = "Question " + (currentQ + 1) + ". " + qText;
-                        speakText(announceText, lang);
+                        announceText = "Question " + (currentQ + 1) + ". " + qText;
                     } else if (finished && !reviewed) {
-                        speakText(t.reviewTitle + ". " + t.reviewSub, lang);
+                        announceText = t.reviewTitle + ". " + t.reviewSub;
                     } else if (reviewed) {
-                        speakText(t.report + ". Compliance score is " + Math.round(avg) + " percent. Projected liability is " + projectedFine, lang);
+                        // Recalculate values for the speech announcement
+                        var answeredQuestions = Object.values(answers);
+                        var answeredScores = answeredQuestions.map(function(a) { return a.score; });
+                        var sum = answeredScores.reduce(function(a,b) { return a + b; }, 0);
+                        var avg = answeredScores.length > 0 ? sum / answeredQuestions.length : 0;
+                        var violations = [];
+                        for (var key in answers) {
+                            if (answers.hasOwnProperty(key) && answers[key].score < 100) {
+                                violations.push(answers[key]);
+                            }
+                        }
+                        var projectedFine = calculateLiability(violations);
+                        
+                        announceText = t.report + ". Compliance score is " + Math.round(avg) + " percent. Projected liability is " + projectedFine;
                     }
                     
+                    if (announceText) speakText(announceText, lang);
+                    
                 // Dependency cleanup: If the question number changes, stop the previous reading.
-                return function() { stopSpeaking(); }; 
-                
-                }, [started, finished, currentQ, lang, reviewed]);
+                }, [started, finished, currentQ, lang, reviewed, ttsEnabled]); // Dependency on ttsEnabled is key
 
 
                 var handleAnswer = function(score, q) {
                     var isLastQuestion = currentQ === AUDIT_QUESTIONS.length - 1;
+                    stopSpeaking(); // Stop speaking when a user interacts
 
                     // 1. Update answers state
                     setAnswers(function(prev) {
@@ -627,25 +662,29 @@
                 
                 var finalizeAudit = function() {
                     // This action moves from Review Screen to Report Screen
+                    stopSpeaking();
                     setReviewed(true);
                     setFinalHash(generateCryptoHash()); // Anchor the report with a final hash
                 };
                 
                 var startReview = function() {
+                    stopSpeaking();
                     setFinished(true); // Used to trigger the review screen after last question
                 };
                 
                 var editAnswer = function(qId) {
+                    stopSpeaking();
                     setFinished(false);
                     setReviewed(false); // Ensure we go back to the question flow, not the report
                     setCurrentQ(AUDIT_QUESTIONS.findIndex(function(q) { return q.id === qId; }));
                 };
 
                 var reset = function() {
+                    stopSpeaking();
                     setStarted(false); setFinished(false); setCurrentQ(0); setReviewed(false);
                     setScores(initialScores); setAnswers({}); setFinalHash(null);
                     setHashStream(generateCryptoHash());
-                    stopSpeaking();
+                    setTtsEnabled(false); // Reset TTS to default OFF on new session
 
                     // Clear Local Storage
                     localStorage.removeItem(LS_KEY_LANG);
@@ -653,6 +692,7 @@
                     localStorage.removeItem(LS_KEY_SCORES);
                     localStorage.removeItem(LS_KEY_PROGRESS);
                     localStorage.removeItem(LS_KEY_HASH);
+                    localStorage.removeItem(LS_KEY_TTS); // Clear TTS preference
                 };
 
                 var copyHash = function() {
@@ -676,7 +716,7 @@
 
                 // SCREEN 1: INTRO (START)
                 if (!started && !reviewed) return e(Layout, null,
-                    e(LangSwitcher, { current: lang, setLang: setLang }),
+                    e(LangSwitcher, { current: lang, setLang: setLang, ttsEnabled: ttsEnabled, setTtsEnabled: setTtsEnabled }),
                     // UX Fix: Added flex items-center for centering the smaller button
                     e('div', { className: "glass-panel max-w-lg w-full p-10 rounded-2xl text-center border-t-4 border-blue-500 relative overflow-hidden mt-[15vh] flex flex-col items-center" },
                         e('h1', { className: "text-4xl font-bold text-white mb-2 neon-text" }, t.title),
@@ -692,7 +732,7 @@
                 
                 // --- SCREEN 3: REVIEW ANSWERS (PHASE II) ---
                 if (finished && !reviewed) return e(Layout, null,
-                    e(LangSwitcher, { current: lang, setLang: setLang }),
+                    e(LangSwitcher, { current: lang, setLang: setLang, ttsEnabled: ttsEnabled, setTtsEnabled: setTtsEnabled }),
                     // UX Fix: Reduced max-w to 3xl for slightly tighter mobile experience
                     e('div', { className: "glass-panel max-w-3xl w-full p-6 md:p-8 rounded-2xl space-y-8 mt-4 mb-4" },
                         e('h2', { className: "text-2xl font-bold text-white mb-2 flex items-center gap-3 border-b border-slate-700 pb-4" },  
@@ -760,7 +800,7 @@
                     var copyButtonText = copied ? t.copied : e('span', { 'data-lucide': "Copy", className: "w-3 h-3 mr-1" }, t.anchor);
 
                     return e(Layout, null,
-                        e(LangSwitcher, { current: lang, setLang: setLang }),
+                        e(LangSwitcher, { current: lang, setLang: setLang, ttsEnabled: ttsEnabled, setTtsEnabled: setTtsEnabled }),
                         e('div', { 
                             // UX Fix: Reduced max-w to 4xl for a better mobile-to-tablet flow
                             className: "glass-panel max-w-4xl w-full p-6 md:p-8 rounded-2xl space-y-8 report-container mt-4 mb-4",
@@ -845,7 +885,7 @@
                 var domainDisplay = t[q.domain] ? t[q.domain] : q.domain;  
 
                 return e(Layout, null,
-                    e(LangSwitcher, { current: lang, setLang: setLang }),
+                    e(LangSwitcher, { current: lang, setLang: setLang, ttsEnabled: ttsEnabled, setTtsEnabled: setTtsEnabled }),
                     // Grid layout for questions
                     // UX Fix: Using max-w-4xl for better scaling across devices
                     e('div', { className: "w-full max-w-4xl grid grid-cols-1 lg:grid-cols-12 gap-6 mt-4 mb-4" },  
