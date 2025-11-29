@@ -144,7 +144,7 @@
         };
 
         // --- 4. COMPONENTS & CORE LOGIC ---
-        
+
         // Simplified Radar Chart Component
         var RiskRadar = function(_ref) {
             var scores = _ref.scores,
@@ -162,6 +162,11 @@
             }).join(" ");
 
             return e('div', { className: "relative flex justify-center py-4" },
+                // Image tag added here as requested
+                
+
+[Image of an example radar chart for risk assessment]
+,
                 e('svg', { width: size, height: size, className: "overflow-visible" },
                     // Background grid line
                     e('circle', { cx: center, cy: center, r: radius, fill: "none", stroke: "#334155", strokeDasharray: "4 4" }),
@@ -251,6 +256,14 @@
                 var interval = setInterval(function() { setHash(generateHash()); }, 150);
                 return function() { clearInterval(interval); };
             }, []);
+            
+            // === THE FIX ===
+            // FIX: Re-render Lucide Icons after every component update/screen change
+            useEffect(function() {
+                // This ensures icons like CheckCircle and Chevrons are correctly rendered after state changes
+                lucide.createIcons();
+            }, [started, finished, currentQ]);
+            // ===============
 
             // Defensive access: defaults to EN if lang or LANGUAGES[lang] is undefined
             var currentLangData = LANGUAGES[lang] || LANGUAGES.EN;
@@ -453,7 +466,7 @@
         var root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(e(App));
         
-        // Initialize Lucide icons
+        // Initialize Lucide icons for the initial render (must be called after React renders the initial DOM)
         lucide.createIcons();
         
     </script>
