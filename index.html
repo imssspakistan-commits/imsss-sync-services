@@ -26,19 +26,15 @@
             background-color: var(--bg-color);
             background-image: radial-gradient(circle at center, #1e293b 1px, transparent 1px);
             background-size: 50px 50px;
-            /* Ensure full body height for better mobile scrolling */
             min-height: 100vh;
             margin: 0;
             padding: 0;
-            /* Force fast touch response */
             touch-action: manipulation; 
         }
         
         #root {
-            /* Ensure root element is full height */
             min-height: 100vh;
         }
-
 
         /* Custom Fonts */
         .font-sans { font-family: 'Roboto Mono', sans-serif; }
@@ -481,7 +477,7 @@
                     }, langData.name);
                 });
                 
-                // TTS Toggle Button (UPDATED to use state props)
+                // TTS Toggle Button
                 var TTSToggle = function() {
                         
                     var toggle = function() {
@@ -502,7 +498,7 @@
                 };
 
 
-                // FIX: Ensure the selector is on the top layer and positioned absolutely 
+                // Ensure the selector is on the top layer and positioned absolutely 
                 return e('div', { className: "absolute top-4 right-4 z-[9999] flex space-x-2 no-print" }, 
                     e(TTSToggle, null), // Added TTS toggle 
                     languageButtons
@@ -517,19 +513,17 @@
                 var initialAnswers = loadState(LS_KEY_ANSWERS, {});
                 var initialScoresFromLS = loadState(LS_KEY_SCORES, initialScores);
                 var initialFinalHash = loadState(LS_KEY_HASH, null);
-                // TTS preference, defaulting to FALSE (user opt-in)
                 var initialTtsEnabled = loadState(LS_KEY_TTS, false); 
                 
-                // NEW: Load ToS agreement and User Info
+                // PHASE X: Load ToS agreement and User Info
                 var initialAgreed = loadState(LS_KEY_AGREED, false);
-                // Load string value for user info
                 var initialUserInfo = loadState(LS_KEY_USERINFO, null); 
 
 
                 // Determine starting progress:
                 var answerKeys = Object.keys(initialAnswers);
                 var initialQ = answerKeys.length > 0 ? answerKeys.length : 0;
-                // Assessment is only 'started' if user info is present
+                // Assessment is only 'started' if user info is present AND progress exists
                 var initialStarted = (initialQ > 0 || loadState(LS_KEY_PROGRESS, false)) && initialUserInfo !== null; 
                 var initialFinished = initialQ === AUDIT_QUESTIONS.length;
                 var initialReviewed = initialFinalHash !== null;
@@ -551,7 +545,6 @@
                     currentQ = _useState3[0],
                     setCurrentQ = _useState3[1];
                 
-                // New State for Review Screen (Phase II)
                 var _useState9 = useState(initialFinished),
                     finished = _useState9[0],
                     setFinished = _useState9[1];
@@ -580,12 +573,11 @@
                     copied = _useState10[0],
                     setCopied = _useState10[1];
 
-                // NEW: TTS State (defaulted to false/user choice)
                 var _useState11 = useState(initialTtsEnabled), 
                     ttsEnabled = _useState11[0],
                     setTtsEnabled = _useState11[1];
                     
-                // NEW STATES (PHASE X)
+                // PHASE X: NEW STATES
                 var _useState12 = useState(initialAgreed),
                     agreed = _useState12[0],
                     setAgreed = _useState12[1];
@@ -601,7 +593,7 @@
                 useEffect(function() { saveState(LS_KEY_PROGRESS, started); }, [started]);
                 useEffect(function() { saveState(LS_KEY_HASH, finalHash); }, [finalHash]);
                 useEffect(function() { saveState(LS_KEY_TTS, ttsEnabled); }, [ttsEnabled]); 
-                // NEW PERSISTENCE EFFECTS
+                // PHASE X: NEW PERSISTENCE EFFECTS
                 useEffect(function() { saveState(LS_KEY_AGREED, agreed); }, [agreed]);
                 useEffect(function() { saveState(LS_KEY_USERINFO, userInfo); }, [userInfo]);
 
@@ -617,7 +609,7 @@
                     if (typeof lucide !== 'undefined') {
                         lucide.createIcons();
                     }
-                }, [started, finished, currentQ, lang, reviewed, agreed, userInfo]); // Added agreed and userInfo
+                }, [started, finished, currentQ, lang, reviewed, agreed, userInfo]); 
 
                 var currentLangData = LANGUAGES[lang] || LANGUAGES.EN; 
                 var t = currentLangData.text;
@@ -626,7 +618,7 @@
                 var langCode = lang;
                 
                 
-                // A11Y SPEAKING EFFECT (Now checks ttsEnabled state)
+                // A11Y SPEAKING EFFECT 
                 useEffect(function() {
                     if (!ttsEnabled) {
                         stopSpeaking(); 
@@ -665,8 +657,7 @@
                     
                     if (announceText) speakText(announceText, lang);
                     
-                // Dependency cleanup: If the question number changes, stop the previous reading.
-                }, [started, finished, currentQ, lang, reviewed, ttsEnabled, agreed, userInfo]); // Added agreed and userInfo dependencies
+                }, [started, finished, currentQ, lang, reviewed, ttsEnabled, agreed, userInfo]);
 
 
                 var handleAnswer = function(score, q) {
@@ -750,13 +741,12 @@
                 var Layout = function(_ref4) {  
                     var children = _ref4.children;
                     return e('div', {  
-                        // UX Fix: Ensuring adequate space while maintaining mobile focus
                         className: "w-full min-h-screen flex flex-col items-center justify-start p-4 md:p-8 " + currentFont,
                         dir: dir  
                     }, children);
                 };
                 
-                // --- SCREEN 0A: TERMS OF SERVICE AGREEMENT (PHASE X) ---
+                // --- SCREEN 0A: TERMS OF SERVICE AGREEMENT (PHASE X/XI) ---
                 var ScreenTOS = function() {
                     return e(Layout, null,
                         e(LangSwitcher, { current: lang, setLang: setLang, ttsEnabled: ttsEnabled, setTtsEnabled: setTtsEnabled }),
@@ -774,8 +764,11 @@
                                 e('h2', { className: "font-bold text-slate-200 mt-4" }, "Accountability & Reliance"),
                                 e('p', null, "The final responsibility for your AI system's compliance rests entirely with you (the **Deployer**). This tool is provided 'as is' without warranty. The **Immutable Hash** included in your report serves as a cryptographic anchor to verify the integrity of the data at the time of export and does not guarantee compliance."),
                                 
-                                e('h2', { className: "font-bold text-slate-200 mt-4" }, "Intellectual Property"),
-                                e('p', null, "You retain ownership of the data you input and the resulting PDF report. The underlying source code, assessment methodology, and design of the IMSSS AI Risk Assessor remain the property of the developers.")
+                                // UPDATED IP CLAUSE (PHASE XI)
+                                e('h2', { className: "font-bold text-slate-200 mt-4" }, "Intellectual Property and Restrictions"),
+                                e('p', null, "The proprietary assessment methodology, scoring algorithms, and question-to-standard mapping used in this Assessor are the **confidential and exclusive intellectual property** of the developers."),
+                                e('p', null, "You are granted a non-exclusive license to use, print, and internally share the final PDF report for your organization’s internal compliance, risk management, and audit purposes only. **You may not** use the source code, extract the assessment logic, or reproduce the methodology for the purpose of developing, offering, or licensing a **competing AI risk assessment tool.**"),
+
                             ),
                             e('button', {
                                 onClick: function() { setAgreed(true); },
@@ -792,7 +785,7 @@
                     var _useState15 = useState(false), error = _useState15[0], setError = _useState15[1];
 
                     var handleSubmit = function() {
-                        // Simple validation: must be at least 5 characters (to catch accidental empty submissions)
+                        // Simple validation: must be at least 5 characters
                         if (emailOrPhone.trim().length < 5) { 
                             setError(true);
                             return;
@@ -841,13 +834,11 @@
                 // SCREEN 1: INTRO (START)
                 if (!started && !reviewed) return e(Layout, null,
                     e(LangSwitcher, { current: lang, setLang: setLang, ttsEnabled: ttsEnabled, setTtsEnabled: setTtsEnabled }),
-                    // UX Fix: Added flex items-center for centering the smaller button
                     e('div', { className: "glass-panel max-w-lg w-full p-10 rounded-2xl text-center border-t-4 border-blue-500 relative overflow-hidden mt-[15vh] flex flex-col items-center" },
                         e('h1', { className: "text-4xl font-bold text-white mb-2 neon-text" }, t.title),
                         e('p', { className: "text-slate-400 text-sm mb-8 font-mono tracking-wider" }, t.subtitle),
                         e('button', {  
                             onClick: function() { setStarted(true); setFinished(false); setCurrentQ(0); },
-                            // UX Fix: Reduced width to max-w-sm and reduced vertical padding (py-3)
                             className: "w-full max-w-sm py-3 bg-blue-700 hover:bg-blue-600 text-white font-bold rounded shadow-lg transition-transform transform active:scale-95",
                             "aria-label": t.startBtn
                         }, t.startBtn)
@@ -857,7 +848,6 @@
                 // --- SCREEN 3: REVIEW ANSWERS (PHASE II) ---
                 if (finished && !reviewed) return e(Layout, null,
                     e(LangSwitcher, { current: lang, setLang: setLang, ttsEnabled: ttsEnabled, setTtsEnabled: setTtsEnabled }),
-                    // UX Fix: Reduced max-w to 3xl for slightly tighter mobile experience
                     e('div', { className: "glass-panel max-w-3xl w-full p-6 md:p-8 rounded-2xl space-y-8 mt-4 mb-4" },
                         e('h2', { className: "text-2xl font-bold text-white mb-2 flex items-center gap-3 border-b border-slate-700 pb-4" },  
                             e('span', { 'data-lucide': "ClipboardCheck", className: "w-7 h-7 text-amber-400" }), t.reviewTitle
@@ -926,7 +916,6 @@
                     return e(Layout, null,
                         e(LangSwitcher, { current: lang, setLang: setLang, ttsEnabled: ttsEnabled, setTtsEnabled: setTtsEnabled }),
                         e('div', { 
-                            // UX Fix: Reduced max-w to 4xl for a better mobile-to-tablet flow
                             className: "glass-panel max-w-4xl w-full p-6 md:p-8 rounded-2xl space-y-8 report-container mt-4 mb-4",
                             id: 'report-container',
                             dir: dir
@@ -935,7 +924,7 @@
                                 e('span', { 'data-lucide': "CheckCircle", className: "w-7 h-7 text-emerald-400" }), t.report
                             ),
 
-                            // Top Metrics Grid (UX Fix: ensured stacked on small screens)
+                            // Top Metrics Grid
                             e('div', { className:"grid grid-cols-1 md:grid-cols-4 gap-6" },
                                 // COMPLIANCE CONFIDENCE
                                 e('div', { className: "flex flex-col items-center justify-center p-4 bg-slate-900/50 rounded-xl border border-slate-700 col-span-1", role: "status" },
@@ -943,7 +932,6 @@
                                     e('div', { className: "text-3xl md:text-4xl font-black " + (passed ? 'text-emerald-400 neon-text' : 'text-amber-500') }, Math.round(avg)+"%")
                                 ),
                                 // LIABILITY EXPOSURE
-                                // UX Fix: Ensured it spans across all columns on mobile
                                 e('div', { className: "p-4 rounded-xl border border-red-800 bg-red-900/20 text-center col-span-1 md:col-span-2", role: "alert" },
                                     e('h3', { className: "text-sm font-bold text-red-400 mb-1" }, "PROJECTED EU LIABILITY"),
                                     e('p', { className: "text-white text-2xl md:text-3xl font-extrabold font-mono neon-text" }, projectedFine)
@@ -955,12 +943,12 @@
                                 )
                             ),
                             
-                            // User Info Display (NEW)
+                            // User Info Display (PHASE X)
                             e('div', { className: "bg-slate-950 p-3 rounded-lg border border-slate-800 mt-6" },
                                 e('p', { className: "text-xs font-mono text-slate-400 break-all" }, "USER CONTACT INFO (LOCAL RECORD): " + (userInfo || 'N/A'))
                             ),
 
-                            // CRYPTO ANCHOR (PHASE II)
+                            // CRYPTO ANCHOR
                             e('div', { className: "flex flex-col sm:flex-row justify-between items-center bg-slate-950 p-3 rounded-lg border border-blue-800/50 no-print mt-4" },
                                 e('p', { className: "text-xs font-mono text-slate-300 break-all mb-2 sm:mb-0" }, t.anchor + ": " + finalHash),
                                 e('button', { onClick: copyHash, className: copyButtonClasses }, 
@@ -994,7 +982,7 @@
                                     )
                             ),
 
-                            // REPORT ACTION BUTTONS (PHASE II)
+                            // REPORT ACTION BUTTONS
                             e('div', { className: "mt-6 flex flex-col md:flex-row gap-4 no-print" },
                                 e('button', { 
                                     onClick: function() { exportPdfReport(finalHash, userInfo); }, // Pass userInfo to export function
@@ -1016,7 +1004,6 @@
                 return e(Layout, null,
                     e(LangSwitcher, { current: lang, setLang: setLang, ttsEnabled: ttsEnabled, setTtsEnabled: setTtsEnabled }),
                     // Grid layout for questions
-                    // UX Fix: Using max-w-4xl for better scaling across devices
                     e('div', { className: "w-full max-w-4xl grid grid-cols-1 lg:grid-cols-12 gap-6 mt-4 mb-4" },  
                         // LEFT: Sidebar (Metrics/Radar)
                         e('div', { className: "hidden lg:flex lg:col-span-4 glass-panel rounded-xl p-6 flex-col justify-between h-[80vh] sticky top-4 md:hidden" },  
@@ -1046,14 +1033,14 @@
                                 )
                             ),
 
-                            // Question Text (A11Y Fix: added aria-describedby for explicit announcement)
+                            // Question Text
                             e('h3', { 
                                 className: "text-xl md:text-3xl font-bold text-white mb-10 leading-snug", 
                                 id: "current-question",
                                 "aria-describedby": "announcer" 
                             }, qText),
 
-                            // Answer Options (ES5 compatible map)
+                            // Answer Options
                             e('div', { className: "space-y-4 mt-auto", role: "group", "aria-labelledby": "current-question" },
                                 OPTIONS.map(function(opt, idx) {
                                     var className = "w-full text-start p-5 rounded-lg transition-all text-white font-medium flex justify-between items-center group ";
