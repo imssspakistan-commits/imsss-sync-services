@@ -10,7 +10,7 @@
     <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
 
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400&family=Noto+Nastaliq+Urdu:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght=400&family=Noto+Nastaliq+Urdu:wght@400;700&display=swap" rel="stylesheet">
     
     <style>
         /* BASE STYLES & GLASSMORPHISM */
@@ -151,7 +151,7 @@
             var size = 180; var center = size / 2; var radius = 70;
             var domains = ["gov", "sec", "risk", "data", "docs"]; 
             
-            // Calculate points for the polygon (ES5 compatible string concat)
+            // Calculate points for the polygon (ES5 compatible map and join)
             var points = domains.map(function(d, i) {
                 var angle = (Math.PI * 2 * i) / 5 - Math.PI / 2; 
                 var value = (scores[d] || 0) / 100; 
@@ -160,10 +160,7 @@
 
             return e('div', { className: "relative flex justify-center py-4" },
                 // Image tag for radar chart visualization
-                
-
-[Image of an example radar chart for risk assessment]
-,
+                ,
                 e('svg', { width: size, height: size, className: "overflow-visible" },
                     // Background grid line
                     e('circle', { cx: center, cy: center, r: radius, fill: "none", stroke: "#334155", strokeDasharray: "4 4" }),
@@ -171,7 +168,7 @@
                     // Risk Polygon
                     e('polygon', { points: points, fill: "rgba(59, 130, 246, 0.4)", stroke: "#3b82f6", strokeWidth: 2 }),
                     
-                    // Domain Labels
+                    // Domain Labels (ES5 compatible map)
                     domains.map(function(d, i) {
                         var angle = (Math.PI * 2 * i) / 5 - Math.PI / 2;
                         var x = center + (radius + 25) * Math.cos(angle);
@@ -191,6 +188,7 @@
 
         var HashStream = function(_ref2) { 
             var hash = _ref2.hash;
+            // ES5 compatible substring
             return e('div', { className: "font-mono text-[10px] text-emerald-500/60" }, hash.substring(0,20)+"...");
         };
         
@@ -199,6 +197,7 @@
             var current = _ref3.current,
                 setLang = _ref3.setLang;
 
+            // ES5 compatible map for language buttons
             var languageButtons = Object.keys(LANGUAGES).map(function(code) {
                 var langData = LANGUAGES[code];
                 // ES5 compatible string concat
@@ -251,7 +250,7 @@
                 return function() { clearInterval(interval); };
             }, []);
             
-            // FIX: Re-render Lucide Icons after every component update/screen change
+            // Re-render Lucide Icons after every component update/screen change
             useEffect(function() {
                 lucide.createIcons();
             }, [started, finished, currentQ]);
@@ -320,7 +319,15 @@
                 var sum = answeredScores.reduce(function(a,b) { return a + b; }, 0);
                 var avg = answeredScores.length > 0 ? sum / answeredScores.length : 0;
                 var passed = avg >= 75; 
-                var violations = Object.values(answers).filter(function(a) { return a.score < 100; });
+                var violations = [];
+                
+                // FIX: Replaced for...of loop with ES5-compatible for...in loop for object key iteration
+                for (var key in answers) {
+                    if (answers.hasOwnProperty(key) && answers[key].score < 100) {
+                        violations.push(answers[key]);
+                    }
+                }
+
                 var projectedFine = calculateLiability(violations);
 
                 return e(Layout, null,
@@ -359,6 +366,7 @@
                                 ? e('p', { className: "text-emerald-400 font-mono text-sm" }, "ZERO CRITICAL VIOLATIONS DETECTED. SYSTEM IS ROBUST.")
                                 // Scrollable area for violations summary
                                 : e('div', { className: "space-y-4 font-mono text-sm max-h-64 overflow-y-auto" }, 
+                                    // ES5 compatible map
                                     violations.map(function(v, i) { 
                                         var domainText = t[v.domain] ? t[v.domain] : v.domain; 
                                         // ES5 compatible string concat
@@ -369,6 +377,7 @@
                                             ),
                                             e('div', { className: "mt-2 p-3 bg-slate-800 rounded text-slate-300 border border-red-900/50" },
                                                 e('p', { className: "font-bold text-red-200 mb-1" }, "ACTION REQUIRED:"),
+                                                // Access translation safely, fallback to English
                                                 e('p', null, v.remediation[langCode] || v.remediation.en) 
                                             ),
                                             e('p', { className: "mt-2 text-slate-500 text-xs" },
@@ -426,7 +435,7 @@
                         // Question Text
                         e('h3', { className: "text-xl md:text-3xl font-bold text-white mb-10 leading-snug" }, qText),
                         
-                        // Answer Options
+                        // Answer Options (ES5 compatible map)
                         e('div', { className: "space-y-4 mt-auto" },
                             OPTIONS.map(function(opt, idx) {
                                 // ES5 compatible string concat
