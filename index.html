@@ -109,6 +109,10 @@
             var LS_KEY_PROGRESS = 'imsss_progress';
             var LS_KEY_HASH = 'imsss_final_hash'; 
             var LS_KEY_TTS = 'imsss_tts_active'; 
+            
+            // NEW KEYS FOR PHASE X (TOS & USER INFO)
+            var LS_KEY_AGREED = 'imsss_tos_agreed';
+            var LS_KEY_USERINFO = 'imsss_user_info';
 
             // --- 1. GLOBALIZATION ENGINE ---
             var LANGUAGES = {
@@ -243,11 +247,17 @@
                     if (typeof defaultVal === 'boolean') {
                         if (serialized === 'true') return true;
                         if (serialized === 'false') return false;
+                        // For boolean defaults, if serialized is null/undefined, return the default boolean
+                        if (serialized === null || serialized === undefined) return defaultVal;
                     }
 
                     if (serialized === null || serialized === undefined) return defaultVal;
                     // Safely parse JSON or return the string if it's not an object
-                    return JSON.parse(serialized) || defaultVal;
+                    try {
+                        return JSON.parse(serialized);
+                    } catch (e) {
+                        return serialized; // Return as string if parsing fails (for user info, hash, etc.)
+                    }
                 } catch(e) {
                     console.error("Could not load state:", key, e);
                     return defaultVal;
@@ -259,6 +269,10 @@
                 try {
                     // Store booleans as strings for consistent loading
                     var serialized = (typeof value === 'boolean') ? String(value) : JSON.stringify(value);
+                    // For strings (like user info), ensure we don't double-JSON-encode
+                    if (typeof value === 'string' && key === LS_KEY_USERINFO) {
+                        serialized = value;
+                    }
                     localStorage.setItem(key, serialized);
                 } catch (e) {
                     console.error("Could not save state:", key, e);
@@ -307,7 +321,7 @@
 
 
             // --- PDF EXPORT FUNCTION (Phase II) ---
-            var exportPdfReport = function(finalHash) {
+            var exportPdfReport = function(finalHash, userInfo) {
                 if (!window.jspdf || !window.html2canvas) {
                     alert("PDF libraries failed to load. Please try refreshing the page.");
                     return;
@@ -343,6 +357,7 @@
                 var headerDiv = document.createElement('div');
                 headerDiv.innerHTML = '<div style="padding: 15px; border-bottom: 1px solid #ccc; font-family: monospace; font-size: 10px; color: black;">' +
                                       'IMSSS AUDIT REPORT - GENERATED: ' + new Date().toLocaleString() + 
+                                      '<br>USER CONTACT: ' + (userInfo || 'N/A') + // Include user info
                                       '<br>IMMUTABLE HASH: ' + finalHash +
                                       '</div>';
                 
@@ -368,7 +383,7 @@
                     heightLeft -= pageHeight;
 
                     while (heightLeft >= 0) {
-                        position = heightLeft - imgImgHeight;
+                        position = heightLeft - imgHeight; // Corrected variable name
                         pdf.addPage();
                         pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
                         heightLeft -= pageHeight;
@@ -502,13 +517,20 @@
                 var initialAnswers = loadState(LS_KEY_ANSWERS, {});
                 var initialScoresFromLS = loadState(LS_KEY_SCORES, initialScores);
                 var initialFinalHash = loadState(LS_KEY_HASH, null);
-                // NEW: Load TTS preference, defaulting to FALSE (user opt-in)
+                // TTS preference, defaulting to FALSE (user opt-in)
                 var initialTtsEnabled = loadState(LS_KEY_TTS, false); 
+                
+                // NEW: Load ToS agreement and User Info
+                var initialAgreed = loadState(LS_KEY_AGREED, false);
+                // Load string value for user info
+                var initialUserInfo = loadState(LS_KEY_USERINFO, null); 
+
 
                 // Determine starting progress:
                 var answerKeys = Object.keys(initialAnswers);
                 var initialQ = answerKeys.length > 0 ? answerKeys.length : 0;
-                var initialStarted = initialQ > 0 || loadState(LS_KEY_PROGRESS, false);
+                // Assessment is only 'started' if user info is present
+                var initialStarted = (initialQ > 0 || loadState(LS_KEY_PROGRESS, false)) && initialUserInfo !== null; 
                 var initialFinished = initialQ === AUDIT_QUESTIONS.length;
                 var initialReviewed = initialFinalHash !== null;
                 
@@ -562,6 +584,15 @@
                 var _useState11 = useState(initialTtsEnabled), 
                     ttsEnabled = _useState11[0],
                     setTtsEnabled = _useState11[1];
+                    
+                // NEW STATES (PHASE X)
+                var _useState12 = useState(initialAgreed),
+                    agreed = _useState12[0],
+                    setAgreed = _useState12[1];
+                
+                var _useState13 = useState(initialUserInfo),
+                    userInfo = _useState13[0],
+                    setUserInfo = _useState13[1];
 
 
                 // Persistence Effects (Save state on change)
@@ -569,7 +600,10 @@
                 useEffect(function() { saveState(LS_KEY_ANSWERS, answers); saveState(LS_KEY_SCORES, scores); }, [answers, scores]);
                 useEffect(function() { saveState(LS_KEY_PROGRESS, started); }, [started]);
                 useEffect(function() { saveState(LS_KEY_HASH, finalHash); }, [finalHash]);
-                useEffect(function() { saveState(LS_KEY_TTS, ttsEnabled); }, [ttsEnabled]); // NEW PERSISTENCE
+                useEffect(function() { saveState(LS_KEY_TTS, ttsEnabled); }, [ttsEnabled]); 
+                // NEW PERSISTENCE EFFECTS
+                useEffect(function() { saveState(LS_KEY_AGREED, agreed); }, [agreed]);
+                useEffect(function() { saveState(LS_KEY_USERINFO, userInfo); }, [userInfo]);
 
 
                 // Hash stream animation effect (Reduced to 1000ms)
@@ -583,7 +617,7 @@
                     if (typeof lucide !== 'undefined') {
                         lucide.createIcons();
                     }
-                }, [started, finished, currentQ, lang, reviewed]);
+                }, [started, finished, currentQ, lang, reviewed, agreed, userInfo]); // Added agreed and userInfo
 
                 var currentLangData = LANGUAGES[lang] || LANGUAGES.EN; 
                 var t = currentLangData.text;
@@ -600,7 +634,11 @@
                     }
 
                     var announceText = "";
-                    if (!started) {
+                    if (!agreed) {
+                        announceText = "Loading Terms of Service. Please review and agree to continue.";
+                    } else if (!userInfo) {
+                        announceText = "Please enter your contact details to proceed to the assessment.";
+                    } else if (!started) {
                         announceText = t.title + ". " + t.subtitle + ". " + t.ttsPrompt;
                     } else if (!finished) {
                         var q = AUDIT_QUESTIONS[currentQ];
@@ -628,7 +666,7 @@
                     if (announceText) speakText(announceText, lang);
                     
                 // Dependency cleanup: If the question number changes, stop the previous reading.
-                }, [started, finished, currentQ, lang, reviewed, ttsEnabled]); // Dependency on ttsEnabled is key
+                }, [started, finished, currentQ, lang, reviewed, ttsEnabled, agreed, userInfo]); // Added agreed and userInfo dependencies
 
 
                 var handleAnswer = function(score, q) {
@@ -685,7 +723,7 @@
                     setStarted(false); setFinished(false); setCurrentQ(0); setReviewed(false);
                     setScores(initialScores); setAnswers({}); setFinalHash(null);
                     setHashStream(generateCryptoHash());
-                    setTtsEnabled(false); // Reset TTS to default OFF on new session
+                    setTtsEnabled(false); 
 
                     // Clear Local Storage
                     localStorage.removeItem(LS_KEY_LANG);
@@ -693,7 +731,10 @@
                     localStorage.removeItem(LS_KEY_SCORES);
                     localStorage.removeItem(LS_KEY_PROGRESS);
                     localStorage.removeItem(LS_KEY_HASH);
-                    localStorage.removeItem(LS_KEY_TTS); // Clear TTS preference
+                    localStorage.removeItem(LS_KEY_TTS); 
+                    // NEW LOCAL STORAGE REMOVALS
+                    localStorage.removeItem(LS_KEY_AGREED);
+                    localStorage.removeItem(LS_KEY_USERINFO);
                 };
 
                 var copyHash = function() {
@@ -714,7 +755,89 @@
                         dir: dir  
                     }, children);
                 };
+                
+                // --- SCREEN 0A: TERMS OF SERVICE AGREEMENT (PHASE X) ---
+                var ScreenTOS = function() {
+                    return e(Layout, null,
+                        e(LangSwitcher, { current: lang, setLang: setLang, ttsEnabled: ttsEnabled, setTtsEnabled: setTtsEnabled }),
+                        e('div', { className: "glass-panel max-w-xl w-full p-8 rounded-2xl border-t-4 border-amber-500 relative overflow-hidden mt-[10vh]" },
+                            e('h1', { className: "text-2xl font-bold text-amber-400 mb-4 flex items-center gap-2" }, 
+                                e('span', { 'data-lucide': "Scale", className: "w-7 h-7" }), "TERMS OF SERVICE"
+                            ),
+                            e('div', { className: "h-[50vh] overflow-y-auto pr-4 text-slate-300 text-sm space-y-4 leading-relaxed" },
+                                e('p', { className: "font-bold text-base" }, "NOTICE: THIS ASSESSMENT IS NOT LEGAL ADVICE."),
+                                e('p', null, "By accessing this tool, you acknowledge that the **IMSSS AI Risk Assessor** provides a model-derived, non-binding assessment of potential compliance gaps relative to stated standards (ISO 42001, EU AI Act, NIST AI RMF). The liability projection is an estimated maximum penalty anchor based on public EU regulatory guidelines and should not be treated as an actual fine."),
+                                
+                                e('h2', { className: "font-bold text-slate-200 mt-4" }, "Data Handling & Privacy"),
+                                e('p', null, "All answers and collected user information (email, phone) are stored **client-side in your browser's local storage** only. This application is **stateless**. We do not transmit or store your personal data, assessment answers, or final hash on any server. Clearing your browser's local storage will erase all session data."),
+                                
+                                e('h2', { className: "font-bold text-slate-200 mt-4" }, "Accountability & Reliance"),
+                                e('p', null, "The final responsibility for your AI system's compliance rests entirely with you (the **Deployer**). This tool is provided 'as is' without warranty. The **Immutable Hash** included in your report serves as a cryptographic anchor to verify the integrity of the data at the time of export and does not guarantee compliance."),
+                                
+                                e('h2', { className: "font-bold text-slate-200 mt-4" }, "Intellectual Property"),
+                                e('p', null, "You retain ownership of the data you input and the resulting PDF report. The underlying source code, assessment methodology, and design of the IMSSS AI Risk Assessor remain the property of the developers.")
+                            ),
+                            e('button', {
+                                onClick: function() { setAgreed(true); },
+                                className: "w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded shadow-lg transition-transform transform active:scale-95 mt-6",
+                                "aria-label": "I have read and agree to the Terms of Service"
+                            }, "I AGREE AND PROCEED")
+                        )
+                    );
+                };
+                
+                // --- SCREEN 0B: USER INFO COLLECTION (PHASE X) ---
+                var ScreenUserInfo = function() {
+                    var _useState14 = useState(''), emailOrPhone = _useState14[0], setEmailOrPhone = _useState14[1];
+                    var _useState15 = useState(false), error = _useState15[0], setError = _useState15[1];
 
+                    var handleSubmit = function() {
+                        // Simple validation: must be at least 5 characters (to catch accidental empty submissions)
+                        if (emailOrPhone.trim().length < 5) { 
+                            setError(true);
+                            return;
+                        }
+                        setError(false);
+                        // Save the data to trigger the next stage
+                        setUserInfo(emailOrPhone.trim());
+                        // Optional: Immediately move to the next screen (Intro)
+                        setStarted(false); 
+                    };
+
+                    return e(Layout, null,
+                        e(LangSwitcher, { current: lang, setLang: setLang, ttsEnabled: ttsEnabled, setTtsEnabled: setTtsEnabled }),
+                        e('div', { className: "glass-panel max-w-lg w-full p-10 rounded-2xl text-center border-t-4 border-blue-500 relative overflow-hidden mt-[15vh]" },
+                            e('h1', { className: "text-2xl font-bold text-white mb-2" }, "CONTACT DETAILS"),
+                            e('p', { className: "text-slate-400 mb-6" }, "Please provide your email or phone number for audit recordkeeping. This data is stored locally."),
+                            
+                            e('input', {
+                                type: "text",
+                                value: emailOrPhone,
+                                onChange: function(e) { setEmailOrPhone(e.target.value); setError(false); },
+                                placeholder: "Email or Phone Number",
+                                className: "w-full p-4 mb-4 rounded-lg bg-slate-800 text-white border focus:ring-blue-500 " + (error ? 'border-red-500' : 'border-slate-700')
+                            }),
+                            
+                            error && e('p', { className: "text-red-400 text-sm mb-4" }, "Please enter a valid email or phone number to continue."),
+                            
+                            e('button', {
+                                onClick: handleSubmit,
+                                className: "w-full py-3 bg-blue-700 hover:bg-blue-600 text-white font-bold rounded shadow-lg transition-transform transform active:scale-95",
+                                "aria-label": "Submit and continue to assessment"
+                            }, "CONTINUE TO ASSESSMENT")
+                        )
+                    );
+                };
+
+
+                // --- FLOW CONTROL (NEW SEQUENCE) ---
+                
+                // 1. Must agree to TOS first
+                if (!agreed) return e(ScreenTOS, null);
+
+                // 2. Must enter user info next (only if agreed)
+                if (agreed && !userInfo) return e(ScreenUserInfo, null);
+                
                 // SCREEN 1: INTRO (START)
                 if (!started && !reviewed) return e(Layout, null,
                     e(LangSwitcher, { current: lang, setLang: setLang, ttsEnabled: ttsEnabled, setTtsEnabled: setTtsEnabled }),
@@ -741,7 +864,7 @@
                         ),
                         e('p', { className: "text-slate-400 mb-6" }, t.reviewSub),
                         
-                        e('div', { className: "space-y-4 max-h-[60vh] overflow-y-auto pr-4" },
+                        e('div', { className: "space-y-4 max-h-[60vh] overflow-y-auto pr-4", dir: dir },
                             AUDIT_QUESTIONS.map(function(q) {
                                 var answer = answers[q.id];
                                 var scoreLabel = getLabelByScore(answer.score);
@@ -831,9 +954,14 @@
                                     e(RiskRadar, { scores: scores, labels: t })
                                 )
                             ),
+                            
+                            // User Info Display (NEW)
+                            e('div', { className: "bg-slate-950 p-3 rounded-lg border border-slate-800 mt-6" },
+                                e('p', { className: "text-xs font-mono text-slate-400 break-all" }, "USER CONTACT INFO (LOCAL RECORD): " + (userInfo || 'N/A'))
+                            ),
 
                             // CRYPTO ANCHOR (PHASE II)
-                            e('div', { className: "flex flex-col sm:flex-row justify-between items-center bg-slate-950 p-3 rounded-lg border border-blue-800/50 no-print mt-6" },
+                            e('div', { className: "flex flex-col sm:flex-row justify-between items-center bg-slate-950 p-3 rounded-lg border border-blue-800/50 no-print mt-4" },
                                 e('p', { className: "text-xs font-mono text-slate-300 break-all mb-2 sm:mb-0" }, t.anchor + ": " + finalHash),
                                 e('button', { onClick: copyHash, className: copyButtonClasses }, 
                                     copyButtonText
@@ -847,9 +975,9 @@
                                 ),
                                 violations.length === 0 
                                     ? e('p', { className: "text-emerald-400 font-mono text-sm" }, "ZERO CRITICAL VIOLATIONS DETECTED. SYSTEM IS ROBUST.")
-                                    : e('div', { className: "space-y-4 font-mono text-sm scrollable-summary", role: "list" },  
+                                    : e('div', { className: "space-y-4 font-mono text-sm scrollable-summary", role: "list", dir: dir },  
                                         violations.map(function(v, i) {  
-                                            var domainText = t[v.domain] ? t.gov : v.domain;  
+                                            var domainText = t[v.domain] ? t[v.domain] : v.domain;  
                                             return e('div', { key: i, className: "border-b border-slate-700 pb-4 " + (v.domain === 'sec' ? 'border-red-500/50' : ''), role: "listitem" },
                                                 e('span', { className: "font-bold text-base " + (v.domain === 'sec' ? 'text-red-500' : 'text-amber-400') },  
                                                     domainText.toUpperCase() + " - " + (v.score === 0 ? 'FAIL' : 'PARTIAL')
@@ -869,7 +997,7 @@
                             // REPORT ACTION BUTTONS (PHASE II)
                             e('div', { className: "mt-6 flex flex-col md:flex-row gap-4 no-print" },
                                 e('button', { 
-                                    onClick: function() { exportPdfReport(finalHash); }, 
+                                    onClick: function() { exportPdfReport(finalHash, userInfo); }, // Pass userInfo to export function
                                     className: "flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded flex items-center justify-center transition-transform transform active:scale-95",
                                     "aria-label": t.exportBtn
                                 }, e('span', { 'data-lucide': "Download", className: "w-5 h-5 mr-2" }), t.exportBtn),
