@@ -766,7 +766,7 @@
                                 
                                 // UPDATED IP CLAUSE (PHASE XI)
                                 e('h2', { className: "font-bold text-slate-200 mt-4" }, "Intellectual Property and Restrictions"),
-                                e('p', null, "The proprietary assessment methodology, scoring algorithms, and question-to-standard mapping used in this Assessor are the **confidential and exclusive intellectual property** of the developers."),
+                                e('p', null, "The proprietary assessment methodology, scoring algorithms, and question-to-standard-mapping used in this Assessor are the **confidential and exclusive intellectual property** of the developers."),
                                 e('p', null, "You are granted a non-exclusive license to use, print, and internally share the final PDF report for your organization’s internal compliance, risk management, and audit purposes only. **You may not** use the source code, extract the assessment logic, or reproduce the methodology for the purpose of developing, offering, or licensing a **competing AI risk assessment tool.**"),
 
                             ),
@@ -779,45 +779,82 @@
                     );
                 };
                 
-                // --- SCREEN 0B: USER INFO COLLECTION (PHASE X) ---
+                // --- SCREEN 0B: USER INFO COLLECTION (PHASE X / FIXED) ---
                 var ScreenUserInfo = function() {
-                    var _useState14 = useState(''), emailOrPhone = _useState14[0], setEmailOrPhone = _useState14[1];
+                    // Initialize with local storage value, ensuring it's not null
+                    var _useState14 = useState(loadState(LS_KEY_USERINFO, '') || ''), 
+                        emailOrPhone = _useState14[0], 
+                        setEmailOrPhone = _useState14[1];
+                        
                     var _useState15 = useState(false), error = _useState15[0], setError = _useState15[1];
 
                     var handleSubmit = function() {
-                        // Simple validation: must be at least 5 characters
-                        if (emailOrPhone.trim().length < 5) { 
+                        var trimmedValue = emailOrPhone.trim();
+                        // Validation: Must be at least 5 characters and contain an '@' or a digit.
+                        if (trimmedValue.length < 5 || (!trimmedValue.includes('@') && !/\d/.test(trimmedValue))) { 
                             setError(true);
                             return;
                         }
                         setError(false);
                         // Save the data to trigger the next stage
-                        setUserInfo(emailOrPhone.trim());
-                        // Optional: Immediately move to the next screen (Intro)
-                        setStarted(false); 
+                        setUserInfo(trimmedValue);
+                        setStarted(false); // Move to Intro/Start Screen
+                    };
+                    
+                    // Handler for the input field: it should only update its local state
+                    var handleInputChange = function(e) {
+                        setEmailOrPhone(e.target.value);
+                        setError(false);
+                    };
+
+                    var handleGmailPrompt = function() {
+                        var result = prompt("Enter your email address to auto-populate the field for recordkeeping.");
+                        if (result) {
+                            setEmailOrPhone(result.trim());
+                            setError(false);
+                        }
                     };
 
                     return e(Layout, null,
                         e(LangSwitcher, { current: lang, setLang: setLang, ttsEnabled: ttsEnabled, setTtsEnabled: setTtsEnabled }),
                         e('div', { className: "glass-panel max-w-lg w-full p-10 rounded-2xl text-center border-t-4 border-blue-500 relative overflow-hidden mt-[15vh]" },
                             e('h1', { className: "text-2xl font-bold text-white mb-2" }, "CONTACT DETAILS"),
-                            e('p', { className: "text-slate-400 mb-6" }, "Please provide your email or phone number for audit recordkeeping. This data is stored locally."),
+                            e('p', { className: "text-slate-400 text-sm mb-6" }, "Please provide your email or phone number for audit recordkeeping. This data is stored locally."),
                             
+                            // *** START: SIMULATED GMAIL/GOOGLE BUTTON ***
+                            e('div', { className: "w-full mb-6" },
+                                e('button', {
+                                    onClick: handleGmailPrompt,
+                                    className: "w-full py-3 bg-white hover:bg-gray-100 text-gray-800 font-semibold rounded-lg border border-gray-300 shadow-md flex items-center justify-center transition-colors mb-4",
+                                    "aria-label": "Continue with Gmail or Google Account"
+                                }, 
+                                    e('span', { 'data-lucide': "Mail", className: "w-5 h-5 mr-3 text-red-500" }),
+                                    "Continue with Gmail / Google"
+                                ),
+                                e('div', { className: "flex items-center my-4" },
+                                    e('hr', { className: "flex-grow border-t border-slate-700" }),
+                                    e('span', { className: "px-3 text-sm text-slate-500" }, "OR"),
+                                    e('hr', { className: "flex-grow border-t border-slate-700" })
+                                )
+                            ),
+                            // *** END: SIMULATED GMAIL/GOOGLE BUTTON ***
+
+                            // INPUT FIELD (NOW STABLE)
                             e('input', {
                                 type: "text",
                                 value: emailOrPhone,
-                                onChange: function(e) { setEmailOrPhone(e.target.value); setError(false); },
-                                placeholder: "Email or Phone Number",
+                                onChange: handleInputChange, // Fixed handler
+                                placeholder: "Enter Email or Phone Number",
                                 className: "w-full p-4 mb-4 rounded-lg bg-slate-800 text-white border focus:ring-blue-500 " + (error ? 'border-red-500' : 'border-slate-700')
                             }),
                             
-                            error && e('p', { className: "text-red-400 text-sm mb-4" }, "Please enter a valid email or phone number to continue."),
+                            error && e('p', { className: "text-red-400 text-sm mb-4" }, "Please enter a valid email or phone (min 5 chars)."),
                             
                             e('button', {
                                 onClick: handleSubmit,
                                 className: "w-full py-3 bg-blue-700 hover:bg-blue-600 text-white font-bold rounded shadow-lg transition-transform transform active:scale-95",
                                 "aria-label": "Submit and continue to assessment"
-                            }, "CONTINUE TO ASSESSMENT")
+                            }, "CONTINUE")
                         )
                     );
                 };
