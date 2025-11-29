@@ -253,10 +253,11 @@
                 return function() { clearInterval(interval); };
             }, []);
 
-            var t = LANGUAGES[lang].text;
-            var currentFont = LANGUAGES[lang].font;
-            var dir = LANGUAGES[lang].dir;
-            var langCode = LANGUAGES[lang].code;
+            // CRITICAL FIX: Add defensive default value (|| LANGUAGES.EN) to ensure 'text' is always read from an object.
+            var t = (LANGUAGES[lang] || LANGUAGES.EN).text;
+            var currentFont = (LANGUAGES[lang] || LANGUAGES.EN).font;
+            var dir = (LANGUAGES[lang] || LANGUAGES.EN).dir;
+            var langCode = (LANGUAGES[lang] || LANGUAGES.EN).code;
 
             var handleAnswer = function(score, q) {
                 // Store detailed answer data (Using Object.assign for ES5 compatibility)
