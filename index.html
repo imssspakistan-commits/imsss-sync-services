@@ -173,13 +173,15 @@
                         // Position the label slightly outside the perimeter
                         var x = center + (radius + 25) * Math.cos(angle);
                         var y = center + (radius + 20) * Math.sin(angle);
+                        // Using a simple object lookup function for labels to ensure stability
+                        var getLabel = function(key) { return labels[key]; };
                         return e('text', { 
                             key: d, x: x, y: y, 
                             textAnchor: "middle", 
                             fill: "#94a3b8", 
                             fontSize: "10",
                             className: "uppercase"
-                        }, labels[d]);
+                        }, getLabel(d));
                     })
                 )
             );
@@ -302,7 +304,7 @@
                     e('h1', { className: "text-4xl font-bold text-white mb-2 neon-text" }, t.title),
                     e('p', { className: "text-slate-400 text-sm mb-8 font-mono tracking-wider" }, t.subtitle),
                     e('button', { 
-                        onClick: function() { setStarted(true); }, // CRITICAL LINE: setStarted(true)
+                        onClick: function() { setStarted(true); },
                         className: "w-full py-4 bg-blue-700 hover:bg-blue-600 text-white font-bold rounded shadow-lg transition-transform transform active:scale-95"
                     }, t.startBtn)
                 )
@@ -354,10 +356,11 @@
                                 // Scrollable area for violations summary
                                 : e('div', { className: "space-y-4 font-mono text-sm max-h-64 overflow-y-auto" }, 
                                     violations.map(function(v, i) { 
+                                        var domainText = t[v.domain] ? t[v.domain] : v.domain; // SAFE CHECK HERE
                                         return e('div', { key: i, className: "border-b border-slate-700 pb-4 " + (v.domain === 'sec' ? 'border-red-500/50' : '') },
                                             e('span', { className: "font-bold text-base " + (v.domain === 'sec' ? 'text-red-500' : 'text-amber-400') }, 
                                                 // Display domain and violation status (FAIL or PARTIAL)
-                                                t[v.domain].toUpperCase() + " - " + (v.score === 0 ? 'FAIL' : 'PARTIAL')
+                                                domainText.toUpperCase() + " - " + (v.score === 0 ? 'FAIL' : 'PARTIAL')
                                             ),
                                             e('div', { className: "mt-2 p-3 bg-slate-800 rounded text-slate-300 border border-red-900/50" },
                                                 e('p', { className: "font-bold text-red-200 mb-1" }, "ACTION REQUIRED:"),
@@ -381,6 +384,9 @@
             // SCREEN 3: QUESTIONS (ASSESSMENT)
             var q = AUDIT_QUESTIONS[currentQ];
             var qText = q[langCode] || q.en;
+            
+            // Added check here too
+            var domainDisplay = t[q.domain] ? t[q.domain] : q.domain; 
             
             return e(Layout, null,
                 e(LangSwitcher, { current: lang, setLang: setLang }),
@@ -410,7 +416,7 @@
                                 "QUESTION " + (currentQ + 1) + " OF " + AUDIT_QUESTIONS.length
                             ),
                             e('span', { className: "bg-slate-800 text-slate-300 px-3 py-1 rounded text-sm font-bold" }, 
-                                t[q.domain].toUpperCase()
+                                domainDisplay.toUpperCase() // USE THE SAFE VARIABLE
                             )
                         ),
                         
