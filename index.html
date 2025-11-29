@@ -6,8 +6,8 @@
     <title>IMSSS | AI Simplicity Console</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400&family=Noto+Nastaliq+Urdu:wght@400;700&display=swap" rel="stylesheet">
@@ -121,19 +121,17 @@
             var MAX_PENALTY_ANCHOR = 50000000; 
             var totalFine = 0;
             
-            violations.forEach(function(v) {
-                // Risk weight sums up to 1.0 
+            // ES5 compatible iteration
+            for (var i = 0; i < violations.length; i++) {
+                var v = violations[i];
                 var penalty = v.riskWeight * MAX_PENALTY_ANCHOR; 
                 
                 if (v.score === 0) {
-                    // Full fine applied for complete failure (score 0)
                     totalFine += penalty; 
                 } else if (v.score === 50) {
-                    // Half fine applied for partial implementation (score 50)
                     totalFine += penalty / 2;
                 }
-            });
-            // Format output as Euro currency
+            }
             return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(totalFine);
         };
 
@@ -153,16 +151,15 @@
             var size = 180; var center = size / 2; var radius = 70;
             var domains = ["gov", "sec", "risk", "data", "docs"]; 
             
-            // Calculate points for the polygon based on scores (normalized to 0-1 range)
+            // Calculate points for the polygon (ES5 compatible string concat)
             var points = domains.map(function(d, i) {
                 var angle = (Math.PI * 2 * i) / 5 - Math.PI / 2; 
-                // Normalize score from 0/50/100 to 0-1 range
                 var value = (scores[d] || 0) / 100; 
-                return "" + (center + radius * value * Math.cos(angle)) + "," + (center + radius * value * Math.sin(angle));
+                return (center + radius * value * Math.cos(angle)) + "," + (center + radius * value * Math.sin(angle));
             }).join(" ");
 
             return e('div', { className: "relative flex justify-center py-4" },
-                // Image tag added here as requested
+                // Image tag for radar chart visualization
                 
 
 [Image of an example radar chart for risk assessment]
@@ -177,10 +174,8 @@
                     // Domain Labels
                     domains.map(function(d, i) {
                         var angle = (Math.PI * 2 * i) / 5 - Math.PI / 2;
-                        // Position the label slightly outside the perimeter
                         var x = center + (radius + 25) * Math.cos(angle);
                         var y = center + (radius + 20) * Math.sin(angle);
-                        // Safe label lookup
                         var getLabel = function(key) { return labels[key]; };
                         return e('text', { 
                             key: d, x: x, y: y, 
@@ -206,6 +201,7 @@
 
             var languageButtons = Object.keys(LANGUAGES).map(function(code) {
                 var langData = LANGUAGES[code];
+                // ES5 compatible string concat
                 var className = "px-3 py-1 rounded text-xs font-bold transition-all border " + (current === code ? 'bg-blue-600 border-blue-400 text-white' : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white');
                 
                 return e('button', {
@@ -237,12 +233,10 @@
                 finished = _useState4[0],
                 setFinished = _useState4[1];
             
-            // Stores score per domain (0, 50, or 100)
             var _useState5 = useState({ gov: 0, sec: 0, risk: 0, data: 0, docs: 0 }),
                 scores = _useState5[0],
                 setScores = _useState5[1];
             
-            // Stores full answer data including violation status and remediation
             var _useState6 = useState({}),
                 answers = _useState6[0],
                 setAnswers = _useState6[1];
@@ -257,15 +251,11 @@
                 return function() { clearInterval(interval); };
             }, []);
             
-            // === THE FIX ===
             // FIX: Re-render Lucide Icons after every component update/screen change
             useEffect(function() {
-                // This ensures icons like CheckCircle and Chevrons are correctly rendered after state changes
                 lucide.createIcons();
             }, [started, finished, currentQ]);
-            // ===============
-
-            // Defensive access: defaults to EN if lang or LANGUAGES[lang] is undefined
+            
             var currentLangData = LANGUAGES[lang] || LANGUAGES.EN;
             var t = currentLangData.text;
             var currentFont = currentLangData.font;
@@ -273,12 +263,11 @@
             var langCode = currentLangData.code;
 
             var handleAnswer = function(score, q) {
-                // Store detailed answer data (Using Object.assign for ES5 compatibility)
+                // Use Object.assign for ES5 compatibility
                 setAnswers(function(prev) {
                     return Object.assign({}, prev, {
                         [q.id]: { 
                             score: score, 
-                            // Violation is defined as any score less than 100%
                             isViolation: score < 100, 
                             references: q.references, 
                             remediation: q.remediation, 
@@ -288,7 +277,7 @@
                     });
                 });
 
-                // Update domain score for the radar chart (Using Object.assign for ES5 compatibility)
+                // Use Object.assign for ES5 compatibility
                 setScores(function(prev) { 
                     return Object.assign({}, prev, { [q.domain]: score });
                 });
@@ -305,7 +294,7 @@
 
             var Layout = function(_ref4) { 
                 var children = _ref4.children;
-                // Simplified layout class to prevent modern sizing conflicts
+                // ES5 compatible string concat
                 return e('div', { 
                     className: "w-full min-h-screen flex items-center justify-center p-4 " + currentFont,
                     dir: dir 
@@ -330,7 +319,6 @@
                 var answeredScores = Object.values(answers).map(function(a) { return a.score; });
                 var sum = answeredScores.reduce(function(a,b) { return a + b; }, 0);
                 var avg = answeredScores.length > 0 ? sum / answeredScores.length : 0;
-                // Pass if average score is >= 75%
                 var passed = avg >= 75; 
                 var violations = Object.values(answers).filter(function(a) { return a.score < 100; });
                 var projectedFine = calculateLiability(violations);
@@ -342,14 +330,15 @@
                             e('span', { 'data-lucide': "CheckCircle", className: "w-7 h-7 text-emerald-400" }), t.report
                         ),
                         
-                        // Top Metrics Grid (4 columns on desktop, 1 column on mobile)
+                        // Top Metrics Grid 
                         e('div', { className:"grid grid-cols-1 md:grid-cols-4 gap-6" },
                             // COMPLIANCE CONFIDENCE
                             e('div', { className: "flex flex-col items-center justify-center p-4 bg-slate-900/50 rounded-xl border border-slate-700 col-span-1" },
                                 e('h3', { className: "text-slate-400 text-xs tracking-widest mb-2" }, "CONFIDENCE SCORE"),
+                                // ES5 compatible string concat
                                 e('div', { className: "text-4xl font-black " + (passed ? 'text-emerald-400 neon-text' : 'text-amber-500') }, Math.round(avg)+"%")
                             ),
-                            // LIABILITY EXPOSURE (BIG RED NUMBER)
+                            // LIABILITY EXPOSURE
                             e('div', { className: "p-4 rounded-xl border border-red-800 bg-red-900/20 text-center col-span-1 md:col-span-2" },
                                 e('h3', { className: "text-sm font-bold text-red-400 mb-1" }, "PROJECTED EU LIABILITY"),
                                 e('p', { className: "text-white text-3xl font-extrabold font-mono neon-text" }, projectedFine)
@@ -372,18 +361,18 @@
                                 : e('div', { className: "space-y-4 font-mono text-sm max-h-64 overflow-y-auto" }, 
                                     violations.map(function(v, i) { 
                                         var domainText = t[v.domain] ? t[v.domain] : v.domain; 
+                                        // ES5 compatible string concat
                                         return e('div', { key: i, className: "border-b border-slate-700 pb-4 " + (v.domain === 'sec' ? 'border-red-500/50' : '') },
+                                            // ES5 compatible string concat
                                             e('span', { className: "font-bold text-base " + (v.domain === 'sec' ? 'text-red-500' : 'text-amber-400') }, 
-                                                // Display domain and violation status (FAIL or PARTIAL)
                                                 domainText.toUpperCase() + " - " + (v.score === 0 ? 'FAIL' : 'PARTIAL')
                                             ),
                                             e('div', { className: "mt-2 p-3 bg-slate-800 rounded text-slate-300 border border-red-900/50" },
                                                 e('p', { className: "font-bold text-red-200 mb-1" }, "ACTION REQUIRED:"),
-                                                // Show localized remediation text, fallback to English
                                                 e('p', null, v.remediation[langCode] || v.remediation.en) 
                                             ),
                                             e('p', { className: "mt-2 text-slate-500 text-xs" },
-                                                // Show compliance references
+                                                // ES5 compatible string concat
                                                 "Ref: " + t.iso + " " + v.references.ISO + ", " + t.eu + " " + v.references.EU + ", " + t.us + " " + v.references.US
                                             )
                                         );
@@ -399,8 +388,6 @@
             // SCREEN 3: QUESTIONS (ASSESSMENT)
             var q = AUDIT_QUESTIONS[currentQ];
             var qText = q[langCode] || q.en;
-            
-            // Safe access to domain display text
             var domainDisplay = t[q.domain] ? t[q.domain] : q.domain; 
             
             return e(Layout, null,
@@ -427,6 +414,7 @@
                     e('div', { className: "col-span-1 lg:col-span-8 glass-panel rounded-xl p-6 md:p-10 flex flex-col relative min-h-[80vh]" }, 
                         // Progress Indicator
                         e('div', { className: "mb-6 flex justify-between items-center" }, 
+                            // ES5 compatible string concat
                             e('span', { className: "text-blue-400 text-xs font-bold font-mono tracking-widest" }, 
                                 "QUESTION " + (currentQ + 1) + " OF " + AUDIT_QUESTIONS.length
                             ),
@@ -438,9 +426,10 @@
                         // Question Text
                         e('h3', { className: "text-xl md:text-3xl font-bold text-white mb-10 leading-snug" }, qText),
                         
-                        // Answer Options (Mobile-Friendly Stacked Buttons)
+                        // Answer Options
                         e('div', { className: "space-y-4 mt-auto" },
                             OPTIONS.map(function(opt, idx) {
+                                // ES5 compatible string concat
                                 var className = "w-full text-start p-5 rounded-lg transition-all text-white font-medium flex justify-between items-center group ";
                                 if (opt.score === 100) className += 'bg-emerald-600/20 hover:bg-emerald-600/40 border border-emerald-500/50';
                                 else if (opt.score === 50) className += 'bg-amber-600/20 hover:bg-amber-600/40 border border-amber-500/50';
@@ -462,11 +451,10 @@
             );
         };
 
-        // Updated for React 18 createRoot
-        var root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(e(App));
+        // Use ReactDOM.render (React 17 compatible)
+        ReactDOM.render(e(App), document.getElementById('root'));
         
-        // Initialize Lucide icons for the initial render (must be called after React renders the initial DOM)
+        // Initialize Lucide icons
         lucide.createIcons();
         
     </script>
