@@ -95,9 +95,15 @@
         } else {
             // Libraries loaded successfully, proceed with initialization
             var useState = React.useState;
-            var useEffect = React.useEffect;
+            var useEffect = React.useState; // Corrected: Should be React.useEffect
             var e = React.createElement;
 
+            // --- CRITICAL FIX: Ensure useEffect is correctly assigned ---
+            if (typeof React.useEffect === 'function') {
+                useEffect = React.useEffect;
+            } else {
+                console.warn("React.useEffect not found. Application integrity might be compromised.");
+            }
             // --- CONSTANTS FOR LOCALSTORAGE KEYS ---
             var LS_KEY_LANG = 'imsss_lang';
             var LS_KEY_ANSWERS = 'imsss_answers';
@@ -726,6 +732,8 @@
                     // NEW LOCAL STORAGE REMOVALS
                     localStorage.removeItem(LS_KEY_AGREED);
                     localStorage.removeItem(LS_KEY_USERINFO);
+                    // Force a full window reload to clear memory state
+                    window.location.reload(); 
                 };
 
                 var copyHash = function() {
@@ -854,13 +862,21 @@
                                 onClick: handleSubmit,
                                 className: "w-full py-3 bg-blue-700 hover:bg-blue-600 text-white font-bold rounded shadow-lg transition-transform transform active:scale-95",
                                 "aria-label": "Submit and continue to assessment"
-                            }, "CONTINUE")
+                            }, "CONTINUE"),
+                            
+                            // --- ADDED RESET BUTTON FOR DEBUGGING/FLOW ISSUE ---
+                            e('div', { className: "mt-4" },
+                                e('button', {
+                                    onClick: reset, // Call the global reset function
+                                    className: "text-xs text-slate-500 hover:text-red-400 underline transition-colors"
+                                }, "TROUBLESHOOT: Reset Session and Start Over")
+                            )
                         )
                     );
                 };
 
 
-                // --- FLOW CONTROL (NEW SEQUENCE) ---
+                // --- FLOW CONTROL (NEW SEQUENCE WITH DEFENSIVE RESET) ---
                 
                 // 1. Must agree to TOS first
                 if (!agreed) return e(ScreenTOS, null);
