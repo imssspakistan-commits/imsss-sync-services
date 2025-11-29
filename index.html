@@ -267,7 +267,6 @@
                 }, []);
                 
                 // Re-render Lucide Icons after every component update/screen change
-                // FIX: Ensure this runs after every state change that might display new icons
                 useEffect(function() {
                     if (typeof lucide !== 'undefined') {
                         lucide.createIcons();
@@ -342,7 +341,7 @@
                     var passed = avg >= 75;  
                     var violations = [];
                     
-                    // FIX: Replaced for...of loop with ES5-compatible for...in loop for object key iteration
+                    // CRITICAL FIX: Ensure ES5 compatibility by iterating over object keys
                     for (var key in answers) {
                         if (answers.hasOwnProperty(key) && answers[key].score < 100) {
                             violations.push(answers[key]);
@@ -482,11 +481,10 @@
             };
 
             // --- FINAL RENDER ---
-            // Use ReactDOM.render (React 17 compatible)
+            // CRITICAL FIX: Ensure ReactDOM.render (React 17 compatible) is used, NOT createRoot
             ReactDOM.render(e(App), document.getElementById('root'));
             
             // Initialize Lucide icons immediately after render
-            // This catches icons used in the initial state (Screen 1)
             lucide.createIcons();
         }
     </script>
