@@ -291,6 +291,7 @@
 
             var Layout = function(_ref4) { 
                 var children = _ref4.children;
+                // Simplified layout class to prevent modern sizing conflicts
                 return e('div', { 
                     className: "w-full min-h-screen flex items-center justify-center p-4 " + currentFont,
                     dir: dir 
@@ -356,7 +357,7 @@
                                 // Scrollable area for violations summary
                                 : e('div', { className: "space-y-4 font-mono text-sm max-h-64 overflow-y-auto" }, 
                                     violations.map(function(v, i) { 
-                                        var domainText = t[v.domain] ? t[v.domain] : v.domain; // SAFE CHECK HERE
+                                        var domainText = t[v.domain] ? t[v.domain] : v.domain; 
                                         return e('div', { key: i, className: "border-b border-slate-700 pb-4 " + (v.domain === 'sec' ? 'border-red-500/50' : '') },
                                             e('span', { className: "font-bold text-base " + (v.domain === 'sec' ? 'text-red-500' : 'text-amber-400') }, 
                                                 // Display domain and violation status (FAIL or PARTIAL)
@@ -385,15 +386,15 @@
             var q = AUDIT_QUESTIONS[currentQ];
             var qText = q[langCode] || q.en;
             
-            // Added check here too
+            // Safe access to domain display text
             var domainDisplay = t[q.domain] ? t[q.domain] : q.domain; 
             
             return e(Layout, null,
                 e(LangSwitcher, { current: lang, setLang: setLang }),
-                // Grid layout: Sidebar (4 cols) on desktop, hidden on mobile
-                e('div', { className: "w-full max-w-5xl h-[85vh] grid grid-cols-1 lg:grid-cols-12 gap-6" },
+                // Grid layout for questions
+                e('div', { className: "w-full max-w-5xl grid grid-cols-1 lg:grid-cols-12 gap-6" }, 
                     // LEFT: Sidebar (Metrics/Radar)
-                    e('div', { className: "hidden lg:flex lg:col-span-4 glass-panel rounded-xl p-6 flex-col justify-between" },
+                    e('div', { className: "hidden lg:flex lg:col-span-4 glass-panel rounded-xl p-6 flex-col justify-between h-[80vh]" }, 
                         e('div', null,
                             e('div', { className: "flex items-center gap-3 mb-6" },
                                 e('div', { className: "w-3 h-3 bg-red-500 rounded-full live-dot" }),
@@ -409,14 +410,14 @@
                     ),
                     
                     // RIGHT: Question Area
-                    e('div', { className: "col-span-1 lg:col-span-8 glass-panel rounded-xl p-6 md:p-10 flex flex-col relative" },
+                    e('div', { className: "col-span-1 lg:col-span-8 glass-panel rounded-xl p-6 md:p-10 flex flex-col relative min-h-[80vh]" }, 
                         // Progress Indicator
                         e('div', { className: "mb-6 flex justify-between items-center" }, 
                             e('span', { className: "text-blue-400 text-xs font-bold font-mono tracking-widest" }, 
                                 "QUESTION " + (currentQ + 1) + " OF " + AUDIT_QUESTIONS.length
                             ),
                             e('span', { className: "bg-slate-800 text-slate-300 px-3 py-1 rounded text-sm font-bold" }, 
-                                domainDisplay.toUpperCase() // USE THE SAFE VARIABLE
+                                domainDisplay.toUpperCase()
                             )
                         ),
                         
