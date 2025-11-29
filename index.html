@@ -6,8 +6,8 @@
     <title>IMSSS | AI Simplicity Console</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400&family=Noto+Nastaliq+Urdu:wght@400;700&display=swap" rel="stylesheet">
@@ -35,7 +35,8 @@
     <div id="root" class="w-full min-h-screen"></div>
 
     <script>
-        const { useState, useEffect } = React;
+        // Switched to React 17 for broader compatibility
+        const { useState, useEffect } = React; 
         const e = React.createElement;
 
         // --- 1. GLOBALIZATION ENGINE ---
@@ -114,12 +115,12 @@
         ];
 
         // --- 3. LIABILITY CALCULATION UTILITY ---
-        const calculateLiability = (violations) => {
+        const calculateLiability = function(violations) {
             // Anchor penalty based on EU AI Act High-Risk violation maximum fine (€50 Million)
             const MAX_PENALTY_ANCHOR = 50000000; 
             let totalFine = 0;
             
-            violations.forEach(v => {
+            violations.forEach(function(v) {
                 // Risk weight sums up to 1.0 
                 let penalty = v.riskWeight * MAX_PENALTY_ANCHOR; 
                 
@@ -135,20 +136,24 @@
             return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(totalFine);
         };
 
-        const generateHash = () => "0x" + Array(40).fill(0).map(()=>"0123456789ABCDEF"[Math.random()*16|0]).join('');
+        const generateHash = function() { 
+            return "0x" + Array(40).fill(0).map(function() {
+                return "0123456789ABCDEF"[Math.random()*16|0];
+            }).join('');
+        };
 
         // --- 4. COMPONENTS & CORE LOGIC ---
         
         // Simplified Radar Chart Component
-        const RiskRadar = ({ scores, labels }) => {
+        const RiskRadar = function({ scores, labels }) {
             const size = 180; const center = size / 2; const radius = 70;
             const domains = ["gov", "sec", "risk", "data", "docs"]; 
             
             // Calculate points for the polygon based on scores (normalized to 0-1 range)
-            const points = domains.map((d, i) => {
+            const points = domains.map(function(d, i) {
                 const angle = (Math.PI * 2 * i) / 5 - Math.PI / 2; 
                 const value = (scores[d] || 0) / 100; // Score is 0, 50, or 100. Normalize to 0-1
-                return `${center + radius * value * Math.cos(angle)},${center + radius * value * Math.sin(angle)}`;
+                return "" + (center + radius * value * Math.cos(angle)) + "," + (center + radius * value * Math.sin(angle));
             }).join(" ");
 
             return e('div', { className: "relative flex justify-center py-4" },
@@ -160,13 +165,13 @@
                     e('polygon', { points: points, fill: "rgba(59, 130, 246, 0.4)", stroke: "#3b82f6", strokeWidth: 2 }),
                     
                     // Domain Labels
-                    domains.map((d, i) => {
+                    domains.map(function(d, i) {
                         const angle = (Math.PI * 2 * i) / 5 - Math.PI / 2;
                         // Position the label slightly outside the perimeter
                         const x = center + (radius + 25) * Math.cos(angle);
                         const y = center + (radius + 20) * Math.sin(angle);
                         return e('text', { 
-                            key: d, x, y, 
+                            key: d, x: x, y: y, 
                             textAnchor: "middle", 
                             fill: "#94a3b8", 
                             fontSize: "10",
@@ -177,21 +182,30 @@
             );
         };
 
-        const HashStream = ({ hash }) => e('div', { className: "font-mono text-[10px] text-emerald-500/60" }, hash.substring(0,20)+"...");
+        const HashStream = function({ hash }) { 
+            return e('div', { className: "font-mono text-[10px] text-emerald-500/60" }, hash.substring(0,20)+"...");
+        };
         
         // Language Selector Component
-        const LangSwitcher = ({ current, setLang }) => e('div', { className: "absolute top-4 right-4 z-50 flex space-x-2" },
-            Object.keys(LANGUAGES).map(code => 
-                e('button', {
+        const LangSwitcher = function({ current, setLang }) {
+            // FIX: Use Array.map on Object.keys to avoid any ambiguous 'of' syntax
+            var languageButtons = Object.keys(LANGUAGES).map(function(code) {
+                var langData = LANGUAGES[code];
+                var className = "px-3 py-1 rounded text-xs font-bold transition-all border " + (current === code ? 'bg-blue-600 border-blue-400 text-white' : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white');
+                
+                return e('button', {
                     key: code,
-                    onClick: () => setLang(code),
-                    className: `px-3 py-1 rounded text-xs font-bold transition-all border ${current === code ? 'bg-blue-600 border-blue-400 text-white' : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white'}`
-                }, LANGUAGES[code].name)
-            )
-        );
+                    onClick: function() { setLang(code); },
+                    className: className
+                }, langData.name);
+            });
+            
+            return e('div', { className: "absolute top-4 right-4 z-50 flex space-x-2" }, languageButtons);
+        };
+
 
         // --- MAIN APP COMPONENT ---
-        const App = () => {
+        const App = function() {
             const [lang, setLang] = useState('EN');
             const [started, setStarted] = useState(false);
             const [currentQ, setCurrentQ] = useState(0);
@@ -203,9 +217,9 @@
             const [hash, setHash] = useState(generateHash());
 
             // Hash stream animation effect
-            useEffect(() => {
-                const interval = setInterval(() => setHash(generateHash()), 150);
-                return () => clearInterval(interval);
+            useEffect(function() {
+                const interval = setInterval(function() { setHash(generateHash()); }, 150);
+                return function() { clearInterval(interval); };
             }, []);
 
             const t = LANGUAGES[lang].text;
@@ -213,49 +227,54 @@
             const dir = LANGUAGES[lang].dir;
             const langCode = LANGUAGES[lang].code;
 
-            const handleAnswer = (score, q) => {
+            const handleAnswer = function(score, q) {
                 // Store detailed answer data
-                setAnswers(prev => ({
-                    ...prev,
-                    [q.id]: { 
-                        score, 
-                        // Violation is defined as any score less than 100%
-                        isViolation: score < 100, 
-                        references: q.references, 
-                        remediation: q.remediation, 
-                        domain: q.domain,
-                        riskWeight: q.riskWeight
-                    }
-                }));
+                setAnswers(function(prev) {
+                    return {
+                        ...prev,
+                        [q.id]: { 
+                            score: score, 
+                            // Violation is defined as any score less than 100%
+                            isViolation: score < 100, 
+                            references: q.references, 
+                            remediation: q.remediation, 
+                            domain: q.domain,
+                            riskWeight: q.riskWeight
+                        }
+                    };
+                });
 
                 // Update domain score for the radar chart
-                setScores(prev => ({ ...prev, [q.domain]: score }));
+                setScores(function(prev) { 
+                    return { ...prev, [q.domain]: score };
+                });
                 
                 // Move to the next question or finish
-                if (currentQ < AUDIT_QUESTIONS.length - 1) setCurrentQ(p => p + 1);
+                if (currentQ < AUDIT_QUESTIONS.length - 1) setCurrentQ(function(p) { return p + 1; });
                 else setFinished(true);
             };
 
-            const reset = () => {
+            const reset = function() {
                 setStarted(false); setFinished(false); setCurrentQ(0); 
                 setScores({ gov: 0, sec: 0, risk: 0, data: 0, docs: 0 }); setAnswers({});
             };
 
-            const Layout = ({ children }) => e('div', { 
-                // *** FIX APPLIED HERE (Line 309 approx.) ***
-                // Resolves the "Uncaught SyntaxError: unexpected template string"
-                className: "w-full min-h-screen flex items-center justify-center p-4 " + currentFont,
-                dir: dir 
-            }, children);
+            const Layout = function({ children }) { 
+                return e('div', { 
+                    // FIX #1: Template literal replaced with string concatenation
+                    className: "w-full min-h-screen flex items-center justify-center p-4 " + currentFont,
+                    dir: dir 
+                }, children);
+            };
 
             // SCREEN 1: INTRO (START)
             if (!started) return e(Layout, null,
-                e(LangSwitcher, { current: lang, setLang }),
+                e(LangSwitcher, { current: lang, setLang: setLang }),
                 e('div', { className: "glass-panel max-w-lg w-full p-10 rounded-2xl text-center border-t-4 border-blue-500 relative overflow-hidden" },
                     e('h1', { className: "text-4xl font-bold text-white mb-2 neon-text" }, t.title),
                     e('p', { className: "text-slate-400 text-sm mb-8 font-mono tracking-wider" }, t.subtitle),
                     e('button', { 
-                        onClick: () => setStarted(true),
+                        onClick: function() { setStarted(true); },
                         className: "w-full py-4 bg-blue-700 hover:bg-blue-600 text-white font-bold rounded shadow-lg transition-transform transform active:scale-95"
                     }, t.startBtn)
                 )
@@ -263,16 +282,16 @@
 
             // SCREEN 2: REPORT (RESULTS)
             if (finished) {
-                const answeredScores = Object.values(answers).map(a => a.score);
-                const sum = answeredScores.reduce((a,b)=>a+b,0);
+                const answeredScores = Object.values(answers).map(function(a) { return a.score; });
+                const sum = answeredScores.reduce(function(a,b) { return a + b; }, 0);
                 const avg = answeredScores.length > 0 ? sum / answeredScores.length : 0;
                 // Pass if average score is >= 75%
                 const passed = avg >= 75; 
-                const violations = Object.values(answers).filter(a => a.score < 100);
+                const violations = Object.values(answers).filter(function(a) { return a.score < 100; });
                 const projectedFine = calculateLiability(violations);
 
                 return e(Layout, null,
-                    e(LangSwitcher, { current: lang, setLang }),
+                    e(LangSwitcher, { current: lang, setLang: setLang }),
                     e('div', { className: "glass-panel max-w-5xl w-full p-8 rounded-2xl space-y-8" },
                         e('h2', { className: "text-2xl font-bold text-white mb-6 flex items-center gap-3 border-b border-slate-700 pb-4" }, 
                             e('span', { 'data-lucide': "CheckCircle", className: "w-7 h-7 text-emerald-400" }), t.report
@@ -283,7 +302,7 @@
                             // COMPLIANCE CONFIDENCE
                             e('div', { className: "flex flex-col items-center justify-center p-4 bg-slate-900/50 rounded-xl border border-slate-700 col-span-1" },
                                 e('h3', { className: "text-slate-400 text-xs tracking-widest mb-2" }, "CONFIDENCE SCORE"),
-                                e('div', { className: `text-4xl font-black ${passed ? 'text-emerald-400 neon-text' : 'text-amber-500'}` }, Math.round(avg)+"%")
+                                e('div', { className: "text-4xl font-black " + (passed ? 'text-emerald-400 neon-text' : 'text-amber-500') }, Math.round(avg)+"%")
                             ),
                             // LIABILITY EXPOSURE (BIG RED NUMBER)
                             e('div', { className: "p-4 rounded-xl border border-red-800 bg-red-900/20 text-center col-span-1 md:col-span-2" },
@@ -293,7 +312,7 @@
                             // RISK TOPOLOGY
                             e('div', { className: "flex flex-col items-center justify-center p-4 glass-panel rounded-xl col-span-1" }, 
                                 e('h3', { className: "text-slate-400 text-xs tracking-widest mb-1" }, "RISK TOPOLOGY"),
-                                e(RiskRadar, { scores, labels: t })                             )
+                                e(RiskRadar, { scores: scores, labels: t })                             )
                         ),
 
                         // VIOLATION & REMEDIATION SUMMARY
@@ -305,21 +324,23 @@
                                 ? e('p', { className: "text-emerald-400 font-mono text-sm" }, "ZERO CRITICAL VIOLATIONS DETECTED. SYSTEM IS ROBUST.")
                                 // Scrollable area for violations summary
                                 : e('div', { className: "space-y-4 font-mono text-sm max-h-64 overflow-y-auto" }, 
-                                    violations.map((v, i) => e('div', { key: i, className: `border-b border-slate-700 pb-4 ${v.domain === 'sec' ? 'border-red-500/50' : ''}` },
-                                        e('span', { className: `font-bold text-base ${v.domain === 'sec' ? 'text-red-500' : 'text-amber-400'}` }, 
-                                            // Display domain and violation status (FAIL or PARTIAL)
-                                            `${t[v.domain].toUpperCase()} - ${v.score === 0 ? 'FAIL' : 'PARTIAL'}`
-                                        ),
-                                        e('div', { className: "mt-2 p-3 bg-slate-800 rounded text-slate-300 border border-red-900/50" },
-                                            e('p', { className: "font-bold text-red-200 mb-1" }, "ACTION REQUIRED:"),
-                                            // Show localized remediation text, fallback to English
-                                            e('p', null, v.remediation[langCode] || v.remediation.en) 
-                                        ),
-                                        e('p', { className: "mt-2 text-slate-500 text-xs" },
-                                            // Show compliance references
-                                            `Ref: ${t.iso} ${v.references.ISO}, ${t.eu} ${v.references.EU}, ${t.us} ${v.references.US}`
-                                        )
-                                    ))
+                                    violations.map(function(v, i) { 
+                                        return e('div', { key: i, className: "border-b border-slate-700 pb-4 " + (v.domain === 'sec' ? 'border-red-500/50' : '') },
+                                            e('span', { className: "font-bold text-base " + (v.domain === 'sec' ? 'text-red-500' : 'text-amber-400') }, 
+                                                // Display domain and violation status (FAIL or PARTIAL)
+                                                t[v.domain].toUpperCase() + " - " + (v.score === 0 ? 'FAIL' : 'PARTIAL')
+                                            ),
+                                            e('div', { className: "mt-2 p-3 bg-slate-800 rounded text-slate-300 border border-red-900/50" },
+                                                e('p', { className: "font-bold text-red-200 mb-1" }, "ACTION REQUIRED:"),
+                                                // Show localized remediation text, fallback to English
+                                                e('p', null, v.remediation[langCode] || v.remediation.en) 
+                                            ),
+                                            e('p', { className: "mt-2 text-slate-500 text-xs" },
+                                                // Show compliance references
+                                                "Ref: " + t.iso + " " + v.references.ISO + ", " + t.eu + " " + v.references.EU + ", " + t.us + " " + v.references.US
+                                            )
+                                        );
+                                    })
                                 )
                         ),
 
@@ -333,7 +354,7 @@
             const qText = q[langCode] || q.en;
             
             return e(Layout, null,
-                e(LangSwitcher, { current: lang, setLang }),
+                e(LangSwitcher, { current: lang, setLang: setLang }),
                 // Grid layout: Sidebar (4 cols) on desktop, hidden on mobile
                 e('div', { className: "w-full max-w-5xl h-[85vh] grid grid-cols-1 lg:grid-cols-12 gap-6" },
                     // LEFT: Sidebar (Metrics/Radar)
@@ -344,7 +365,7 @@
                                 e('span', { className: "text-xs font-bold text-slate-400 tracking-widest" }, t.monitoring)
                             ),
                             e('h2', { className: "text-xl font-bold text-white mb-4" }, t.metrics),
-                            e(RiskRadar, { scores, labels: t })
+                            e(RiskRadar, { scores: scores, labels: t })
                         ),
                         e('div', { className: "text-center" }, 
                             e('p', { className: "text-slate-500 font-mono text-xs mb-1" }, "CRYPTOGRAPHIC ANCHOR"),
@@ -357,7 +378,7 @@
                         // Progress Indicator
                         e('div', { className: "mb-6 flex justify-between items-center" }, 
                             e('span', { className: "text-blue-400 text-xs font-bold font-mono tracking-widest" }, 
-                                `QUESTION ${currentQ + 1} OF ${AUDIT_QUESTIONS.length}`
+                                "QUESTION " + (currentQ + 1) + " OF " + AUDIT_QUESTIONS.length
                             ),
                             e('span', { className: "bg-slate-800 text-slate-300 px-3 py-1 rounded text-sm font-bold" }, 
                                 t[q.domain].toUpperCase()
@@ -369,20 +390,22 @@
                         
                         // Answer Options (Mobile-Friendly Stacked Buttons)
                         e('div', { className: "space-y-4 mt-auto" },
-                            OPTIONS.map((opt, idx) => 
-                                e('button', {
+                            OPTIONS.map(function(opt, idx) {
+                                var className = "w-full text-start p-5 rounded-lg transition-all text-white font-medium flex justify-between items-center group ";
+                                if (opt.score === 100) className += 'bg-emerald-600/20 hover:bg-emerald-600/40 border border-emerald-500/50';
+                                else if (opt.score === 50) className += 'bg-amber-600/20 hover:bg-amber-600/40 border border-amber-500/50';
+                                else className += 'bg-red-600/20 hover:bg-red-600/40 border border-red-500/50';
+
+                                return e('button', {
                                     key: idx,
-                                    onClick: () => handleAnswer(opt.score, q),
-                                    className: `w-full text-start p-5 rounded-lg transition-all text-white font-medium flex justify-between items-center group
-                                        ${opt.score === 100 ? 'bg-emerald-600/20 hover:bg-emerald-600/40 border border-emerald-500/50' : 
-                                         opt.score === 50 ? 'bg-amber-600/20 hover:bg-amber-600/40 border border-amber-500/50' : 
-                                         'bg-red-600/20 hover:bg-red-600/40 border border-red-500/50'}`
+                                    onClick: function() { handleAnswer(opt.score, q); },
+                                    className: className
                                 }, 
                                     e('span', null, opt.label),
                                     // Use appropriate Chevron icon based on RTL/LTR
                                     e('span', { 'data-lucide': dir === 'rtl' ? "ChevronLeft" : "ChevronRight", className: "text-white opacity-70 group-hover:opacity-100" })
-                                )
-                            )
+                                );
+                            })
                         )
                     )
                 )
