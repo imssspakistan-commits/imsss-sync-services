@@ -6,8 +6,8 @@
     <title>IMSSS | AI Simplicity Console</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400&family=Noto+Nastaliq+Urdu:wght@400;700&display=swap" rel="stylesheet">
@@ -35,12 +35,12 @@
     <div id="root" class="w-full min-h-screen"></div>
 
     <script>
-        // Switched to React 17 for broader compatibility
-        const { useState, useEffect } = React; 
-        const e = React.createElement;
+        var useState = React.useState;
+        var useEffect = React.useEffect;
+        var e = React.createElement;
 
         // --- 1. GLOBALIZATION ENGINE ---
-        const LANGUAGES = {
+        var LANGUAGES = {
             EN: { 
                 name: "English", code: "en", dir: "ltr", font: "font-sans", 
                 text: { 
@@ -74,7 +74,7 @@
         };
 
         // --- 2. AUDIT DATA (AI GRC Focus) ---
-        const AUDIT_QUESTIONS = [
+        var AUDIT_QUESTIONS = [
             {
                 id: 1, domain: "gov", en: "Does the organization possess a formally signed AI Policy defining accountability and responsibility?", ur: "کیا تنظیم کے پاس ذمہ داری کی وضاحت کرنے والی باضابطہ دستخط شدہ AI پالیسی موجود ہے؟",
                 references: { ISO: "42001: 5.2", EU: "AI Act: Art. 8", US: "NIST AI RMF: Govern" },
@@ -108,21 +108,21 @@
         ];
 
         // Scoring Options (Simplified labels for quick action)
-        const OPTIONS = [
+        var OPTIONS = [
             { label: "YES, Fully Implemented", score: 100 },
             { label: "PARTIAL, Ad-Hoc Only", score: 50 },
             { label: "NO, Not Implemented", score: 0 }
         ];
 
         // --- 3. LIABILITY CALCULATION UTILITY ---
-        const calculateLiability = function(violations) {
+        var calculateLiability = function(violations) {
             // Anchor penalty based on EU AI Act High-Risk violation maximum fine (€50 Million)
-            const MAX_PENALTY_ANCHOR = 50000000; 
-            let totalFine = 0;
+            var MAX_PENALTY_ANCHOR = 50000000; 
+            var totalFine = 0;
             
             violations.forEach(function(v) {
                 // Risk weight sums up to 1.0 
-                let penalty = v.riskWeight * MAX_PENALTY_ANCHOR; 
+                var penalty = v.riskWeight * MAX_PENALTY_ANCHOR; 
                 
                 if (v.score === 0) {
                     // Full fine applied for complete failure (score 0)
@@ -136,7 +136,7 @@
             return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(totalFine);
         };
 
-        const generateHash = function() { 
+        var generateHash = function() { 
             return "0x" + Array(40).fill(0).map(function() {
                 return "0123456789ABCDEF"[Math.random()*16|0];
             }).join('');
@@ -145,14 +145,17 @@
         // --- 4. COMPONENTS & CORE LOGIC ---
         
         // Simplified Radar Chart Component
-        const RiskRadar = function({ scores, labels }) {
-            const size = 180; const center = size / 2; const radius = 70;
-            const domains = ["gov", "sec", "risk", "data", "docs"]; 
+        var RiskRadar = function(_ref) {
+            var scores = _ref.scores,
+                labels = _ref.labels;
+
+            var size = 180; var center = size / 2; var radius = 70;
+            var domains = ["gov", "sec", "risk", "data", "docs"]; 
             
             // Calculate points for the polygon based on scores (normalized to 0-1 range)
-            const points = domains.map(function(d, i) {
-                const angle = (Math.PI * 2 * i) / 5 - Math.PI / 2; 
-                const value = (scores[d] || 0) / 100; // Score is 0, 50, or 100. Normalize to 0-1
+            var points = domains.map(function(d, i) {
+                var angle = (Math.PI * 2 * i) / 5 - Math.PI / 2; 
+                var value = (scores[d] || 0) / 100; // Score is 0, 50, or 100. Normalize to 0-1
                 return "" + (center + radius * value * Math.cos(angle)) + "," + (center + radius * value * Math.sin(angle));
             }).join(" ");
 
@@ -166,10 +169,10 @@
                     
                     // Domain Labels
                     domains.map(function(d, i) {
-                        const angle = (Math.PI * 2 * i) / 5 - Math.PI / 2;
+                        var angle = (Math.PI * 2 * i) / 5 - Math.PI / 2;
                         // Position the label slightly outside the perimeter
-                        const x = center + (radius + 25) * Math.cos(angle);
-                        const y = center + (radius + 20) * Math.sin(angle);
+                        var x = center + (radius + 25) * Math.cos(angle);
+                        var y = center + (radius + 20) * Math.sin(angle);
                         return e('text', { 
                             key: d, x: x, y: y, 
                             textAnchor: "middle", 
@@ -182,13 +185,16 @@
             );
         };
 
-        const HashStream = function({ hash }) { 
+        var HashStream = function(_ref2) { 
+            var hash = _ref2.hash;
             return e('div', { className: "font-mono text-[10px] text-emerald-500/60" }, hash.substring(0,20)+"...");
         };
         
         // Language Selector Component
-        const LangSwitcher = function({ current, setLang }) {
-            // FIX: Use Array.map on Object.keys to avoid any ambiguous 'of' syntax
+        var LangSwitcher = function(_ref3) {
+            var current = _ref3.current,
+                setLang = _ref3.setLang;
+
             var languageButtons = Object.keys(LANGUAGES).map(function(code) {
                 var langData = LANGUAGES[code];
                 var className = "px-3 py-1 rounded text-xs font-bold transition-all border " + (current === code ? 'bg-blue-600 border-blue-400 text-white' : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white');
@@ -205,33 +211,52 @@
 
 
         // --- MAIN APP COMPONENT ---
-        const App = function() {
-            const [lang, setLang] = useState('EN');
-            const [started, setStarted] = useState(false);
-            const [currentQ, setCurrentQ] = useState(0);
-            const [finished, setFinished] = useState(false);
+        var App = function() {
+            var _useState = useState('EN'),
+                lang = _useState[0],
+                setLang = _useState[1];
+            
+            var _useState2 = useState(false),
+                started = _useState2[0],
+                setStarted = _useState2[1];
+            
+            var _useState3 = useState(0),
+                currentQ = _useState3[0],
+                setCurrentQ = _useState3[1];
+            
+            var _useState4 = useState(false),
+                finished = _useState4[0],
+                setFinished = _useState4[1];
+            
             // Stores score per domain (0, 50, or 100)
-            const [scores, setScores] = useState({ gov: 0, sec: 0, risk: 0, data: 0, docs: 0 }); 
+            var _useState5 = useState({ gov: 0, sec: 0, risk: 0, data: 0, docs: 0 }),
+                scores = _useState5[0],
+                setScores = _useState5[1];
+            
             // Stores full answer data including violation status and remediation
-            const [answers, setAnswers] = useState({}); 
-            const [hash, setHash] = useState(generateHash());
+            var _useState6 = useState({}),
+                answers = _useState6[0],
+                setAnswers = _useState6[1];
+            
+            var _useState7 = useState(generateHash()),
+                hash = _useState7[0],
+                setHash = _useState7[1];
 
             // Hash stream animation effect
             useEffect(function() {
-                const interval = setInterval(function() { setHash(generateHash()); }, 150);
+                var interval = setInterval(function() { setHash(generateHash()); }, 150);
                 return function() { clearInterval(interval); };
             }, []);
 
-            const t = LANGUAGES[lang].text;
-            const currentFont = LANGUAGES[lang].font;
-            const dir = LANGUAGES[lang].dir;
-            const langCode = LANGUAGES[lang].code;
+            var t = LANGUAGES[lang].text;
+            var currentFont = LANGUAGES[lang].font;
+            var dir = LANGUAGES[lang].dir;
+            var langCode = LANGUAGES[lang].code;
 
-            const handleAnswer = function(score, q) {
-                // Store detailed answer data
+            var handleAnswer = function(score, q) {
+                // Store detailed answer data (Using Object.assign for ES5 compatibility)
                 setAnswers(function(prev) {
-                    return {
-                        ...prev,
+                    return Object.assign({}, prev, {
                         [q.id]: { 
                             score: score, 
                             // Violation is defined as any score less than 100%
@@ -241,12 +266,12 @@
                             domain: q.domain,
                             riskWeight: q.riskWeight
                         }
-                    };
+                    });
                 });
 
-                // Update domain score for the radar chart
+                // Update domain score for the radar chart (Using Object.assign for ES5 compatibility)
                 setScores(function(prev) { 
-                    return { ...prev, [q.domain]: score };
+                    return Object.assign({}, prev, { [q.domain]: score });
                 });
                 
                 // Move to the next question or finish
@@ -254,14 +279,14 @@
                 else setFinished(true);
             };
 
-            const reset = function() {
+            var reset = function() {
                 setStarted(false); setFinished(false); setCurrentQ(0); 
                 setScores({ gov: 0, sec: 0, risk: 0, data: 0, docs: 0 }); setAnswers({});
             };
 
-            const Layout = function({ children }) { 
+            var Layout = function(_ref4) { 
+                var children = _ref4.children;
                 return e('div', { 
-                    // FIX #1: Template literal replaced with string concatenation
                     className: "w-full min-h-screen flex items-center justify-center p-4 " + currentFont,
                     dir: dir 
                 }, children);
@@ -282,13 +307,13 @@
 
             // SCREEN 2: REPORT (RESULTS)
             if (finished) {
-                const answeredScores = Object.values(answers).map(function(a) { return a.score; });
-                const sum = answeredScores.reduce(function(a,b) { return a + b; }, 0);
-                const avg = answeredScores.length > 0 ? sum / answeredScores.length : 0;
+                var answeredScores = Object.values(answers).map(function(a) { return a.score; });
+                var sum = answeredScores.reduce(function(a,b) { return a + b; }, 0);
+                var avg = answeredScores.length > 0 ? sum / answeredScores.length : 0;
                 // Pass if average score is >= 75%
-                const passed = avg >= 75; 
-                const violations = Object.values(answers).filter(function(a) { return a.score < 100; });
-                const projectedFine = calculateLiability(violations);
+                var passed = avg >= 75; 
+                var violations = Object.values(answers).filter(function(a) { return a.score < 100; });
+                var projectedFine = calculateLiability(violations);
 
                 return e(Layout, null,
                     e(LangSwitcher, { current: lang, setLang: setLang }),
@@ -350,8 +375,8 @@
             }
 
             // SCREEN 3: QUESTIONS (ASSESSMENT)
-            const q = AUDIT_QUESTIONS[currentQ];
-            const qText = q[langCode] || q.en;
+            var q = AUDIT_QUESTIONS[currentQ];
+            var qText = q[langCode] || q.en;
             
             return e(Layout, null,
                 e(LangSwitcher, { current: lang, setLang: setLang }),
@@ -412,8 +437,10 @@
             );
         };
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
+        // Updated for React 18 createRoot
+        var root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(e(App));
+        
         // Initialize Lucide icons
         lucide.createIcons();
     </script>
