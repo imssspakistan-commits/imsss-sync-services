@@ -4,17 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IMSSS AI Risk Assessor</title>
+
+    <script src="https://cdn.tailwindcss.com?version=3.4.4"></script>
+    <script src="https://unpkg.com/react@18.2.0/umd/react.production.min.js" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/lucide@0.368.0"></script>
     
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Noto+Sans+Arabic:wght@400;700&display=swap');
-        
+
         :root {
             --bg-color: #0f172a; /* slate-900 */
             --glass-bg: rgba(30, 41, 59, 0.7); /* slate-800 with transparency */
@@ -30,7 +31,7 @@
         /* Custom Fonts */
         .font-sans { font-family: 'Roboto Mono', sans-serif; }
         .font-urdu { font-family: 'Noto Sans Arabic', sans-serif; }
-        
+
         /* Glass Panel Effect */
         .glass-panel {
             background-color: var(--glass-bg);
@@ -43,7 +44,7 @@
         .neon-text {
             text-shadow: 0 0 5px rgba(59, 130, 246, 0.5), 0 0 10px rgba(59, 130, 246, 0.3);
         }
-        
+
         /* Live Dot Animation */
         .live-dot {
             animation: pulse-red 1.5s infinite;
@@ -54,11 +55,25 @@
             70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
             100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
         }
+
+        /* Ensure scrollable area is visible (Fix for previous issue) */
+        .scrollable-summary {
+            max-height: 250px; /* Adjusted from 256px to be safer */
+            overflow-y: auto;
+            padding-right: 10px; /* Space for scrollbar */
+        }
+        
+        /* Styles to hide components during PDF rendering */
+        @media print {
+            .no-print { display: none !important; }
+            .report-container { background-color: white !important; color: black !important; }
+            body { background-image: none !important; background-color: white !important; }
+        }
     </style>
 </head>
 <body>
 
-    <div id="root">
+    <div id="root" aria-live="polite">
         <div class="text-white text-center p-10">Loading Application...</div>
     </div>
 
@@ -73,6 +88,13 @@
             var useEffect = React.useEffect;
             var e = React.createElement;
 
+            // --- CONSTANTS FOR LOCALSTORAGE KEYS ---
+            var LS_KEY_LANG = 'imsss_lang';
+            var LS_KEY_ANSWERS = 'imsss_answers';
+            var LS_KEY_SCORES = 'imsss_scores';
+            var LS_KEY_PROGRESS = 'imsss_progress';
+            var LS_KEY_HASH = 'imsss_final_hash'; // New key for the final report hash
+
             // --- 1. GLOBALIZATION ENGINE ---
             var LANGUAGES = {
                 EN: { 
@@ -82,7 +104,9 @@
                         report: "AUDIT SUMMARY REPORT", monitoring: "LIVE MONITORING", integrity: "IMMUTABLE HASH", metrics: "System Metrics", 
                         complianceSummary: "VIOLATION & REMEDIATION SUMMARY", 
                         iso: "ISO 42001", eu: "EU AI Act", us: "NIST AI RMF", 
-                        gov: "Governance", risk: "Risk Mgmt", data: "Data Integrity", docs: "Documentation", sec: "Security" 
+                        gov: "Governance", risk: "Risk Mgmt", data: "Data Integrity", docs: "Documentation", sec: "Security",
+                        reviewTitle: "REVIEW ANSWERS", reviewSub: "Confirm your selections before finalizing the audit.", continueBtn: "FINALIZE AUDIT", editBtn: "GO BACK TO QUESTION", 
+                        exportBtn: "EXPORT PDF REPORT", anchor: "REPORT CRYPTOGRAPHIC ANCHOR", copied: "COPIED"
                     } 
                 },
                 ES: { 
@@ -92,7 +116,9 @@
                         report: "RESUMEN DE AUDITORÍA", monitoring: "MONITOREO EN VIVO", integrity: "HASH INMUTABLE", metrics: "Métricas del Sistema", 
                         complianceSummary: "RESUMEN DE VIOLACIONES Y ACCIONES", 
                         iso: "Ley IA UE", eu: "Ley IA UE", us: "NIST IA RMF", 
-                        gov: "Gobernanza", risk: "Gestión de Riesgos", data: "Integridad de Datos", docs: "Documentación", sec: "Seguridad" 
+                        gov: "Gobernanza", risk: "Gestión de Riesgos", data: "Integridad de Datos", docs: "Documentación", sec: "Seguridad",
+                        reviewTitle: "REVISAR RESPUESTAS", reviewSub: "Confirme sus selecciones antes de finalizar la auditoría.", continueBtn: "FINALIZAR AUDITORÍA", editBtn: "VOLVER A PREGUNTA",
+                        exportBtn: "EXPORTAR REPORTE PDF", anchor: "ANCHOR CRIPTOGRÁFICO", copied: "COPIADO"
                     } 
                 },
                 UR: { 
@@ -102,7 +128,9 @@
                         report: "آڈٹ کا خلاصہ", monitoring: "لائیو نگرانی", integrity: "ناقابل تغیر ہیش", metrics: "سسٹم میٹرکس", 
                         complianceSummary: "خلاف ورزی اور ازالے کا خلاصہ", 
                         iso: "آئی ایس او 42001", eu: "یورپی یونین AI ایکٹ", us: "NIST AI RMF", 
-                        gov: "انتظامیہ", risk: "رسک مینجمنٹ", data: "ڈیٹا کی سالمیت", docs: "دستاویزات", sec: "سیکیورٹی" 
+                        gov: "انتظامیہ", risk: "رسک مینجمنٹ", data: "ڈیٹا کی سالمیت", docs: "دستاویزات", sec: "سیکیورٹی",
+                        reviewTitle: "جوابات کا جائزہ", reviewSub: "آڈٹ کو حتمی شکل دینے سے پہلے اپنی انتخابی تصدیق کریں۔", continueBtn: "آڈٹ کو حتمی شکل دیں", editBtn: "سوال پر واپس جائیں",
+                        exportBtn: "پی ڈی ایف رپورٹ ایکسپورٹ کریں", anchor: "رپورٹ کرپٹوگرافک اینکر", copied: "نقل کر لیا"
                     } 
                 }
             };
@@ -148,17 +176,58 @@
                 { label: "NO, Not Implemented", score: 0 }
             ];
 
-            // --- 3. LIABILITY CALCULATION UTILITY ---
+            var initialScores = { gov: 0, sec: 0, risk: 0, data: 0, docs: 0 };
+
+            // --- 3. UTILITIES ---
+
+            // Function to load state from localStorage
+            var loadState = function(key, defaultVal) {
+                try {
+                    var serialized = localStorage.getItem(key);
+                    if (serialized === null) return defaultVal;
+                    // Safely parse JSON or return the string if it's not an object
+                    return JSON.parse(serialized) || defaultVal;
+                } catch(e) {
+                    console.error("Could not load state:", key, e);
+                    return defaultVal;
+                }
+            };
+
+            // Function to save state to localStorage
+            var saveState = function(key, value) {
+                try {
+                    var serialized = JSON.stringify(value);
+                    localStorage.setItem(key, serialized);
+                } catch (e) {
+                    console.error("Could not save state:", key, e);
+                }
+            };
+
+            // Replaces generateHash with cryptographically secure random values
+            var generateCryptoHash = function() {  
+                if (typeof window.crypto !== 'undefined' && typeof window.crypto.getRandomValues === 'function') {
+                    // Use Crypto API for better randomness (32 bytes = 64 hex chars)
+                    var buffer = new Uint8Array(32);
+                    window.crypto.getRandomValues(buffer);
+                    var hex = Array.prototype.map.call(buffer, function(x) { 
+                        return ('00' + x.toString(16)).slice(-2);
+                    }).join('');
+                    return "0x" + hex.toUpperCase();
+                }
+                // Fallback (less secure)
+                return "0x" + Array(64).fill(0).map(function() {
+                    return "0123456789ABCDEF"[Math.random()*16|0];
+                }).join('');
+            };
+
             var calculateLiability = function(violations) {
-                // Anchor penalty based on EU AI Act High-Risk violation maximum fine (€50 Million)
                 var MAX_PENALTY_ANCHOR = 50000000;  
                 var totalFine = 0;
-                
-                // ES5 compatible iteration
+
                 for (var i = 0; i < violations.length; i++) {
                     var v = violations[i];
                     var penalty = v.riskWeight * MAX_PENALTY_ANCHOR;  
-                    
+
                     if (v.score === 0) {
                         totalFine += penalty;  
                     } else if (v.score === 50) {
@@ -167,12 +236,98 @@
                 }
                 return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(totalFine);
             };
-
-            var generateHash = function() {  
-                return "0x" + Array(40).fill(0).map(function() {
-                    return "0123456789ABCDEF"[Math.random()*16|0];
-                }).join('');
+            
+            // Function to find an option label based on score
+            var getLabelByScore = function(score) {
+                var option = OPTIONS.find(function(o) { return o.score === score; });
+                return option ? option.label : 'N/A';
             };
+
+
+            // --- PDF EXPORT FUNCTION (Phase II) ---
+            var exportPdfReport = function(finalHash) {
+                if (!window.jspdf || !window.html2canvas) {
+                    alert("PDF libraries failed to load. Please try refreshing the page.");
+                    return;
+                }
+
+                var { jsPDF } = window.jspdf;
+                var reportElement = document.getElementById('report-container');
+                
+                // Temporarily clone the element to clean up non-printable styles for the screenshot
+                var clone = reportElement.cloneNode(true);
+                clone.style.backgroundColor = 'white';
+                clone.style.color = 'black';
+                clone.querySelectorAll('.neon-text').forEach(function(el) {
+                    el.style.textShadow = 'none';
+                    el.style.color = 'black';
+                });
+                clone.querySelectorAll('.text-slate-500, .text-slate-400, .text-slate-300').forEach(function(el) {
+                    el.style.color = 'black';
+                });
+                clone.querySelectorAll('.bg-slate-950, .bg-slate-900\\/50').forEach(function(el) {
+                    el.style.backgroundColor = 'white';
+                });
+                clone.querySelectorAll('.border-slate-700, .border-slate-800').forEach(function(el) {
+                    el.style.borderColor = 'lightgray';
+                });
+                
+                // Hide buttons for printing
+                clone.querySelectorAll('.no-print').forEach(function(el) {
+                    el.style.display = 'none';
+                });
+
+                // Prepend the current date and hash to the PDF
+                var headerDiv = document.createElement('div');
+                headerDiv.innerHTML = '<div style="padding: 15px; border-bottom: 1px solid #ccc; font-family: monospace; font-size: 10px; color: black;">' +
+                                      'IMSSS AUDIT REPORT - GENERATED: ' + new Date().toLocaleString() + 
+                                      '<br>IMMUTABLE HASH: ' + finalHash +
+                                      '</div>';
+                
+                document.body.appendChild(headerDiv);
+                document.body.appendChild(clone);
+                
+                // Generate the canvas from the clean clone
+                html2canvas(clone, { 
+                    scale: 2, 
+                    useCORS: true, 
+                    logging: false,
+                    scrollY: -window.scrollY
+                }).then(canvas => {
+                    var imgData = canvas.toDataURL('image/png');
+                    var pdf = new jsPDF('p', 'mm', 'a4');
+                    var imgWidth = 210; 
+                    var pageHeight = 295;  
+                    var imgHeight = canvas.height * imgWidth / canvas.width;
+                    var heightLeft = imgHeight;
+                    var position = 0;
+
+                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+
+                    while (heightLeft >= 0) {
+                        position = heightLeft - imgHeight;
+                        pdf.addPage();
+                        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                        heightLeft -= pageHeight;
+                    }
+                    
+                    pdf.save("IMSSS_AI_Audit_Report_" + new Date().toISOString().slice(0, 10) + ".pdf");
+                    
+                    // Clean up temporary elements
+                    document.body.removeChild(clone);
+                    document.body.removeChild(headerDiv);
+
+                }).catch(function(error) {
+                    console.error("PDF Export Failed:", error);
+                    alert("PDF Generation failed: " + error.message);
+                    
+                    // Attempt to clean up even on failure
+                    if (document.body.contains(clone)) document.body.removeChild(clone);
+                    if (document.body.contains(headerDiv)) document.body.removeChild(headerDiv);
+                });
+            };
+
 
             // --- 4. COMPONENTS & CORE LOGIC ---
 
@@ -182,21 +337,20 @@
 
                 var size = 180; var center = size / 2; var radius = 70;
                 var domains = ["gov", "sec", "risk", "data", "docs"];  
-                
-                // Calculate points for the polygon (ES5 compatible map and join)
+
                 var points = domains.map(function(d, i) {
                     var angle = (Math.PI * 2 * i) / 5 - Math.PI / 2;  
                     var value = (scores[d] || 0) / 100;  
                     return (center + radius * value * Math.cos(angle)) + "," + (center + radius * value * Math.sin(angle));
                 }).join(" ");
 
-                return e('div', { className: "relative flex justify-center py-4" },
+                return e('div', { className: "relative flex justify-center py-4", role: "img", "aria-label": "AI Risk Radar Chart" },
                     e('svg', { width: size, height: size, className: "overflow-visible" },
                         // Background grid line (3 layers for better depth)
                         e('circle', { cx: center, cy: center, r: radius * 0.33, fill: "none", stroke: "#334155", strokeDasharray: "4 4" }),
                         e('circle', { cx: center, cy: center, r: radius * 0.66, fill: "none", stroke: "#334155", strokeDasharray: "4 4" }),
                         e('circle', { cx: center, cy: center, r: radius, fill: "none", stroke: "#334155" }),
-                        
+
                         // Domain Spokes
                         domains.map(function(d, i) {
                             var angle = (Math.PI * 2 * i) / 5 - Math.PI / 2;
@@ -207,11 +361,10 @@
 
                         // Risk Polygon
                         e('polygon', { points: points, fill: "rgba(59, 130, 246, 0.4)", stroke: "#3b82f6", strokeWidth: 2 }),
-                        
+
                         // Domain Labels (ES5 compatible map)
                         domains.map(function(d, i) {
                             var angle = (Math.PI * 2 * i) / 5 - Math.PI / 2;
-                            // Offset slightly more for text
                             var x = center + (radius + 28) * Math.cos(angle);
                             var y = center + (radius + 20) * Math.sin(angle);
                             var getLabel = function(key) { return labels[key]; };
@@ -229,85 +382,122 @@
 
             var HashStream = function(_ref2) {  
                 var hash = _ref2.hash;
-                // ES5 compatible substring
-                return e('div', { className: "font-mono text-[10px] text-emerald-500/60" }, hash.substring(0,20)+"...");
+                return e('div', { className: "font-mono text-[10px] text-emerald-500/60", "aria-live": "polite" }, hash.substring(0,20)+"...");
             };
-            
+
             // Language Selector Component
             var LangSwitcher = function(_ref3) {
                 var current = _ref3.current,
                     setLang = _ref3.setLang;
 
-                // ES5 compatible map for language buttons
                 var languageButtons = Object.keys(LANGUAGES).map(function(code) {
                     var langData = LANGUAGES[code];
-                    // ES5 compatible string concat
                     var className = "px-3 py-1 rounded text-xs font-bold transition-all border " + (current === code ? 'bg-blue-600 border-blue-400 text-white' : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white');
-                    
+
                     return e('button', {
                         key: code,
                         onClick: function() { setLang(code); },
-                        className: className
+                        className: className,
+                        "aria-pressed": current === code
                     }, langData.name);
                 });
-                
-                return e('div', { className: "absolute top-4 right-4 z-50 flex space-x-2" }, languageButtons);
+
+                return e('div', { className: "absolute top-4 right-4 z-50 flex space-x-2 no-print" }, languageButtons);
             };
 
 
             // --- MAIN APP COMPONENT ---
             var App = function() {
-                var _useState = useState('EN'),
+                // --- Load initial state from LocalStorage ---
+                var initialLang = loadState(LS_KEY_LANG, 'EN');
+                var initialAnswers = loadState(LS_KEY_ANSWERS, {});
+                var initialScoresFromLS = loadState(LS_KEY_SCORES, initialScores);
+                var initialFinalHash = loadState(LS_KEY_HASH, null);
+
+                // Determine starting progress:
+                var answerKeys = Object.keys(initialAnswers);
+                var initialQ = answerKeys.length > 0 ? answerKeys.length : 0;
+                var initialStarted = initialQ > 0 || loadState(LS_KEY_PROGRESS, false);
+                var initialFinished = initialQ === AUDIT_QUESTIONS.length;
+                var initialReviewed = initialFinalHash !== null;
+                
+                // If finished on last load, set up for review or report view
+                if (initialReviewed) { initialFinished = true; } 
+                else if (initialFinished) { initialStarted = true; } 
+
+                // State initialization
+                var _useState = useState(initialLang),
                     lang = _useState[0],
                     setLang = _useState[1];
-                
-                var _useState2 = useState(false),
+
+                var _useState2 = useState(initialStarted),
                     started = _useState2[0],
                     setStarted = _useState2[1];
-                
-                var _useState3 = useState(0),
+
+                var _useState3 = useState(initialQ),
                     currentQ = _useState3[0],
                     setCurrentQ = _useState3[1];
                 
-                var _useState4 = useState(false),
-                    finished = _useState4[0],
-                    setFinished = _useState4[1];
-                
-                // Set initial scores to 0 for all domains
-                var initialScores = { gov: 0, sec: 0, risk: 0, data: 0, docs: 0 };
-                var _useState5 = useState(initialScores),
+                // New State for Review Screen (Phase II)
+                var _useState9 = useState(initialFinished),
+                    finished = _useState9[0],
+                    setFinished = _useState9[1];
+
+                var _useState4 = useState(initialReviewed),
+                    reviewed = _useState4[0],
+                    setReviewed = _useState4[1];
+
+                var _useState5 = useState(initialScoresFromLS),
                     scores = _useState5[0],
                     setScores = _useState5[1];
-                
-                var _useState6 = useState({}),
+
+                var _useState6 = useState(initialAnswers),
                     answers = _useState6[0],
                     setAnswers = _useState6[1];
                 
-                var _useState7 = useState(generateHash()),
-                    hash = _useState7[0],
-                    setHash = _useState7[1];
+                var _useState7 = useState(initialFinalHash),
+                    finalHash = _useState7[0],
+                    setFinalHash = _useState7[1];
 
-                // Hash stream animation effect
+                var _useState8 = useState(generateCryptoHash()),
+                    hashStream = _useState8[0],
+                    setHashStream = _useState8[1];
+                
+                var _useState10 = useState(false), // For Copy Button feedback
+                    copied = _useState10[0],
+                    setCopied = _useState10[1];
+
+
+                // Persistence Effects (Save state on change)
+                useEffect(function() { saveState(LS_KEY_LANG, lang); }, [lang]);
+                useEffect(function() { saveState(LS_KEY_ANSWERS, answers); saveState(LS_KEY_SCORES, scores); }, [answers, scores]);
+                useEffect(function() { saveState(LS_KEY_PROGRESS, started); }, [started]);
+                useEffect(function() { saveState(LS_KEY_HASH, finalHash); }, [finalHash]);
+
+
+                // Hash stream animation effect (Reduced to 1000ms)
                 useEffect(function() {
-                    var interval = setInterval(function() { setHash(generateHash()); }, 150);
+                    var interval = setInterval(function() { setHashStream(generateCryptoHash()); }, 1000); 
                     return function() { clearInterval(interval); };
                 }, []);
-                
+
                 // Re-render Lucide Icons after every component update/screen change
                 useEffect(function() {
                     if (typeof lucide !== 'undefined') {
                         lucide.createIcons();
                     }
-                }, [started, finished, currentQ, lang]);
-                
-                var currentLangData = LANGUAGES[lang] || LANGUAGES.EN; // Added robust fallback
+                }, [started, finished, currentQ, lang, reviewed]);
+
+                var currentLangData = LANGUAGES[lang] || LANGUAGES.EN; 
                 var t = currentLangData.text;
                 var currentFont = currentLangData.font;
                 var dir = currentLangData.dir;
-                var langCode = lang;  // Use the uppercase language code
+                var langCode = lang;
 
                 var handleAnswer = function(score, q) {
-                    // Update answers state (safe for ES5 because the key is a constant `q.id`)
+                    var isLastQuestion = currentQ === AUDIT_QUESTIONS.length - 1;
+
+                    // 1. Update answers state
                     setAnswers(function(prev) {
                         var newAnswers = Object.assign({}, prev);
                         newAnswers[q.id] = { 
@@ -321,28 +511,58 @@
                         return newAnswers;
                     });
 
-                    // CRITICAL FIX: Update scores state using ES5 compatible method
+                    // 2. Update scores state 
                     setScores(function(prev) {  
                         var newScores = Object.assign({}, prev);
-                        // Use standard bracket assignment (ES5 compatible)
                         newScores[q.domain] = score; 
                         return newScores;
                     });
-                    
-                    // Move to the next question or finish
-                    if (currentQ < AUDIT_QUESTIONS.length - 1) setCurrentQ(function(p) { return p + 1; });
-                    else setFinished(true);
+
+                    // 3. Move to the next question or finish
+                    if (!isLastQuestion) setCurrentQ(function(p) { return p + 1; });
+                    else setFinished(true); // Go to Review Screen
+                };
+                
+                var finalizeAudit = function() {
+                    // This action moves from Review Screen to Report Screen
+                    setReviewed(true);
+                    setFinalHash(generateCryptoHash()); // Anchor the report with a final hash
+                };
+                
+                var startReview = function() {
+                    setFinished(true); // Used to trigger the review screen after last question
+                };
+                
+                var editAnswer = function(qId) {
+                    setFinished(false);
+                    setCurrentQ(AUDIT_QUESTIONS.findIndex(function(q) { return q.id === qId; }));
                 };
 
                 var reset = function() {
-                    setStarted(false); setFinished(false); setCurrentQ(0);  
-                    setScores(initialScores); setAnswers({});
-                    setHash(generateHash());
+                    setStarted(false); setFinished(false); setCurrentQ(0); setReviewed(false);
+                    setScores(initialScores); setAnswers({}); setFinalHash(null);
+                    setHashStream(generateCryptoHash());
+
+                    // Clear Local Storage
+                    localStorage.removeItem(LS_KEY_LANG);
+                    localStorage.removeItem(LS_KEY_ANSWERS);
+                    localStorage.removeItem(LS_KEY_SCORES);
+                    localStorage.removeItem(LS_KEY_PROGRESS);
+                    localStorage.removeItem(LS_KEY_HASH);
                 };
+
+                var copyHash = function() {
+                    navigator.clipboard.writeText(finalHash).then(function() {
+                        setCopied(true);
+                        setTimeout(function() { setCopied(false); }, 2000);
+                    }).catch(function(err) {
+                        console.error('Could not copy text: ', err);
+                    });
+                };
+
 
                 var Layout = function(_ref4) {  
                     var children = _ref4.children;
-                    // ES5 compatible string concat
                     return e('div', {  
                         className: "w-full min-h-screen flex items-center justify-center p-4 " + currentFont,
                         dir: dir  
@@ -350,28 +570,73 @@
                 };
 
                 // SCREEN 1: INTRO (START)
-                if (!started) return e(Layout, null,
+                if (!started && !reviewed) return e(Layout, null,
                     e(LangSwitcher, { current: lang, setLang: setLang }),
                     e('div', { className: "glass-panel max-w-lg w-full p-10 rounded-2xl text-center border-t-4 border-blue-500 relative overflow-hidden" },
                         e('h1', { className: "text-4xl font-bold text-white mb-2 neon-text" }, t.title),
                         e('p', { className: "text-slate-400 text-sm mb-8 font-mono tracking-wider" }, t.subtitle),
                         e('button', {  
-                            onClick: function() { setStarted(true); },
+                            onClick: function() { setStarted(true); setFinished(false); setCurrentQ(0); },
                             className: "w-full py-4 bg-blue-700 hover:bg-blue-600 text-white font-bold rounded shadow-lg transition-transform transform active:scale-95"
                         }, t.startBtn)
                     )
                 );
+                
+                // --- SCREEN 3: REVIEW ANSWERS (PHASE II) ---
+                if (finished && !reviewed) return e(Layout, null,
+                    e(LangSwitcher, { current: lang, setLang: setLang }),
+                    e('div', { className: "glass-panel max-w-4xl w-full p-8 rounded-2xl space-y-8" },
+                        e('h2', { className: "text-2xl font-bold text-white mb-2 flex items-center gap-3 border-b border-slate-700 pb-4" },  
+                            e('span', { 'data-lucide': "ClipboardCheck", className: "w-7 h-7 text-amber-400" }), t.reviewTitle
+                        ),
+                        e('p', { className: "text-slate-400 mb-6" }, t.reviewSub),
+                        
+                        e('div', { className: "space-y-4 max-h-[60vh] overflow-y-auto pr-4" },
+                            AUDIT_QUESTIONS.map(function(q) {
+                                var answer = answers[q.id];
+                                var scoreLabel = getLabelByScore(answer.score);
+                                var qText = q[currentLangData.code.toLowerCase()] || q.en; 
+                                var domainText = t[q.domain] ? t[q.domain] : q.domain; 
 
-                // SCREEN 2: REPORT (RESULTS)
-                if (finished) {
+                                var baseClass = "p-4 rounded-lg flex justify-between items-center text-sm border ";
+                                if (answer.score === 100) baseClass += 'bg-emerald-600/10 border-emerald-500/50';
+                                else if (answer.score === 50) baseClass += 'bg-amber-600/10 border-amber-500/50';
+                                else baseClass += 'bg-red-600/10 border-red-500/50';
+
+                                return e('div', { key: q.id, className: baseClass },
+                                    e('div', { className: "w-4/5" },
+                                        e('p', { className: "font-bold text-slate-200" }, domainText.toUpperCase() + ": " + qText),
+                                        e('p', { className: "text-xs mt-1 font-mono " + (answer.score === 100 ? 'text-emerald-300' : answer.score === 50 ? 'text-amber-300' : 'text-red-300') }, 
+                                            "YOUR ANSWER: " + scoreLabel
+                                        )
+                                    ),
+                                    e('button', {
+                                        onClick: function() { editAnswer(q.id); },
+                                        className: "flex items-center gap-1 text-xs text-blue-400 hover:text-blue-200 border border-blue-600 px-3 py-1 rounded transition-all"
+                                    }, 
+                                        e('span', { 'data-lucide': "Edit", className: "w-4 h-4" }), t.editBtn
+                                    )
+                                );
+                            })
+                        ),
+                        
+                        e('button', {
+                            onClick: finalizeAudit,
+                            className: "w-full py-4 bg-blue-700 hover:bg-blue-600 text-white font-bold rounded shadow-lg transition-transform transform active:scale-95 mt-6"
+                        }, t.continueBtn)
+                    )
+                );
+
+
+                // --- SCREEN 4: REPORT (RESULTS) ---
+                if (reviewed) {
                     var answeredQuestions = Object.values(answers);
                     var answeredScores = answeredQuestions.map(function(a) { return a.score; });
                     var sum = answeredScores.reduce(function(a,b) { return a + b; }, 0);
                     var avg = answeredScores.length > 0 ? sum / answeredQuestions.length : 0;
                     var passed = avg >= 75;  
                     var violations = [];
-                    
-                    // CRITICAL FIX: Ensure ES5 compatibility by iterating over object keys
+
                     for (var key in answers) {
                         if (answers.hasOwnProperty(key) && answers[key].score < 100) {
                             violations.push(answers[key]);
@@ -379,24 +644,30 @@
                     }
 
                     var projectedFine = calculateLiability(violations);
+                    
+                    var copyButtonClasses = "py-1 px-3 rounded text-xs font-bold transition-all " + (copied ? 'bg-emerald-500 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600');
+                    var copyButtonText = copied ? t.copied : e('span', { 'data-lucide': "Copy", className: "w-3 h-3 mr-1" }, t.anchor);
 
                     return e(Layout, null,
                         e(LangSwitcher, { current: lang, setLang: setLang }),
-                        e('div', { className: "glass-panel max-w-5xl w-full p-8 rounded-2xl space-y-8" },
+                        e('div', { 
+                            className: "glass-panel max-w-5xl w-full p-8 rounded-2xl space-y-8 report-container",
+                            id: 'report-container',
+                            dir: dir
+                        },
                             e('h2', { className: "text-2xl font-bold text-white mb-6 flex items-center gap-3 border-b border-slate-700 pb-4" },  
                                 e('span', { 'data-lucide': "CheckCircle", className: "w-7 h-7 text-emerald-400" }), t.report
                             ),
-                            
+
                             // Top Metrics Grid  
                             e('div', { className:"grid grid-cols-1 md:grid-cols-4 gap-6" },
                                 // COMPLIANCE CONFIDENCE
-                                e('div', { className: "flex flex-col items-center justify-center p-4 bg-slate-900/50 rounded-xl border border-slate-700 col-span-1" },
+                                e('div', { className: "flex flex-col items-center justify-center p-4 bg-slate-900/50 rounded-xl border border-slate-700 col-span-1", role: "status" },
                                     e('h3', { className: "text-slate-400 text-xs tracking-widest mb-2" }, "CONFIDENCE SCORE"),
-                                    // ES5 compatible string concat
                                     e('div', { className: "text-4xl font-black " + (passed ? 'text-emerald-400 neon-text' : 'text-amber-500') }, Math.round(avg)+"%")
                                 ),
                                 // LIABILITY EXPOSURE
-                                e('div', { className: "p-4 rounded-xl border border-red-800 bg-red-900/20 text-center col-span-1 md:col-span-2" },
+                                e('div', { className: "p-4 rounded-xl border border-red-800 bg-red-900/20 text-center col-span-1 md:col-span-2", role: "alert" },
                                     e('h3', { className: "text-sm font-bold text-red-400 mb-1" }, "PROJECTED EU LIABILITY"),
                                     e('p', { className: "text-white text-3xl font-extrabold font-mono neon-text" }, projectedFine)
                                 ),
@@ -407,6 +678,14 @@
                                 )
                             ),
 
+                            // CRYPTO ANCHOR (PHASE II)
+                            e('div', { className: "flex justify-between items-center bg-slate-950 p-3 rounded-lg border border-blue-800/50 no-print" },
+                                e('p', { className: "text-xs font-mono text-slate-300" }, t.anchor + ": " + finalHash),
+                                e('button', { onClick: copyHash, className: copyButtonClasses }, 
+                                    copyButtonText
+                                )
+                            ),
+
                             // VIOLATION & REMEDIATION SUMMARY
                             e('div', { className: "bg-slate-950 p-6 rounded-lg border border-slate-800" },
                                 e('h3', { className: "text-lg font-bold text-red-400 mb-4 flex items-center gap-2" },  
@@ -414,24 +693,18 @@
                                 ),
                                 violations.length === 0 
                                     ? e('p', { className: "text-emerald-400 font-mono text-sm" }, "ZERO CRITICAL VIOLATIONS DETECTED. SYSTEM IS ROBUST.")
-                                    // Scrollable area for violations summary
-                                    : e('div', { className: "space-y-4 font-mono text-sm max-h-64 overflow-y-auto" },  
-                                        // ES5 compatible map
+                                    : e('div', { className: "space-y-4 font-mono text-sm scrollable-summary" },  
                                         violations.map(function(v, i) {  
                                             var domainText = t[v.domain] ? t[v.domain] : v.domain;  
-                                            // ES5 compatible string concat
                                             return e('div', { key: i, className: "border-b border-slate-700 pb-4 " + (v.domain === 'sec' ? 'border-red-500/50' : '') },
-                                                // ES5 compatible string concat
                                                 e('span', { className: "font-bold text-base " + (v.domain === 'sec' ? 'text-red-500' : 'text-amber-400') },  
                                                     domainText.toUpperCase() + " - " + (v.score === 0 ? 'FAIL' : 'PARTIAL')
                                                 ),
                                                 e('div', { className: "mt-2 p-3 bg-slate-800 rounded text-slate-300 border border-red-900/50" },
                                                     e('p', { className: "font-bold text-red-200 mb-1" }, "ACTION REQUIRED:"),
-                                                    // Access translation safely using the correct, uppercase language code
                                                     e('p', null, v.remediation[langCode] || v.remediation.EN)  
                                                 ),
                                                 e('p', { className: "mt-2 text-slate-500 text-xs" },
-                                                    // ES5 compatible string concat
                                                     "Ref: " + t.iso + " " + v.references.ISO + ", " + t.eu + " " + v.references.EU + ", " + t.us + " " + v.references.US
                                                 )
                                             );
@@ -439,16 +712,24 @@
                                     )
                             ),
 
-                            e('button', { onClick: reset, className: "w-full mt-4 py-3 border border-slate-600 text-slate-400 hover:bg-slate-800 rounded" }, t.reset)
+                            // REPORT ACTION BUTTONS (PHASE II)
+                            e('div', { className: "mt-6 flex flex-col md:flex-row gap-4 no-print" },
+                                e('button', { 
+                                    onClick: function() { exportPdfReport(finalHash); }, 
+                                    className: "flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded flex items-center justify-center transition-transform transform active:scale-95" 
+                                }, e('span', { 'data-lucide': "Download", className: "w-5 h-5 mr-2" }), t.exportBtn),
+                                
+                                e('button', { onClick: reset, className: "flex-1 py-3 border border-slate-600 text-slate-400 hover:bg-slate-800 rounded" }, t.reset)
+                            )
                         )
                     );
                 }
 
-                // SCREEN 3: QUESTIONS (ASSESSMENT)
+                // SCREEN 2: QUESTIONS (ASSESSMENT)
                 var q = AUDIT_QUESTIONS[currentQ];
-                var qText = q[currentLangData.code.toLowerCase()] || q.en; // Use lowercase code for question text
+                var qText = q[currentLangData.code.toLowerCase()] || q.en; 
                 var domainDisplay = t[q.domain] ? t[q.domain] : q.domain;  
-                
+
                 return e(Layout, null,
                     e(LangSwitcher, { current: lang, setLang: setLang }),
                     // Grid layout for questions
@@ -457,7 +738,7 @@
                         e('div', { className: "hidden lg:flex lg:col-span-4 glass-panel rounded-xl p-6 flex-col justify-between h-[80vh]" },  
                             e('div', null,
                                 e('div', { className: "flex items-center gap-3 mb-6" },
-                                    e('div', { className: "w-3 h-3 bg-red-500 rounded-full live-dot" }),
+                                    e('div', { className: "w-3 h-3 bg-red-500 rounded-full live-dot", role: "presentation" }),
                                     e('span', { className: "text-xs font-bold text-slate-400 tracking-widest" }, t.monitoring)
                                 ),
                                 e('h2', { className: "text-xl font-bold text-white mb-4" }, t.metrics),
@@ -465,15 +746,14 @@
                             ),
                             e('div', { className: "text-center" },  
                                 e('p', { className: "text-slate-500 font-mono text-xs mb-1" }, "CRYPTOGRAPHIC ANCHOR"),
-                                e(HashStream, { hash: hash })
+                                e(HashStream, { hash: hashStream })
                             )
                         ),
-                        
+
                         // RIGHT: Question Area
                         e('div', { className: "col-span-1 lg:col-span-8 glass-panel rounded-xl p-6 md:p-10 flex flex-col relative min-h-[80vh]" },  
                             // Progress Indicator
                             e('div', { className: "mb-6 flex justify-between items-center" },  
-                                // ES5 compatible string concat
                                 e('span', { className: "text-blue-400 text-xs font-bold font-mono tracking-widest" },  
                                     "QUESTION " + (currentQ + 1) + " OF " + AUDIT_QUESTIONS.length
                                 ),
@@ -481,18 +761,17 @@
                                     domainDisplay.toUpperCase()
                                 )
                             ),
-                            
+
                             // Question Text
-                            e('h3', { className: "text-xl md:text-3xl font-bold text-white mb-10 leading-snug" }, qText),
-                            
+                            e('h3', { className: "text-xl md:text-3xl font-bold text-white mb-10 leading-snug", id: "current-question" }, qText),
+
                             // Answer Options (ES5 compatible map)
-                            e('div', { className: "space-y-4 mt-auto" },
+                            e('div', { className: "space-y-4 mt-auto", role: "group", "aria-labelledby": "current-question" },
                                 OPTIONS.map(function(opt, idx) {
-                                    // ES5 compatible string concat
                                     var className = "w-full text-start p-5 rounded-lg transition-all text-white font-medium flex justify-between items-center group ";
-                                    if (opt.score === 100) className += 'bg-emerald-600/20 hover:bg-emerald-600/40 border border-emerald-500/50';
-                                    else if (opt.score === 50) className += 'bg-amber-600/20 hover:bg-amber-600/40 border border-amber-500/50';
-                                    else className += 'bg-red-600/20 hover:bg-red-600/40 border border-red-500/50';
+                                    if (opt.score === 100) className += 'bg-emerald-600/20 hover:bg-emerald-600/40 border border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/50';
+                                    else if (opt.score === 50) className += 'bg-amber-600/20 hover:bg-amber-600/40 border border-amber-500/50 focus:ring-4 focus:ring-amber-500/50';
+                                    else className += 'bg-red-600/20 hover:bg-red-600/40 border border-red-500/50 focus:ring-4 focus:ring-red-500/50';
 
                                     return e('button', {
                                         key: idx,
@@ -500,7 +779,6 @@
                                         className: className
                                     },  
                                         e('span', null, opt.label),
-                                        // Use appropriate Chevron icon based on RTL/LTR
                                         e('span', { 'data-lucide': dir === 'rtl' ? "ChevronLeft" : "ChevronRight", className: "text-white opacity-70 group-hover:opacity-100" })
                                     );
                                 })
@@ -511,10 +789,8 @@
             };
 
             // --- FINAL RENDER ---
-            // Using ReactDOM.createRoot (React 18 compatible)
             ReactDOM.createRoot(document.getElementById('root')).render(e(App));
-            
-            // Initialize Lucide icons immediately after render
+
             lucide.createIcons();
         }
     </script>
