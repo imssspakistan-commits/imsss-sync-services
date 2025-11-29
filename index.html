@@ -108,7 +108,7 @@
             var LS_KEY_SCORES = 'imsss_scores';
             var LS_KEY_PROGRESS = 'imsss_progress';
             var LS_KEY_HASH = 'imsss_final_hash'; 
-            var LS_KEY_TTS = 'imsss_tts_active'; // NEW KEY
+            var LS_KEY_TTS = 'imsss_tts_active'; 
 
             // --- 1. GLOBALIZATION ENGINE ---
             var LANGUAGES = {
@@ -451,8 +451,8 @@
             var LangSwitcher = function(_ref3) {
                 var current = _ref3.current,
                     setLang = _ref3.setLang,
-                    ttsEnabled = _ref3.ttsEnabled, // NEW PROP
-                    setTtsEnabled = _ref3.setTtsEnabled; // NEW PROP
+                    ttsEnabled = _ref3.ttsEnabled,
+                    setTtsEnabled = _ref3.setTtsEnabled;
 
                 var languageButtons = Object.keys(LANGUAGES).map(function(code) {
                     var langData = LANGUAGES[code];
@@ -487,7 +487,8 @@
                 };
 
 
-                return e('div', { className: "absolute top-4 right-4 z-50 flex space-x-2 no-print" }, 
+                // FIX: Ensure the selector is on the top layer and positioned absolutely 
+                return e('div', { className: "absolute top-4 right-4 z-[9999] flex space-x-2 no-print" }, 
                     e(TTSToggle, null), // Added TTS toggle 
                     languageButtons
                 );
