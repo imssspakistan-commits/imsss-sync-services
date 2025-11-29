@@ -46,6 +46,59 @@
             return { name: "Level 0 (Not Implemented)", color: "text-red-600", bg: "bg-red-100" };
         };
 
+        // --- NEW COMPONENT: PrivacyPolicy (For Transparency) ---
+        const PrivacyPolicy = ({ onClose }) => {
+            useLucideIcons();
+
+            return e('div', { className: "fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50 p-4" },
+                e('div', { className: "bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-8 relative" },
+                    e('h2', { className: "text-2xl font-bold text-indigo-700 mb-4 border-b pb-2 flex items-center" },
+                        e('span', { 'data-lucide': "ShieldCheck", className: "inline-block w-6 h-6 mr-3" }),
+                        "Privacy Policy"
+                    ),
+                    e('button', {
+                        onClick: onClose,
+                        className: "absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+                    },
+                        e('span', { 'data-lucide': "X", className: "w-6 h-6" })
+                    ),
+                    e('p', { className: "mb-4 text-sm text-gray-700" }, 
+                        "This application, the IMSSS Assessor, is designed for self-assessment and utilizes only **Client-Side Data Storage**."
+                    ),
+                    
+                    e('h3', { className: "text-lg font-semibold mt-4 mb-2 text-gray-800" }, "1. Data Stored (Local Storage)"),
+                    e('p', { className: "text-sm text-gray-600 mb-4" }, 
+                        "If you select **'Browser Local Storage'** in Step 3, the following information is saved directly in your browser (not sent to any server):"
+                    ),
+                    e('ul', { className: "list-disc list-inside ml-4 text-sm text-gray-600 space-y-1" },
+                        e('li', null, "The selected Assessment Type (e.g., 'baseline')."),
+                        e('li', null, "The selected Persistence Mechanism ('local_storage')."),
+                        e('li', null, "The **Assessment Answers** (5 numeric scores 0-4)."),
+                    ),
+                    
+                    e('h3', { className: "text-lg font-semibold mt-4 mb-2 text-gray-800" }, "2. Data Retention and Deletion"),
+                    e('p', { className: "text-sm text-gray-600 mb-4" }, 
+                        "This data persists only as long as you do not manually clear your browser's Local Storage or click **'Start New Assessment'**, which triggers an internal data reset."
+                    ),
+                    e('p', { className: "text-sm font-bold text-red-600 p-2 bg-red-50 rounded-lg" }, 
+                        "To manually delete the stored assessment data, you must clear your browser's local storage for this domain."
+                    ),
+
+                    e('h3', { className: "text-lg font-semibold mt-4 mb-2 text-gray-800" }, "3. No Tracking or External Transmission"),
+                    e('p', { className: "text-sm text-gray-600" }, 
+                        "No personal data, IP addresses, or usage metrics are collected, tracked, or transmitted to any remote server or third party."
+                    ),
+
+                    e('div', { className: "flex justify-end pt-6 border-t mt-6" },
+                        e('button', {
+                            onClick: onClose,
+                            className: "px-6 py-2 text-white bg-indigo-600 hover:bg-indigo-700 font-medium rounded-lg transition duration-150"
+                        }, "Close Policy")
+                    )
+                )
+            );
+        };
+        
         // --- COMPONENT: Breadcrumb (Step Indicator) ---
         const Breadcrumb = ({ currentStep, onStepClick, isAssessmentStarted, isAssessmentFinished }) => {
             useLucideIcons();
@@ -106,7 +159,7 @@
         };
 
         // --- COMPONENT: TermsOfService (Step 1) ---
-        const TermsOfService = ({ onAccept }) => {
+        const TermsOfService = ({ onAccept, onPolicyOpen }) => {
             useLucideIcons();
             
             return e('div', { className: "p-8 bg-white rounded-xl shadow-lg border border-gray-200" },
@@ -124,6 +177,17 @@
                         e('li', null, "The assessment framework is based on the **IMSSS** (Internal Maturity Self-Scoring System) model."),
                     ),
                     e('p', { className: "mt-4 font-semibold text-red-600" }, "Do not use this tool with highly sensitive or confidential information unless you are fully aware of and accept the risks associated with the selected persistence method."),
+                    
+                    // --- NEW PRIVACY LINK ---
+                    e('p', { className: "mt-4 text-sm font-semibold" }, 
+                        "For details on data storage, please review our ",
+                        e('a', { 
+                            href: "#", 
+                            onClick: (e) => { e.preventDefault(); onPolicyOpen(); }, 
+                            className: "text-indigo-600 hover:underline" 
+                        }, "Privacy Policy.")
+                    )
+                    // --- END NEW PRIVACY LINK ---
                 ),
                 e('div', { className: "flex justify-end mt-6" },
                     e('button', {
@@ -511,6 +575,8 @@
 
             // State for the application flow
             const [step, setStep] = useState(1);
+            // NEW STATE: Manages the visibility of the Privacy Policy modal
+            const [isPrivacyPolicyOpen, setIsPrivacyPolicyOpen] = useState(false); 
             const [assessmentType, setAssessmentType] = useState(null);
             const [persistenceMechanism, setPersistenceMechanism] = useState(null);
             const [isAssessmentStarted, setIsAssessmentStarted] = useState(false);
@@ -635,6 +701,8 @@
                     case 1:
                         return e(TermsOfService, { 
                             onAccept: nextStep,
+                            // Pass the state setter to open the Policy modal
+                            onPolicyOpen: () => setIsPrivacyPolicyOpen(true),
                         });
                     case 2:
                         return e(Step1, { 
@@ -679,7 +747,13 @@
                 
                 e('main', { className: "bg-white p-6 rounded-2xl shadow-2xl" },
                     renderStep()
-                )
+                ),
+                
+                // --- CONDITIONAL RENDERING FOR PRIVACY POLICY MODAL ---
+                isPrivacyPolicyOpen && e(PrivacyPolicy, { 
+                    onClose: () => setIsPrivacyPolicyOpen(false) 
+                })
+                // --- END CONDITIONAL RENDERING ---
             );
         };
 
