@@ -6,8 +6,8 @@
     <title>IMSSS | AI Simplicity Console</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght=400&family=Noto+Nastaliq+Urdu:wght@400;700&display=swap" rel="stylesheet">
@@ -84,31 +84,31 @@
                 {
                     id: 1, domain: "gov", en: "Does the organization possess a formally signed AI Policy defining accountability and responsibility?", ur: "کیا تنظیم کے پاس ذمہ داری کی وضاحت کرنے والی باضابطہ دستخط شدہ AI پالیسی موجود ہے؟",
                     references: { ISO: "42001: 5.2", EU: "AI Act: Art. 8", US: "NIST AI RMF: Govern" },
-                    remediation: { en: "Formalize Top Management sign-off. Assign clear roles (ISO 42001, 5.3).", ur: "اعلیٰ انتظامیہ کے دستخط کو باضابطہ بنائیں۔ واضح کردار تفویض کریں۔" },
+                    remediation: { EN: "Formalize Top Management sign-off. Assign clear roles (ISO 42001, 5.3).", ES: "Formalizar la firma de la Alta Dirección. Asignar funciones claras.", UR: "اعلیٰ انتظامیہ کے دستخط کو باضابطہ بنائیں۔ واضح کردار تفویض کریں۔" },
                     riskWeight: 0.25 
                 },
                 {
                     id: 2, domain: "sec", en: "Has the system undergone adversarial testing (e.g., data poisoning, model evasion, prompt injection defense)?", ur: "کیا سسٹم مخالفانہ جانچ (جیسے ڈیٹا پوائزننگ، ماڈل سے بچاؤ) سے گزرا ہے؟",
                     references: { ISO: "42001: 8.6.2 (Security)", EU: "AI Act: Art. 15 (Robustness)", US: "NIST AI RMF: Manage (Defenses)" },
-                    remediation: { en: "Implement adversarial attack testing/hardening procedures (NIST AI 100-2).", ur: "مخالفانہ حملے کی جانچ اور سختی کے طریقہ کار کو نافذ کریں۔" },
+                    remediation: { EN: "Implement adversarial attack testing/hardening procedures (NIST AI 100-2).", ES: "Implementar procedimientos de prueba/endurecimiento de ataques adversarios.", UR: "مخالفانہ حملے کی جانچ اور سختی کے طریقہ کار کو نافذ کریں۔" },
                     riskWeight: 0.25 
                 },
                 {
                     id: 3, domain: "risk", en: "Is the AI System subject to mandatory, independent internal audits to verify compliance and risk management?", ur: "کیا AI سسٹم لازمی اندرونی آڈٹ کے تابع ہے؟",
                     references: { ISO: "42001: 9.2", EU: "AI Act: Art. 18", US: "NIST AI RMF: Measure" },
-                    remediation: { en: "Schedule mandatory internal and external audits (ISO 42001, 9.2).", ur: "لازمی اندرونی اور بیرونی آڈٹ کا شیڈول بنائیں۔" },
+                    remediation: { EN: "Schedule mandatory internal and external audits (ISO 42001, 9.2).", ES: "Programar auditorías internas y externas obligatorias.", UR: "لازمی اندرونی اور بیرونی آڈٹ کا شیڈول بنائیں۔" },
                     riskWeight: 0.1667
                 },
                 {
                     id: 4, domain: "data", en: "Are statistical controls applied to training data to map, measure, and mitigate algorithmic bias?", ur: "کیا الگورتھم کے تعصب کو کم کرنے کے لیے تربیتی ڈیٹا پر شماریاتی کنٹرول لاگو کیے گئے ہیں؟",
                     references: { ISO: "42001: 8.2", EU: "AI Act: Art. 10", US: "NIST AI RMF: Map" },
-                    remediation: { en: "Establish data quality metrics and bias detection procedures (EU AI Act, Art. 10).", ur: "ڈیٹا کوالٹی میٹرکس اور تعصب کا پتہ لگانے کے طریقہ کار قائم کریں۔" },
+                    remediation: { EN: "Establish data quality metrics and bias detection procedures (EU AI Act, Art. 10).", ES: "Establecer métricas de calidad de datos y procedimientos de detección de sesgos.", UR: "ڈیٹا کوالٹی میٹرکس اور تعصب کا پتہ لگانے کے طریقہ کار قائم کریں۔" },
                     riskWeight: 0.1667
                 },
                 {
                     id: 5, domain: "docs", en: "Is a live Technical File maintained with version history, validation logs, and system specifications for all models?", ur: "کیا تمام ماڈلز کے لیے ورژن ہسٹری اور تصدیقی لاگز کے ساتھ لائیو ٹیکنیکل فائل برقرار رکھی گئی ہے؟",
                     references: { ISO: "42001: 7.5", EU: "AI Act: Art. 11", US: "NIST AI RMF: Manage (Documentation)" },
-                    remediation: { en: "Create an automated log and documentation repository (ISO 42001, 7.5).", ur: "خودکار لاگ اور دستاویزی ذخیرہ بنائیں۔" },
+                    remediation: { EN: "Create an automated log and documentation repository (ISO 42001, 7.5).", ES: "Crear un repositorio automatizado de registro y documentación.", UR: "خودکار لاگ اور دستاویزی ذخیرہ بنائیں۔" },
                     riskWeight: 0.1667
                 }
             ];
@@ -277,7 +277,8 @@
                 var t = currentLangData.text;
                 var currentFont = currentLangData.font;
                 var dir = currentLangData.dir;
-                var langCode = currentLangData.code.toLowerCase(); // Use lower case code for property access
+                // FIX 2: Use the uppercase language code (lang) to match the keys in AUDIT_QUESTIONS.remediation
+                var langCode = lang; 
 
                 var handleAnswer = function(score, q) {
                     // Use Object.assign for ES5 compatibility
@@ -397,8 +398,8 @@
                                                 ),
                                                 e('div', { className: "mt-2 p-3 bg-slate-800 rounded text-slate-300 border border-red-900/50" },
                                                     e('p', { className: "font-bold text-red-200 mb-1" }, "ACTION REQUIRED:"),
-                                                    // Access translation safely, fallback to English
-                                                    e('p', null, v.remediation[langCode] || v.remediation.en)  
+                                                    // FIX 3: Access translation safely using the correct, uppercase language code
+                                                    e('p', null, v.remediation[langCode] || v.remediation.EN)  
                                                 ),
                                                 e('p', { className: "mt-2 text-slate-500 text-xs" },
                                                     // ES5 compatible string concat
@@ -416,7 +417,7 @@
 
                 // SCREEN 3: QUESTIONS (ASSESSMENT)
                 var q = AUDIT_QUESTIONS[currentQ];
-                var qText = q[langCode] || q.en;
+                var qText = q[currentLangData.code.toLowerCase()] || q.en; // Use lowercase code for question text
                 var domainDisplay = t[q.domain] ? t[q.domain] : q.domain;  
                 
                 return e(Layout, null,
@@ -481,8 +482,8 @@
             };
 
             // --- FINAL RENDER ---
-            // CRITICAL FIX: Ensure ReactDOM.render (React 17 compatible) is used, NOT createRoot
-            ReactDOM.render(e(App), document.getElementById('root'));
+            // FIX 4: Use ReactDOM.createRoot (React 18 compatible)
+            ReactDOM.createRoot(document.getElementById('root')).render(e(App));
             
             // Initialize Lucide icons immediately after render
             lucide.createIcons();
