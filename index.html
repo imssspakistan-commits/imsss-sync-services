@@ -35,426 +35,430 @@
     <div id="root" class="w-full min-h-screen"></div>
 
     <script>
-        var useState = React.useState;
-        var useEffect = React.useEffect;
-        var e = React.createElement;
+        // Use DOMContentLoaded to ensure ALL elements, CDNs, and variables are loaded before executing logic
+        document.addEventListener('DOMContentLoaded', function() {
+            var useState = React.useState;
+            var useEffect = React.useEffect;
+            var e = React.createElement;
 
-        // --- 1. GLOBALIZATION ENGINE ---
-        var LANGUAGES = {
-            EN: { 
-                name: "English", code: "en", dir: "ltr", font: "font-sans", 
-                text: { 
-                    title: "IMSSS ASSESSOR", subtitle: "AI ADVERSARIAL & RISK AUDIT", startBtn: "BEGIN ASSESSMENT", reset: "START NEW SESSION", 
-                    report: "AUDIT SUMMARY REPORT", monitoring: "LIVE MONITORING", integrity: "IMMUTABLE HASH", metrics: "System Metrics", 
-                    complianceSummary: "VIOLATION & REMEDIATION SUMMARY", 
-                    iso: "ISO 42001", eu: "EU AI Act", us: "NIST AI RMF", 
-                    gov: "Governance", risk: "Risk Mgmt", data: "Data Integrity", docs: "Documentation", sec: "Security" 
-                } 
-            },
-            ES: { 
-                name: "Español", code: "es", dir: "ltr", font: "font-sans", 
-                text: { 
-                    title: "IMSSS EVALUADOR", subtitle: "AUDITORÍA ADVERSARIA Y DE RIESGO", startBtn: "INICIAR EVALUACIÓN", reset: "NUEVA SESIÓN", 
-                    report: "RESUMEN DE AUDITORÍA", monitoring: "MONITOREO EN VIVO", integrity: "HASH INMUTABLE", metrics: "Métricas del Sistema", 
-                    complianceSummary: "RESUMEN DE VIOLACIONES Y ACCIONES", 
-                    iso: "ISO 42001", eu: "Ley IA UE", us: "NIST IA RMF", 
-                    gov: "Gobernanza", risk: "Gestión de Riesgos", data: "Integridad de Datos", docs: "Documentación", sec: "Seguridad" 
-                } 
-            },
-            UR: { 
-                name: "اردو", code: "ur", dir: "rtl", font: "font-urdu", 
-                text: { 
-                    title: "IMSSS آڈیٹر", subtitle: "مخالفانہ اور رسک آڈٹ", startBtn: "تشخیص شروع کریں", reset: "نئی نشست شروع کریں", 
-                    report: "آڈٹ کا خلاصہ", monitoring: "لائیو نگرانی", integrity: "ناقابل تغیر ہیش", metrics: "سسٹم میٹرکس", 
-                    complianceSummary: "خلاف ورزی اور ازالے کا خلاصہ", 
-                    iso: "آئی ایس او 42001", eu: "یورپی یونین AI ایکٹ", us: "NIST AI RMF", 
-                    gov: "انتظامیہ", risk: "رسک مینجمنٹ", data: "ڈیٹا کی سالمیت", docs: "دستاویزات", sec: "سیکیورٹی" 
-                } 
-            }
-        };
-
-        // --- 2. AUDIT DATA (AI GRC Focus) ---
-        var AUDIT_QUESTIONS = [
-            {
-                id: 1, domain: "gov", en: "Does the organization possess a formally signed AI Policy defining accountability and responsibility?", ur: "کیا تنظیم کے پاس ذمہ داری کی وضاحت کرنے والی باضابطہ دستخط شدہ AI پالیسی موجود ہے؟",
-                references: { ISO: "42001: 5.2", EU: "AI Act: Art. 8", US: "NIST AI RMF: Govern" },
-                remediation: { en: "Formalize Top Management sign-off. Assign clear roles (ISO 42001, 5.3).", ur: "اعلیٰ انتظامیہ کے دستخط کو باضابطہ بنائیں۔ واضح کردار تفویض کریں۔" },
-                riskWeight: 0.25 
-            },
-            {
-                id: 2, domain: "sec", en: "Has the system undergone adversarial testing (e.g., data poisoning, model evasion, prompt injection defense)?", ur: "کیا سسٹم مخالفانہ جانچ (جیسے ڈیٹا پوائزننگ، ماڈل سے بچاؤ) سے گزرا ہے؟",
-                references: { ISO: "42001: 8.6.2 (Security)", EU: "AI Act: Art. 15 (Robustness)", US: "NIST AI RMF: Manage (Defenses)" },
-                remediation: { en: "Implement adversarial attack testing/hardening procedures (NIST AI 100-2).", ur: "مخالفانہ حملے کی جانچ اور سختی کے طریقہ کار کو نافذ کریں۔" },
-                riskWeight: 0.25 
-            },
-            {
-                id: 3, domain: "risk", en: "Is the AI System subject to mandatory, independent internal audits to verify compliance and risk management?", ur: "کیا AI سسٹم لازمی اندرونی آڈٹ کے تابع ہے؟",
-                references: { ISO: "42001: 9.2", EU: "AI Act: Art. 18", US: "NIST AI RMF: Measure" },
-                remediation: { en: "Schedule mandatory internal and external audits (ISO 42001, 9.2).", ur: "لازمی اندرونی اور بیرونی آڈٹ کا شیڈول بنائیں۔" },
-                riskWeight: 0.1667
-            },
-            {
-                id: 4, domain: "data", en: "Are statistical controls applied to training data to map, measure, and mitigate algorithmic bias?", ur: "کیا الگورتھم کے تعصب کو کم کرنے کے لیے تربیتی ڈیٹا پر شماریاتی کنٹرول لاگو کیے گئے ہیں؟",
-                references: { ISO: "42001: 8.2", EU: "AI Act: Art. 10", US: "NIST AI RMF: Map" },
-                remediation: { en: "Establish data quality metrics and bias detection procedures (EU AI Act, Art. 10).", ur: "ڈیٹا کوالٹی میٹرکس اور تعصب کا پتہ لگانے کے طریقہ کار قائم کریں۔" },
-                riskWeight: 0.1667
-            },
-            {
-                id: 5, domain: "docs", en: "Is a live Technical File maintained with version history, validation logs, and system specifications for all models?", ur: "کیا تمام ماڈلز کے لیے ورژن ہسٹری اور تصدیقی لاگز کے ساتھ لائیو ٹیکنیکل فائل برقرار رکھی گئی ہے؟",
-                references: { ISO: "42001: 7.5", EU: "AI Act: Art. 11", US: "NIST AI RMF: Manage (Documentation)" },
-                remediation: { en: "Create an automated log and documentation repository (ISO 42001, 7.5).", ur: "خودکار لاگ اور دستاویزی ذخیرہ بنائیں۔" },
-                riskWeight: 0.1667
-            }
-        ];
-
-        // Scoring Options (Simplified labels for quick action)
-        var OPTIONS = [
-            { label: "YES, Fully Implemented", score: 100 },
-            { label: "PARTIAL, Ad-Hoc Only", score: 50 },
-            { label: "NO, Not Implemented", score: 0 }
-        ];
-
-        // --- 3. LIABILITY CALCULATION UTILITY ---
-        var calculateLiability = function(violations) {
-            // Anchor penalty based on EU AI Act High-Risk violation maximum fine (€50 Million)
-            var MAX_PENALTY_ANCHOR = 50000000; 
-            var totalFine = 0;
-            
-            violations.forEach(function(v) {
-                // Risk weight sums up to 1.0 
-                var penalty = v.riskWeight * MAX_PENALTY_ANCHOR; 
-                
-                if (v.score === 0) {
-                    // Full fine applied for complete failure (score 0)
-                    totalFine += penalty; 
-                } else if (v.score === 50) {
-                    // Half fine applied for partial implementation (score 50)
-                    totalFine += penalty / 2;
+            // --- 1. GLOBALIZATION ENGINE ---
+            var LANGUAGES = {
+                EN: { 
+                    name: "English", code: "en", dir: "ltr", font: "font-sans", 
+                    text: { 
+                        title: "IMSSS ASSESSOR", subtitle: "AI ADVERSARIAL & RISK AUDIT", startBtn: "BEGIN ASSESSMENT", reset: "START NEW SESSION", 
+                        report: "AUDIT SUMMARY REPORT", monitoring: "LIVE MONITORING", integrity: "IMMUTABLE HASH", metrics: "System Metrics", 
+                        complianceSummary: "VIOLATION & REMEDIATION SUMMARY", 
+                        iso: "ISO 42001", eu: "EU AI Act", us: "NIST AI RMF", 
+                        gov: "Governance", risk: "Risk Mgmt", data: "Data Integrity", docs: "Documentation", sec: "Security" 
+                    } 
+                },
+                ES: { 
+                    name: "Español", code: "es", dir: "ltr", font: "font-sans", 
+                    text: { 
+                        title: "IMSSS EVALUADOR", subtitle: "AUDITORÍA ADVERSARIA Y DE RIESGO", startBtn: "INICIAR EVALUACIÓN", reset: "NUEVA SESIÓN", 
+                        report: "RESUMEN DE AUDITORÍA", monitoring: "MONITOREO EN VIVO", integrity: "HASH INMUTABLE", metrics: "Métricas del Sistema", 
+                        complianceSummary: "RESUMEN DE VIOLACIONES Y ACCIONES", 
+                        iso: "ISO 42001", eu: "Ley IA UE", us: "NIST IA RMF", 
+                        gov: "Gobernanza", risk: "Gestión de Riesgos", data: "Integridad de Datos", docs: "Documentación", sec: "Seguridad" 
+                    } 
+                },
+                UR: { 
+                    name: "اردو", code: "ur", dir: "rtl", font: "font-urdu", 
+                    text: { 
+                        title: "IMSSS آڈیٹر", subtitle: "مخالفانہ اور رسک آڈٹ", startBtn: "تشخیص شروع کریں", reset: "نئی نشست شروع کریں", 
+                        report: "آڈٹ کا خلاصہ", monitoring: "لائیو نگرانی", integrity: "ناقابل تغیر ہیش", metrics: "سسٹم میٹرکس", 
+                        complianceSummary: "خلاف ورزی اور ازالے کا خلاصہ", 
+                        iso: "آئی ایس او 42001", eu: "یورپی یونین AI ایکٹ", us: "NIST AI RMF", 
+                        gov: "انتظامیہ", risk: "رسک مینجمنٹ", data: "ڈیٹا کی سالمیت", docs: "دستاویزات", sec: "سیکیورٹی" 
+                    } 
                 }
-            });
-            // Format output as Euro currency
-            return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(totalFine);
-        };
+            };
 
-        var generateHash = function() { 
-            return "0x" + Array(40).fill(0).map(function() {
-                return "0123456789ABCDEF"[Math.random()*16|0];
-            }).join('');
-        };
+            // --- 2. AUDIT DATA (AI GRC Focus) ---
+            var AUDIT_QUESTIONS = [
+                {
+                    id: 1, domain: "gov", en: "Does the organization possess a formally signed AI Policy defining accountability and responsibility?", ur: "کیا تنظیم کے پاس ذمہ داری کی وضاحت کرنے والی باضابطہ دستخط شدہ AI پالیسی موجود ہے؟",
+                    references: { ISO: "42001: 5.2", EU: "AI Act: Art. 8", US: "NIST AI RMF: Govern" },
+                    remediation: { en: "Formalize Top Management sign-off. Assign clear roles (ISO 42001, 5.3).", ur: "اعلیٰ انتظامیہ کے دستخط کو باضابطہ بنائیں۔ واضح کردار تفویض کریں۔" },
+                    riskWeight: 0.25 
+                },
+                {
+                    id: 2, domain: "sec", en: "Has the system undergone adversarial testing (e.g., data poisoning, model evasion, prompt injection defense)?", ur: "کیا سسٹم مخالفانہ جانچ (جیسے ڈیٹا پوائزننگ، ماڈل سے بچاؤ) سے گزرا ہے؟",
+                    references: { ISO: "42001: 8.6.2 (Security)", EU: "AI Act: Art. 15 (Robustness)", US: "NIST AI RMF: Manage (Defenses)" },
+                    remediation: { en: "Implement adversarial attack testing/hardening procedures (NIST AI 100-2).", ur: "مخالفانہ حملے کی جانچ اور سختی کے طریقہ کار کو نافذ کریں۔" },
+                    riskWeight: 0.25 
+                },
+                {
+                    id: 3, domain: "risk", en: "Is the AI System subject to mandatory, independent internal audits to verify compliance and risk management?", ur: "کیا AI سسٹم لازمی اندرونی آڈٹ کے تابع ہے؟",
+                    references: { ISO: "42001: 9.2", EU: "AI Act: Art. 18", US: "NIST AI RMF: Measure" },
+                    remediation: { en: "Schedule mandatory internal and external audits (ISO 42001, 9.2).", ur: "لازمی اندرونی اور بیرونی آڈٹ کا شیڈول بنائیں۔" },
+                    riskWeight: 0.1667
+                },
+                {
+                    id: 4, domain: "data", en: "Are statistical controls applied to training data to map, measure, and mitigate algorithmic bias?", ur: "کیا الگورتھم کے تعصب کو کم کرنے کے لیے تربیتی ڈیٹا پر شماریاتی کنٹرول لاگو کیے گئے ہیں؟",
+                    references: { ISO: "42001: 8.2", EU: "AI Act: Art. 10", US: "NIST AI RMF: Map" },
+                    remediation: { en: "Establish data quality metrics and bias detection procedures (EU AI Act, Art. 10).", ur: "ڈیٹا کوالٹی میٹرکس اور تعصب کا پتہ لگانے کے طریقہ کار قائم کریں۔" },
+                    riskWeight: 0.1667
+                },
+                {
+                    id: 5, domain: "docs", en: "Is a live Technical File maintained with version history, validation logs, and system specifications for all models?", ur: "کیا تمام ماڈلز کے لیے ورژن ہسٹری اور تصدیقی لاگز کے ساتھ لائیو ٹیکنیکل فائل برقرار رکھی گئی ہے؟",
+                    references: { ISO: "42001: 7.5", EU: "AI Act: Art. 11", US: "NIST AI RMF: Manage (Documentation)" },
+                    remediation: { en: "Create an automated log and documentation repository (ISO 42001, 7.5).", ur: "خودکار لاگ اور دستاویزی ذخیرہ بنائیں۔" },
+                    riskWeight: 0.1667
+                }
+            ];
 
-        // --- 4. COMPONENTS & CORE LOGIC ---
-        
-        // Simplified Radar Chart Component
-        var RiskRadar = function(_ref) {
-            var scores = _ref.scores,
-                labels = _ref.labels;
+            // Scoring Options (Simplified labels for quick action)
+            var OPTIONS = [
+                { label: "YES, Fully Implemented", score: 100 },
+                { label: "PARTIAL, Ad-Hoc Only", score: 50 },
+                { label: "NO, Not Implemented", score: 0 }
+            ];
 
-            var size = 180; var center = size / 2; var radius = 70;
-            var domains = ["gov", "sec", "risk", "data", "docs"]; 
+            // --- 3. LIABILITY CALCULATION UTILITY ---
+            var calculateLiability = function(violations) {
+                // Anchor penalty based on EU AI Act High-Risk violation maximum fine (€50 Million)
+                var MAX_PENALTY_ANCHOR = 50000000; 
+                var totalFine = 0;
+                
+                violations.forEach(function(v) {
+                    // Risk weight sums up to 1.0 
+                    var penalty = v.riskWeight * MAX_PENALTY_ANCHOR; 
+                    
+                    if (v.score === 0) {
+                        // Full fine applied for complete failure (score 0)
+                        totalFine += penalty; 
+                    } else if (v.score === 50) {
+                        // Half fine applied for partial implementation (score 50)
+                        totalFine += penalty / 2;
+                    }
+                });
+                // Format output as Euro currency
+                return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(totalFine);
+            };
+
+            var generateHash = function() { 
+                return "0x" + Array(40).fill(0).map(function() {
+                    return "0123456789ABCDEF"[Math.random()*16|0];
+                }).join('');
+            };
+
+            // --- 4. COMPONENTS & CORE LOGIC ---
             
-            // Calculate points for the polygon based on scores (normalized to 0-1 range)
-            var points = domains.map(function(d, i) {
-                var angle = (Math.PI * 2 * i) / 5 - Math.PI / 2; 
-                var value = (scores[d] || 0) / 100; // Score is 0, 50, or 100. Normalize to 0-1
-                return "" + (center + radius * value * Math.cos(angle)) + "," + (center + radius * value * Math.sin(angle));
-            }).join(" ");
+            // Simplified Radar Chart Component
+            var RiskRadar = function(_ref) {
+                var scores = _ref.scores,
+                    labels = _ref.labels;
 
-            return e('div', { className: "relative flex justify-center py-4" },
-                e('svg', { width: size, height: size, className: "overflow-visible" },
-                    // Background grid line
-                    e('circle', { cx: center, cy: center, r: radius, fill: "none", stroke: "#334155", strokeDasharray: "4 4" }),
-                    
-                    // Risk Polygon
-                    e('polygon', { points: points, fill: "rgba(59, 130, 246, 0.4)", stroke: "#3b82f6", strokeWidth: 2 }),
-                    
-                    // Domain Labels
-                    domains.map(function(d, i) {
-                        var angle = (Math.PI * 2 * i) / 5 - Math.PI / 2;
-                        // Position the label slightly outside the perimeter
-                        var x = center + (radius + 25) * Math.cos(angle);
-                        var y = center + (radius + 20) * Math.sin(angle);
-                        // Using a simple object lookup function for labels to ensure stability
-                        var getLabel = function(key) { return labels[key]; };
-                        return e('text', { 
-                            key: d, x: x, y: y, 
-                            textAnchor: "middle", 
-                            fill: "#94a3b8", 
-                            fontSize: "10",
-                            className: "uppercase"
-                        }, getLabel(d));
-                    })
-                )
-            );
-        }; 
+                var size = 180; var center = size / 2; var radius = 70;
+                var domains = ["gov", "sec", "risk", "data", "docs"]; 
+                
+                // Calculate points for the polygon based on scores (normalized to 0-1 range)
+                var points = domains.map(function(d, i) {
+                    var angle = (Math.PI * 2 * i) / 5 - Math.PI / 2; 
+                    var value = (scores[d] || 0) / 100; // Score is 0, 50, or 100. Normalize to 0-1
+                    return "" + (center + radius * value * Math.cos(angle)) + "," + (center + radius * value * Math.sin(angle));
+                }).join(" ");
+
+                return e('div', { className: "relative flex justify-center py-4" },
+                    e('svg', { width: size, height: size, className: "overflow-visible" },
+                        // Background grid line
+                        e('circle', { cx: center, cy: center, r: radius, fill: "none", stroke: "#334155", strokeDasharray: "4 4" }),
+                        
+                        // Risk Polygon
+                        e('polygon', { points: points, fill: "rgba(59, 130, 246, 0.4)", stroke: "#3b82f6", strokeWidth: 2 }),
+                        
+                        // Domain Labels
+                        domains.map(function(d, i) {
+                            var angle = (Math.PI * 2 * i) / 5 - Math.PI / 2;
+                            // Position the label slightly outside the perimeter
+                            var x = center + (radius + 25) * Math.cos(angle);
+                            var y = center + (radius + 20) * Math.sin(angle);
+                            // Using a simple object lookup function for labels to ensure stability
+                            var getLabel = function(key) { return labels[key]; };
+                            return e('text', { 
+                                key: d, x: x, y: y, 
+                                textAnchor: "middle", 
+                                fill: "#94a3b8", 
+                                fontSize: "10",
+                                className: "uppercase"
+                            }, getLabel(d));
+                        })
+                    )
+                );
+            }; 
 
 [Image of an example radar chart for risk assessment]
 
 
-        var HashStream = function(_ref2) { 
-            var hash = _ref2.hash;
-            return e('div', { className: "font-mono text-[10px] text-emerald-500/60" }, hash.substring(0,20)+"...");
-        };
-        
-        // Language Selector Component
-        var LangSwitcher = function(_ref3) {
-            var current = _ref3.current,
-                setLang = _ref3.setLang;
+            var HashStream = function(_ref2) { 
+                var hash = _ref2.hash;
+                return e('div', { className: "font-mono text-[10px] text-emerald-500/60" }, hash.substring(0,20)+"...");
+            };
+            
+            // Language Selector Component
+            var LangSwitcher = function(_ref3) {
+                var current = _ref3.current,
+                    setLang = _ref3.setLang;
 
-            var languageButtons = Object.keys(LANGUAGES).map(function(code) {
-                var langData = LANGUAGES[code];
-                var className = "px-3 py-1 rounded text-xs font-bold transition-all border " + (current === code ? 'bg-blue-600 border-blue-400 text-white' : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white');
+                var languageButtons = Object.keys(LANGUAGES).map(function(code) {
+                    var langData = LANGUAGES[code];
+                    var className = "px-3 py-1 rounded text-xs font-bold transition-all border " + (current === code ? 'bg-blue-600 border-blue-400 text-white' : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white');
+                    
+                    return e('button', {
+                        key: code,
+                        onClick: function() { setLang(code); },
+                        className: className
+                    }, langData.name);
+                });
                 
-                return e('button', {
-                    key: code,
-                    onClick: function() { setLang(code); },
-                    className: className
-                }, langData.name);
-            });
-            
-            return e('div', { className: "absolute top-4 right-4 z-50 flex space-x-2" }, languageButtons);
-        };
+                return e('div', { className: "absolute top-4 right-4 z-50 flex space-x-2" }, languageButtons);
+            };
 
 
-        // --- MAIN APP COMPONENT ---
-        var App = function() {
-            var _useState = useState('EN'),
-                lang = _useState[0],
-                setLang = _useState[1];
-            
-            var _useState2 = useState(false),
-                started = _useState2[0],
-                setStarted = _useState2[1];
-            
-            var _useState3 = useState(0),
-                currentQ = _useState3[0],
-                setCurrentQ = _useState3[1];
-            
-            var _useState4 = useState(false),
-                finished = _useState4[0],
-                setFinished = _useState4[1];
-            
-            // Stores score per domain (0, 50, or 100)
-            var _useState5 = useState({ gov: 0, sec: 0, risk: 0, data: 0, docs: 0 }),
-                scores = _useState5[0],
-                setScores = _useState5[1];
-            
-            // Stores full answer data including violation status and remediation
-            var _useState6 = useState({}),
-                answers = _useState6[0],
-                setAnswers = _useState6[1];
-            
-            var _useState7 = useState(generateHash()),
-                hash = _useState7[0],
-                setHash = _useState7[1];
+            // --- MAIN APP COMPONENT ---
+            var App = function() {
+                var _useState = useState('EN'),
+                    lang = _useState[0],
+                    setLang = _useState[1];
+                
+                var _useState2 = useState(false),
+                    started = _useState2[0],
+                    setStarted = _useState2[1];
+                
+                var _useState3 = useState(0),
+                    currentQ = _useState3[0],
+                    setCurrentQ = _useState3[1];
+                
+                var _useState4 = useState(false),
+                    finished = _useState4[0],
+                    setFinished = _useState4[1];
+                
+                // Stores score per domain (0, 50, or 100)
+                var _useState5 = useState({ gov: 0, sec: 0, risk: 0, data: 0, docs: 0 }),
+                    scores = _useState5[0],
+                    setScores = _useState5[1];
+                
+                // Stores full answer data including violation status and remediation
+                var _useState6 = useState({}),
+                    answers = _useState6[0],
+                    setAnswers = _useState6[1];
+                
+                var _useState7 = useState(generateHash()),
+                    hash = _useState7[0],
+                    setHash = _useState7[1];
 
-            // Hash stream animation effect
-            useEffect(function() {
-                var interval = setInterval(function() { setHash(generateHash()); }, 150);
-                return function() { clearInterval(interval); };
-            }, []);
+                // Hash stream animation effect
+                useEffect(function() {
+                    var interval = setInterval(function() { setHash(generateHash()); }, 150);
+                    return function() { clearInterval(interval); };
+                }, []);
 
-            // CRITICAL FIX: Add defensive default value (|| LANGUAGES.EN) to ensure 'text' is always read from an object.
-            var t = (LANGUAGES[lang] || LANGUAGES.EN).text;
-            var currentFont = (LANGUAGES[lang] || LANGUAGES.EN).font;
-            var dir = (LANGUAGES[lang] || LANGUAGES.EN).dir;
-            var langCode = (LANGUAGES[lang] || LANGUAGES.EN).code;
+                // Defensive access: defaults to EN if lang or LANGUAGES[lang] is undefined
+                var currentLangData = LANGUAGES[lang] || LANGUAGES.EN;
+                var t = currentLangData.text;
+                var currentFont = currentLangData.font;
+                var dir = currentLangData.dir;
+                var langCode = currentLangData.code;
 
-            var handleAnswer = function(score, q) {
-                // Store detailed answer data (Using Object.assign for ES5 compatibility)
-                setAnswers(function(prev) {
-                    return Object.assign({}, prev, {
-                        [q.id]: { 
-                            score: score, 
-                            // Violation is defined as any score less than 100%
-                            isViolation: score < 100, 
-                            references: q.references, 
-                            remediation: q.remediation, 
-                            domain: q.domain,
-                            riskWeight: q.riskWeight
-                        }
+                var handleAnswer = function(score, q) {
+                    // Store detailed answer data (Using Object.assign for ES5 compatibility)
+                    setAnswers(function(prev) {
+                        return Object.assign({}, prev, {
+                            [q.id]: { 
+                                score: score, 
+                                // Violation is defined as any score less than 100%
+                                isViolation: score < 100, 
+                                references: q.references, 
+                                remediation: q.remediation, 
+                                domain: q.domain,
+                                riskWeight: q.riskWeight
+                            }
+                        });
                     });
-                });
 
-                // Update domain score for the radar chart (Using Object.assign for ES5 compatibility)
-                setScores(function(prev) { 
-                    return Object.assign({}, prev, { [q.domain]: score });
-                });
-                
-                // Move to the next question or finish
-                if (currentQ < AUDIT_QUESTIONS.length - 1) setCurrentQ(function(p) { return p + 1; });
-                else setFinished(true);
-            };
+                    // Update domain score for the radar chart (Using Object.assign for ES5 compatibility)
+                    setScores(function(prev) { 
+                        return Object.assign({}, prev, { [q.domain]: score });
+                    });
+                    
+                    // Move to the next question or finish
+                    if (currentQ < AUDIT_QUESTIONS.length - 1) setCurrentQ(function(p) { return p + 1; });
+                    else setFinished(true);
+                };
 
-            var reset = function() {
-                setStarted(false); setFinished(false); setCurrentQ(0); 
-                setScores({ gov: 0, sec: 0, risk: 0, data: 0, docs: 0 }); setAnswers({});
-            };
+                var reset = function() {
+                    setStarted(false); setFinished(false); setCurrentQ(0); 
+                    setScores({ gov: 0, sec: 0, risk: 0, data: 0, docs: 0 }); setAnswers({});
+                };
 
-            var Layout = function(_ref4) { 
-                var children = _ref4.children;
-                // Simplified layout class to prevent modern sizing conflicts
-                return e('div', { 
-                    className: "w-full min-h-screen flex items-center justify-center p-4 " + currentFont,
-                    dir: dir 
-                }, children);
-            };
+                var Layout = function(_ref4) { 
+                    var children = _ref4.children;
+                    // Simplified layout class to prevent modern sizing conflicts
+                    return e('div', { 
+                        className: "w-full min-h-screen flex items-center justify-center p-4 " + currentFont,
+                        dir: dir 
+                    }, children);
+                };
 
-            // SCREEN 1: INTRO (START)
-            if (!started) return e(Layout, null,
-                e(LangSwitcher, { current: lang, setLang: setLang }),
-                e('div', { className: "glass-panel max-w-lg w-full p-10 rounded-2xl text-center border-t-4 border-blue-500 relative overflow-hidden" },
-                    e('h1', { className: "text-4xl font-bold text-white mb-2 neon-text" }, t.title),
-                    e('p', { className: "text-slate-400 text-sm mb-8 font-mono tracking-wider" }, t.subtitle),
-                    e('button', { 
-                        onClick: function() { setStarted(true); },
-                        className: "w-full py-4 bg-blue-700 hover:bg-blue-600 text-white font-bold rounded shadow-lg transition-transform transform active:scale-95"
-                    }, t.startBtn)
-                )
-            );
-
-            // SCREEN 2: REPORT (RESULTS)
-            if (finished) {
-                var answeredScores = Object.values(answers).map(function(a) { return a.score; });
-                var sum = answeredScores.reduce(function(a,b) { return a + b; }, 0);
-                var avg = answeredScores.length > 0 ? sum / answeredScores.length : 0;
-                // Pass if average score is >= 75%
-                var passed = avg >= 75; 
-                var violations = Object.values(answers).filter(function(a) { return a.score < 100; });
-                var projectedFine = calculateLiability(violations);
-
-                return e(Layout, null,
+                // SCREEN 1: INTRO (START)
+                if (!started) return e(Layout, null,
                     e(LangSwitcher, { current: lang, setLang: setLang }),
-                    e('div', { className: "glass-panel max-w-5xl w-full p-8 rounded-2xl space-y-8" },
-                        e('h2', { className: "text-2xl font-bold text-white mb-6 flex items-center gap-3 border-b border-slate-700 pb-4" }, 
-                            e('span', { 'data-lucide': "CheckCircle", className: "w-7 h-7 text-emerald-400" }), t.report
-                        ),
-                        
-                        // Top Metrics Grid (4 columns on desktop, 1 column on mobile)
-                        e('div', { className:"grid grid-cols-1 md:grid-cols-4 gap-6" },
-                            // COMPLIANCE CONFIDENCE
-                            e('div', { className: "flex flex-col items-center justify-center p-4 bg-slate-900/50 rounded-xl border border-slate-700 col-span-1" },
-                                e('h3', { className: "text-slate-400 text-xs tracking-widest mb-2" }, "CONFIDENCE SCORE"),
-                                e('div', { className: "text-4xl font-black " + (passed ? 'text-emerald-400 neon-text' : 'text-amber-500') }, Math.round(avg)+"%")
-                            ),
-                            // LIABILITY EXPOSURE (BIG RED NUMBER)
-                            e('div', { className: "p-4 rounded-xl border border-red-800 bg-red-900/20 text-center col-span-1 md:col-span-2" },
-                                e('h3', { className: "text-sm font-bold text-red-400 mb-1" }, "PROJECTED EU LIABILITY"),
-                                e('p', { className: "text-white text-3xl font-extrabold font-mono neon-text" }, projectedFine)
-                            ),
-                            // RISK TOPOLOGY
-                            e('div', { className: "flex flex-col items-center justify-center p-4 glass-panel rounded-xl col-span-1" }, 
-                                e('h3', { className: "text-slate-400 text-xs tracking-widest mb-1" }, "RISK TOPOLOGY"),
-                                e(RiskRadar, { scores: scores, labels: t })
-                            )
-                        ),
-
-                        // VIOLATION & REMEDIATION SUMMARY
-                        e('div', { className: "bg-slate-950 p-6 rounded-lg border border-slate-800" },
-                            e('h3', { className: "text-lg font-bold text-red-400 mb-4 flex items-center gap-2" }, 
-                                e('span', { 'data-lucide': "ListChecks", className: "w-5 h-5" }), t.complianceSummary
-                            ),
-                            violations.length === 0 
-                                ? e('p', { className: "text-emerald-400 font-mono text-sm" }, "ZERO CRITICAL VIOLATIONS DETECTED. SYSTEM IS ROBUST.")
-                                // Scrollable area for violations summary
-                                : e('div', { className: "space-y-4 font-mono text-sm max-h-64 overflow-y-auto" }, 
-                                    violations.map(function(v, i) { 
-                                        var domainText = t[v.domain] ? t[v.domain] : v.domain; 
-                                        return e('div', { key: i, className: "border-b border-slate-700 pb-4 " + (v.domain === 'sec' ? 'border-red-500/50' : '') },
-                                            e('span', { className: "font-bold text-base " + (v.domain === 'sec' ? 'text-red-500' : 'text-amber-400') }, 
-                                                // Display domain and violation status (FAIL or PARTIAL)
-                                                domainText.toUpperCase() + " - " + (v.score === 0 ? 'FAIL' : 'PARTIAL')
-                                            ),
-                                            e('div', { className: "mt-2 p-3 bg-slate-800 rounded text-slate-300 border border-red-900/50" },
-                                                e('p', { className: "font-bold text-red-200 mb-1" }, "ACTION REQUIRED:"),
-                                                // Show localized remediation text, fallback to English
-                                                e('p', null, v.remediation[langCode] || v.remediation.en) 
-                                            ),
-                                            e('p', { className: "mt-2 text-slate-500 text-xs" },
-                                                // Show compliance references
-                                                "Ref: " + t.iso + " " + v.references.ISO + ", " + t.eu + " " + v.references.EU + ", " + t.us + " " + v.references.US
-                                            )
-                                        );
-                                    })
-                                )
-                        ),
-
-                        e('button', { onClick: reset, className: "w-full mt-4 py-3 border border-slate-600 text-slate-400 hover:bg-slate-800 rounded" }, t.reset)
+                    e('div', { className: "glass-panel max-w-lg w-full p-10 rounded-2xl text-center border-t-4 border-blue-500 relative overflow-hidden" },
+                        e('h1', { className: "text-4xl font-bold text-white mb-2 neon-text" }, t.title),
+                        e('p', { className: "text-slate-400 text-sm mb-8 font-mono tracking-wider" }, t.subtitle),
+                        e('button', { 
+                            onClick: function() { setStarted(true); },
+                            className: "w-full py-4 bg-blue-700 hover:bg-blue-600 text-white font-bold rounded shadow-lg transition-transform transform active:scale-95"
+                        }, t.startBtn)
                     )
                 );
-            }
 
-            // SCREEN 3: QUESTIONS (ASSESSMENT)
-            var q = AUDIT_QUESTIONS[currentQ];
-            var qText = q[langCode] || q.en;
-            
-            // Safe access to domain display text
-            var domainDisplay = t[q.domain] ? t[q.domain] : q.domain; 
-            
-            return e(Layout, null,
-                e(LangSwitcher, { current: lang, setLang: setLang }),
-                // Grid layout for questions
-                e('div', { className: "w-full max-w-5xl grid grid-cols-1 lg:grid-cols-12 gap-6" }, 
-                    // LEFT: Sidebar (Metrics/Radar)
-                    e('div', { className: "hidden lg:flex lg:col-span-4 glass-panel rounded-xl p-6 flex-col justify-between h-[80vh]" }, 
-                        e('div', null,
-                            e('div', { className: "flex items-center gap-3 mb-6" },
-                                e('div', { className: "w-3 h-3 bg-red-500 rounded-full live-dot" }),
-                                e('span', { className: "text-xs font-bold text-slate-400 tracking-widest" }, t.monitoring)
+                // SCREEN 2: REPORT (RESULTS)
+                if (finished) {
+                    var answeredScores = Object.values(answers).map(function(a) { return a.score; });
+                    var sum = answeredScores.reduce(function(a,b) { return a + b; }, 0);
+                    var avg = answeredScores.length > 0 ? sum / answeredScores.length : 0;
+                    // Pass if average score is >= 75%
+                    var passed = avg >= 75; 
+                    var violations = Object.values(answers).filter(function(a) { return a.score < 100; });
+                    var projectedFine = calculateLiability(violations);
+
+                    return e(Layout, null,
+                        e(LangSwitcher, { current: lang, setLang: setLang }),
+                        e('div', { className: "glass-panel max-w-5xl w-full p-8 rounded-2xl space-y-8" },
+                            e('h2', { className: "text-2xl font-bold text-white mb-6 flex items-center gap-3 border-b border-slate-700 pb-4" }, 
+                                e('span', { 'data-lucide': "CheckCircle", className: "w-7 h-7 text-emerald-400" }), t.report
                             ),
-                            e('h2', { className: "text-xl font-bold text-white mb-4" }, t.metrics),
-                            e(RiskRadar, { scores: scores, labels: t })
-                        ),
-                        e('div', { className: "text-center" }, 
-                            e('p', { className: "text-slate-500 font-mono text-xs mb-1" }, "CRYPTOGRAPHIC ANCHOR"),
-                            e(HashStream, { hash: hash })
+                            
+                            // Top Metrics Grid (4 columns on desktop, 1 column on mobile)
+                            e('div', { className:"grid grid-cols-1 md:grid-cols-4 gap-6" },
+                                // COMPLIANCE CONFIDENCE
+                                e('div', { className: "flex flex-col items-center justify-center p-4 bg-slate-900/50 rounded-xl border border-slate-700 col-span-1" },
+                                    e('h3', { className: "text-slate-400 text-xs tracking-widest mb-2" }, "CONFIDENCE SCORE"),
+                                    e('div', { className: "text-4xl font-black " + (passed ? 'text-emerald-400 neon-text' : 'text-amber-500') }, Math.round(avg)+"%")
+                                ),
+                                // LIABILITY EXPOSURE (BIG RED NUMBER)
+                                e('div', { className: "p-4 rounded-xl border border-red-800 bg-red-900/20 text-center col-span-1 md:col-span-2" },
+                                    e('h3', { className: "text-sm font-bold text-red-400 mb-1" }, "PROJECTED EU LIABILITY"),
+                                    e('p', { className: "text-white text-3xl font-extrabold font-mono neon-text" }, projectedFine)
+                                ),
+                                // RISK TOPOLOGY
+                                e('div', { className: "flex flex-col items-center justify-center p-4 glass-panel rounded-xl col-span-1" }, 
+                                    e('h3', { className: "text-slate-400 text-xs tracking-widest mb-1" }, "RISK TOPOLOGY"),
+                                    e(RiskRadar, { scores: scores, labels: t })
+                                )
+                            ),
+
+                            // VIOLATION & REMEDIATION SUMMARY
+                            e('div', { className: "bg-slate-950 p-6 rounded-lg border border-slate-800" },
+                                e('h3', { className: "text-lg font-bold text-red-400 mb-4 flex items-center gap-2" }, 
+                                    e('span', { 'data-lucide': "ListChecks", className: "w-5 h-5" }), t.complianceSummary
+                                ),
+                                violations.length === 0 
+                                    ? e('p', { className: "text-emerald-400 font-mono text-sm" }, "ZERO CRITICAL VIOLATIONS DETECTED. SYSTEM IS ROBUST.")
+                                    // Scrollable area for violations summary
+                                    : e('div', { className: "space-y-4 font-mono text-sm max-h-64 overflow-y-auto" }, 
+                                        violations.map(function(v, i) { 
+                                            var domainText = t[v.domain] ? t[v.domain] : v.domain; 
+                                            return e('div', { key: i, className: "border-b border-slate-700 pb-4 " + (v.domain === 'sec' ? 'border-red-500/50' : '') },
+                                                e('span', { className: "font-bold text-base " + (v.domain === 'sec' ? 'text-red-500' : 'text-amber-400') }, 
+                                                    // Display domain and violation status (FAIL or PARTIAL)
+                                                    domainText.toUpperCase() + " - " + (v.score === 0 ? 'FAIL' : 'PARTIAL')
+                                                ),
+                                                e('div', { className: "mt-2 p-3 bg-slate-800 rounded text-slate-300 border border-red-900/50" },
+                                                    e('p', { className: "font-bold text-red-200 mb-1" }, "ACTION REQUIRED:"),
+                                                    // Show localized remediation text, fallback to English
+                                                    e('p', null, v.remediation[langCode] || v.remediation.en) 
+                                                ),
+                                                e('p', { className: "mt-2 text-slate-500 text-xs" },
+                                                    // Show compliance references
+                                                    "Ref: " + t.iso + " " + v.references.ISO + ", " + t.eu + " " + v.references.EU + ", " + t.us + " " + v.references.US
+                                                )
+                                            );
+                                        })
+                                    )
+                            ),
+
+                            e('button', { onClick: reset, className: "w-full mt-4 py-3 border border-slate-600 text-slate-400 hover:bg-slate-800 rounded" }, t.reset)
                         )
-                    ),
-                    
-                    // RIGHT: Question Area
-                    e('div', { className: "col-span-1 lg:col-span-8 glass-panel rounded-xl p-6 md:p-10 flex flex-col relative min-h-[80vh]" }, 
-                        // Progress Indicator
-                        e('div', { className: "mb-6 flex justify-between items-center" }, 
-                            e('span', { className: "text-blue-400 text-xs font-bold font-mono tracking-widest" }, 
-                                "QUESTION " + (currentQ + 1) + " OF " + AUDIT_QUESTIONS.length
+                    );
+                }
+
+                // SCREEN 3: QUESTIONS (ASSESSMENT)
+                var q = AUDIT_QUESTIONS[currentQ];
+                var qText = q[langCode] || q.en;
+                
+                // Safe access to domain display text
+                var domainDisplay = t[q.domain] ? t[q.domain] : q.domain; 
+                
+                return e(Layout, null,
+                    e(LangSwitcher, { current: lang, setLang: setLang }),
+                    // Grid layout for questions
+                    e('div', { className: "w-full max-w-5xl grid grid-cols-1 lg:grid-cols-12 gap-6" }, 
+                        // LEFT: Sidebar (Metrics/Radar)
+                        e('div', { className: "hidden lg:flex lg:col-span-4 glass-panel rounded-xl p-6 flex-col justify-between h-[80vh]" }, 
+                            e('div', null,
+                                e('div', { className: "flex items-center gap-3 mb-6" },
+                                    e('div', { className: "w-3 h-3 bg-red-500 rounded-full live-dot" }),
+                                    e('span', { className: "text-xs font-bold text-slate-400 tracking-widest" }, t.monitoring)
+                                ),
+                                e('h2', { className: "text-xl font-bold text-white mb-4" }, t.metrics),
+                                e(RiskRadar, { scores: scores, labels: t })
                             ),
-                            e('span', { className: "bg-slate-800 text-slate-300 px-3 py-1 rounded text-sm font-bold" }, 
-                                domainDisplay.toUpperCase()
+                            e('div', { className: "text-center" }, 
+                                e('p', { className: "text-slate-500 font-mono text-xs mb-1" }, "CRYPTOGRAPHIC ANCHOR"),
+                                e(HashStream, { hash: hash })
                             )
                         ),
                         
-                        // Question Text
-                        e('h3', { className: "text-xl md:text-3xl font-bold text-white mb-10 leading-snug" }, qText),
-                        
-                        // Answer Options (Mobile-Friendly Stacked Buttons)
-                        e('div', { className: "space-y-4 mt-auto" },
-                            OPTIONS.map(function(opt, idx) {
-                                var className = "w-full text-start p-5 rounded-lg transition-all text-white font-medium flex justify-between items-center group ";
-                                if (opt.score === 100) className += 'bg-emerald-600/20 hover:bg-emerald-600/40 border border-emerald-500/50';
-                                else if (opt.score === 50) className += 'bg-amber-600/20 hover:bg-amber-600/40 border border-amber-500/50';
-                                else className += 'bg-red-600/20 hover:bg-red-600/40 border border-red-500/50';
+                        // RIGHT: Question Area
+                        e('div', { className: "col-span-1 lg:col-span-8 glass-panel rounded-xl p-6 md:p-10 flex flex-col relative min-h-[80vh]" }, 
+                            // Progress Indicator
+                            e('div', { className: "mb-6 flex justify-between items-center" }, 
+                                e('span', { className: "text-blue-400 text-xs font-bold font-mono tracking-widest" }, 
+                                    "QUESTION " + (currentQ + 1) + " OF " + AUDIT_QUESTIONS.length
+                                ),
+                                e('span', { className: "bg-slate-800 text-slate-300 px-3 py-1 rounded text-sm font-bold" }, 
+                                    domainDisplay.toUpperCase()
+                                )
+                            ),
+                            
+                            // Question Text
+                            e('h3', { className: "text-xl md:text-3xl font-bold text-white mb-10 leading-snug" }, qText),
+                            
+                            // Answer Options (Mobile-Friendly Stacked Buttons)
+                            e('div', { className: "space-y-4 mt-auto" },
+                                OPTIONS.map(function(opt, idx) {
+                                    var className = "w-full text-start p-5 rounded-lg transition-all text-white font-medium flex justify-between items-center group ";
+                                    if (opt.score === 100) className += 'bg-emerald-600/20 hover:bg-emerald-600/40 border border-emerald-500/50';
+                                    else if (opt.score === 50) className += 'bg-amber-600/20 hover:bg-amber-600/40 border border-amber-500/50';
+                                    else className += 'bg-red-600/20 hover:bg-red-600/40 border border-red-500/50';
 
-                                return e('button', {
-                                    key: idx,
-                                    onClick: function() { handleAnswer(opt.score, q); },
-                                    className: className
-                                }, 
-                                    e('span', null, opt.label),
-                                    // Use appropriate Chevron icon based on RTL/LTR
-                                    e('span', { 'data-lucide': dir === 'rtl' ? "ChevronLeft" : "ChevronRight", className: "text-white opacity-70 group-hover:opacity-100" })
-                                );
-                            })
+                                    return e('button', {
+                                        key: idx,
+                                        onClick: function() { handleAnswer(opt.score, q); },
+                                        className: className
+                                    }, 
+                                        e('span', null, opt.label),
+                                        // Use appropriate Chevron icon based on RTL/LTR
+                                        e('span', { 'data-lucide': dir === 'rtl' ? "ChevronLeft" : "ChevronRight", className: "text-white opacity-70 group-hover:opacity-100" })
+                                    );
+                                })
+                            )
                         )
                     )
-                )
-            );
-        };
+                );
+            };
 
-        // Updated for React 18 createRoot
-        var root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(e(App));
-        
-        // Initialize Lucide icons
-        lucide.createIcons();
+            // Updated for React 18 createRoot
+            var root = ReactDOM.createRoot(document.getElementById('root'));
+            root.render(e(App));
+            
+            // Initialize Lucide icons
+            lucide.createIcons();
+        });
     </script>
 </body>
-</html>
+</html
