@@ -96,7 +96,7 @@
         } else {
             // Libraries loaded successfully, proceed with initialization
             var useState = React.useState;
-            var useEffect = React.useState; // Corrected: Should be React.useEffect
+            var useEffect = React.useState; 
             var e = React.createElement;
 
             // --- CRITICAL FIX: Ensure useEffect is correctly assigned ---
@@ -323,7 +323,7 @@
                     // Use Crypto API for better randomness (32 bytes = 64 hex chars)
                     var buffer = new Uint8Array(32);
                     window.crypto.getRandomValues(buffer);
-                    var hex = Array.prototype.map.call(buffer, function(x) { 
+                    var hex = Array.prototype.map.call(buffer, function(x) {  
                         return ('00' + x.toString(16)).slice(-2);
                     }).join('');
                     return "0x" + hex.toUpperCase();
@@ -394,10 +394,10 @@
                 // Prepend the current date and hash to the PDF
                 var headerDiv = document.createElement('div');
                 headerDiv.innerHTML = '<div style="padding: 15px; border-bottom: 1px solid #ccc; font-family: monospace; font-size: 10px; color: black;">' +
-                                        'IMSSS AUDIT REPORT - GENERATED: ' + new Date().toLocaleString() + 
-                                        '<br>USER CONTACT: ' + (userInfo || 'N/A') + // Include user info
-                                        '<br>IMMUTABLE HASH: ' + finalHash +
-                                        '</div>';
+                                            'IMSSS AUDIT REPORT - GENERATED: ' + new Date().toLocaleString() + 
+                                            '<br>USER CONTACT: ' + (userInfo || 'N/A') + // Include user info
+                                            '<br>IMMUTABLE HASH: ' + finalHash +
+                                            '</div>';
                 
                 document.body.appendChild(headerDiv);
                 document.body.appendChild(clone);
@@ -421,7 +421,7 @@
                     heightLeft -= pageHeight;
 
                     while (heightLeft >= 0) {
-                        position = heightLeft - imgHeight; // Corrected variable name
+                        position = heightLeft - imgHeight; 
                         pdf.addPage();
                         pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
                         heightLeft -= pageHeight;
@@ -551,284 +551,296 @@
             // --- SCREEN: TERMS OF SERVICE (Phase X) ---
             var ScreenTOS = function(_ref4) {
                 var languageText = _ref4.languageText,
-                    setAgreed = _ref4.setAgreed;
+                    setAgreed = _ref4.setAgreed,
+                    ttsEnabled = _ref4.ttsEnabled,
+                    langCode = _ref4.langCode;
+
+                useEffect(function() {
+                    if (ttsEnabled) {
+                        speakText(languageText.tosTitle + ". " + languageText.tosBody, langCode);
+                    }
+                }, [ttsEnabled, langCode, languageText]);
 
                 // Function to handle disagreement
                 var handleDisagree = function() {
+                    stopSpeaking();
                     alert("You must agree to the Terms of Service to use the IMSSS AI Risk Assessor. The page will now close.");
-                    // In a real browser environment, you might try window.close() or redirect
                     // For a GitHub Pages hosted app, we'll just stop the process visually
-                    ReactDOM.unmountComponentAtNode(document.getElementById('root'));
-                    document.getElementById('root').innerHTML = '<div class="text-white text-center p-10 bg-red-900/50">ACCESS DENIED: Terms not agreed.</div>';
-                };
-
-                return e('div', { className: "flex justify-center items-center min-h-screen p-4" },
-                    e('div', { className: "glass-panel p-8 w-full max-w-md text-center rounded-lg shadow-2xl text-white", dir: LANGUAGES[languageText.code].dir },
-                        e('h2', { className: "text-2xl font-bold mb-4 neon-text" }, languageText.text.tosTitle),
-                        e('p', { className: "text-slate-300 mb-8" }, languageText.text.tosBody),
-
-                        e('button', {
-                            onClick: function() { setAgreed(true); },
-                            className: "w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg mb-4 transition-colors"
-                        }, languageText.text.tosAgree),
-
-                        e('button', {
-                            onClick: handleDisagree,
-                            className: "w-full py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition-colors"
-                        }, languageText.text.tosDisagree)
-                    )
-                );
-            };
-
-            // --- SCREEN: USER INFO / CONTACT DETAILS (Phase X) ---
-            var ScreenUserInfo = function(_ref5) {
-                var languageText = _ref5.languageText,
-                    setUserInfo = _ref5.setUserInfo,
-                    resetSession = _ref5.resetSession;
-
-                var _useState = useState(""),
-                    localContact = _useState[0],
-                    setLocalContact = _useState[1];
-                
-                var _useState2 = useState(false),
-                    error = _useState2[0],
-                    setError = _useState2[1];
-
-                var handleSubmit = function() {
-                    if (isValidContact(localContact)) {
-                        setError(false);
-                        setUserInfo(localContact); // This will move the user to the next screen (Intro)
-                        saveState(LS_KEY_USERINFO, localContact);
-                    } else {
-                        setError(true);
+                    var rootDiv = document.getElementById('root');
+                    if (rootDiv) {
+                        rootDiv.innerHTML = '<div class="flex items-center justify-center min-h-[50vh]"><div class="text-white p-6 bg-red-900/50 glass-panel rounded-lg shadow-xl text-center"><h2 class="text-2xl font-bold">Session Ended</h2><p class="mt-4">You disagreed with the Terms of Service. Application closed.</p></div></div>';
+                    }
+                    if (typeof ReactDOM.unmountComponentAtNode === 'function') {
+                        // Attempt to unmount the React component tree
+                        ReactDOM.unmountComponentAtNode(document.getElementById('root'));
                     }
                 };
 
-                return e('div', { className: "flex justify-center items-center min-h-screen p-4" },
-                    e('div', { className: "glass-panel p-8 w-full max-w-md text-center rounded-lg shadow-2xl text-white", dir: LANGUAGES[languageText.code].dir },
-                        e('h2', { className: "text-2xl font-bold mb-2 neon-text" }, languageText.text.userInfoTitle),
-                        e('p', { className: "text-slate-300 mb-6 text-sm" }, languageText.text.userInfoBody),
-
-                        // Input Field
-                        e('div', { className: "mb-4" },
-                            e('input', {
-                                type: "text", // Use text for email/phone flexibility
-                                value: localContact,
-                                onChange: function(e) { setLocalContact(e.target.value); setError(false); },
-                                onKeyDown: function(e) { if (e.key === 'Enter') { handleSubmit(); } },
-                                placeholder: languageText.text.userInfoInput,
-                                'aria-label': languageText.text.userInfoInput,
-                                'aria-invalid': error,
-                                className: "w-full px-4 py-3 bg-[var(--input-bg)] border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500",
-                                disabled: false // Ensure the input is not disabled
-                            })
-                        ),
-
-                        // Error Message
-                        error && e('p', { className: "text-red-500 text-sm mb-4" }, languageText.text.userInfoInvalid),
-
-                        // Continue Button
-                        e('button', {
-                            onClick: handleSubmit,
-                            className: "w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors mb-6",
-                            disabled: !isValidContact(localContact) // Disable until input is valid
-                        }, languageText.text.userInfoContinue),
-                        
-                        // TROUBLESHOOT Reset Button (Moved to bottom)
-                        e('button', {
-                            onClick: resetSession,
-                            className: "text-xs text-slate-500 hover:text-red-400 underline transition-colors"
-                        }, languageText.text.troubleshootReset)
+                return e('div', { className: "flex items-center justify-center min-h-screen p-4" },
+                    e('div', { className: "glass-panel w-full max-w-lg p-8 rounded-xl shadow-2xl text-white " + LANGUAGES[langCode].font, dir: LANGUAGES[langCode].dir },
+                        e('h2', { className: "text-2xl font-bold neon-text border-b border-slate-700 pb-3 mb-6 text-center" }, languageText.tosTitle),
+                        e('p', { className: "text-slate-300 text-sm mb-8 leading-relaxed" }, languageText.tosBody),
+                        e('div', { className: "space-y-4" },
+                            e('button', { 
+                                className: "w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors shadow-lg",
+                                onClick: function() { setAgreed(true); } 
+                            }, languageText.tosAgree),
+                            e('button', { 
+                                className: "w-full bg-red-600/50 hover:bg-red-700/70 text-white font-bold py-3 px-4 rounded-lg transition-colors shadow-lg",
+                                onClick: handleDisagree
+                            }, languageText.tosDisagree)
+                        )
                     )
                 );
             };
 
-            // --- SCREEN: INTRO & ASSESSMENT LAYOUT (Previous Code) ---
-            var Layout = function(_ref6) {
+            // --- SCREEN: USER CONTACT INFO (Phase X) ---
+            var ScreenUserInfo = function(_ref5) {
+                var languageText = _ref5.languageText,
+                    langCode = _ref5.langCode,
+                    ttsEnabled = _ref5.ttsEnabled,
+                    setUserInfo = _ref5.setUserInfo,
+                    setStep = _ref5.setStep,
+                    setHash = _ref5.setHash,
+                    resetSession = _ref5.resetSession;
+
+                var [contact, setContact] = useState(loadState(LS_KEY_USERINFO, ''));
+                var [error, setError] = useState('');
+                
+                useEffect(function() {
+                    if (ttsEnabled) {
+                        speakText(languageText.userInfoTitle + ". " + languageText.userInfoBody, langCode);
+                    }
+                }, [ttsEnabled, langCode, languageText]);
+
+                var handleSubmit = function() {
+                    stopSpeaking();
+                    if (!isValidContact(contact)) {
+                        setError(languageText.userInfoInvalid);
+                        return;
+                    }
+                    setError('');
+                    saveState(LS_KEY_USERINFO, contact);
+                    setUserInfo(contact);
+                    setStep('question');
+                    setHash(generateCryptoHash()); // Generate hash on first submission
+                };
+
+                return e('div', { className: "flex items-center justify-center min-h-screen p-4" },
+                    e('div', { className: "glass-panel w-full max-w-lg p-8 rounded-xl shadow-2xl text-white " + LANGUAGES[langCode].font, dir: LANGUAGES[langCode].dir },
+                        e('h2', { className: "text-2xl font-bold neon-text border-b border-slate-700 pb-3 mb-6 text-center" }, languageText.userInfoTitle),
+                        e('p', { className: "text-slate-300 text-sm mb-6 leading-relaxed text-center" }, languageText.userInfoBody),
+
+                        // Input Field
+                        e('div', { className: "mb-6" },
+                            // --- Placeholder for Google Sign-in if feature were active ---
+                            e('div', { className: "mb-4 text-center" },
+                                e('button', {
+                                    className: "w-full bg-white text-black font-bold py-3 px-4 rounded-lg shadow-md opacity-50 cursor-not-allowed",
+                                    disabled: true
+                                }, "Continue with Gmail / Google"),
+                                e('p', { className: "text-slate-500 text-xs mt-2" }, "OR")
+                            ),
+                            // --- End Placeholder ---
+                            e('input', {
+                                type: "text",
+                                value: contact,
+                                onChange: function(e) { setContact(e.target.value); setError(''); },
+                                placeholder: languageText.userInfoInput,
+                                className: "w-full bg-slate-800 border border-slate-700 text-white p-3 rounded-lg focus:outline-none focus:border-blue-500",
+                                'aria-invalid': error ? 'true' : 'false',
+                                'aria-describedby': error ? 'contact-error' : null
+                            }),
+                            error && e('p', { id: "contact-error", className: "mt-2 text-red-400 text-sm text-center" }, error)
+                        ),
+
+                        // Continue Button
+                        e('button', { 
+                            className: "w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors shadow-lg",
+                            onClick: handleSubmit 
+                        }, languageText.userInfoContinue),
+                        
+                        // Troubleshoot Reset
+                        e('button', { 
+                            className: "mt-4 w-full text-xs text-slate-500 hover:text-red-500 transition-colors no-print",
+                            onClick: resetSession
+                        }, languageText.troubleshootReset)
+                    )
+                );
+            };
+
+            // --- SCREEN: INTRO ---
+            var ScreenIntro = function(_ref6) {
                 var languageText = _ref6.languageText,
-                    setStarted = _ref6.setStarted,
+                    setStep = _ref6.setStep,
+                    resetSession = _ref6.resetSession,
+                    langCode = _ref6.langCode,
                     ttsEnabled = _ref6.ttsEnabled;
 
                 useEffect(function() {
-                    // Speak the prompt when this screen loads and TTS is enabled
                     if (ttsEnabled) {
-                        speakText(languageText.text.ttsPrompt, languageText.code);
+                        speakText(languageText.ttsPrompt, langCode);
                     }
-                    return stopSpeaking;
-                }, [languageText, ttsEnabled]);
+                }, [ttsEnabled, langCode, languageText]);
+                
+                var handleStart = function() {
+                    stopSpeaking();
+                    setStep('tos'); 
+                };
 
-                return e('div', { className: "flex justify-center items-center min-h-screen p-4", dir: LANGUAGES[languageText.code].dir },
-                    e('div', { className: "glass-panel p-8 w-full max-w-md text-center rounded-lg shadow-2xl text-white" },
-                        e('h1', { className: "text-4xl font-bold mb-2 neon-text" }, languageText.text.title),
-                        e('p', { className: "text-slate-400 mb-8 font-sans" }, languageText.text.subtitle),
-                        e('button', {
-                            onClick: function() { setStarted(true); stopSpeaking(); },
-                            className: "w-full py-4 bg-blue-600 hover:bg-blue-700 text-white text-xl font-bold rounded-lg transition-colors"
-                        }, languageText.text.startBtn)
+                return e('div', { className: "flex items-center justify-center min-h-screen p-4" },
+                    e('div', { className: "glass-panel w-full max-w-md p-8 rounded-xl shadow-2xl text-white text-center " + LANGUAGES[langCode].font, dir: LANGUAGES[langCode].dir },
+                        e('div', { className: "flex justify-center mb-6" },
+                            e('span', { 'data-lucide': 'ShieldCheck', className: "w-16 h-16 text-blue-400 neon-text" })
+                        ),
+                        e('h1', { className: "text-3xl font-bold mb-2 neon-text" }, languageText.title),
+                        e('p', { className: "text-xl text-slate-400 mb-8" }, languageText.subtitle),
+                        e('button', { 
+                            className: "w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-4 rounded-lg transition-colors text-lg shadow-lg",
+                            onClick: handleStart,
+                            'aria-live': 'off'
+                        }, languageText.startBtn),
+                        e('button', { 
+                            className: "mt-4 w-full text-xs text-slate-500 hover:text-red-500 transition-colors",
+                            onClick: resetSession
+                        }, languageText.troubleshootReset)
                     )
                 );
             };
 
-            // ... (Other components like ScreenQuestion, ScreenReview, ScreenReport, and utility functions remain the same) ...
-            
+
             // --- SCREEN: QUESTION ---
             var ScreenQuestion = function(_ref7) {
-                var currentQ = _ref7.currentQ,
-                    setCurrentQ = _ref7.setCurrentQ,
-                    languageText = _ref7.languageText,
+                var questions = _ref7.questions,
+                    currentQIndex = _ref7.currentQIndex,
+                    setQIndex = _ref7.setQIndex,
                     answers = _ref7.answers,
                     setAnswers = _ref7.setAnswers,
-                    scores = _ref7.scores,
-                    setScores = _ref7.setScores,
-                    setFinished = _ref7.setFinished,
+                    setStep = _ref7.setStep,
+                    langCode = _ref7.langCode,
                     ttsEnabled = _ref7.ttsEnabled;
 
-                var qIndex = currentQ; // 0-indexed for array access
-                var question = AUDIT_QUESTIONS[qIndex];
-                var qText = question[languageText.code];
-                var domainText = languageText.text[question.domain];
+                var q = questions[currentQIndex];
+                var languageText = LANGUAGES[langCode].text;
+                var questionText = q[LANGUAGES[langCode].code] || q.en;
 
-                // TTS Effect
                 useEffect(function() {
                     if (ttsEnabled) {
-                        var speechText = languageText.code === 'EN' ? "Question " + (currentQ + 1) + " of " + AUDIT_QUESTIONS.length + ", in " + domainText + ". " + qText : qText;
-                        speakText(speechText, languageText.code);
+                        speakText("Question " + (currentQIndex + 1) + ". " + questionText, langCode);
                     }
-                    return stopSpeaking;
-                }, [qText, domainText, ttsEnabled, currentQ]);
+                }, [ttsEnabled, langCode, currentQIndex, questionText]);
 
 
-                var handleAnswer = function(score) {
-                    var newAnswers = {};
-                    newAnswers[question.id] = score;
-                    setAnswers(Object.assign({}, answers, newAnswers)); // Add answer
-
-                    // Calculate new domain score
-                    var newScores = Object.assign({}, scores);
-                    newScores[question.domain] = score;
-                    setScores(newScores);
-
-                    // Move to next question or finish
-                    if (currentQ < AUDIT_QUESTIONS.length - 1) {
-                        setCurrentQ(currentQ + 1);
+                var handleAnswer = function(score, label) {
+                    stopSpeaking();
+                    var newAnswers = answers.slice();
+                    newAnswers[currentQIndex] = { id: q.id, score: score, label: label, domain: q.domain, question: q.en };
+                    setAnswers(newAnswers);
+                    
+                    // Move to the next question or review screen
+                    if (currentQIndex < questions.length - 1) {
+                        setQIndex(currentQIndex + 1);
                     } else {
-                        setFinished(true); // All questions answered
+                        setStep('review');
                     }
                 };
 
-                return e('div', { className: "flex justify-center items-center min-h-screen p-4", dir: LANGUAGES[languageText.code].dir },
-                    e('div', { className: "glass-panel p-6 w-full max-w-lg rounded-lg shadow-2xl text-white" },
-                        e('div', { className: "flex justify-between items-center mb-6 border-b border-slate-700 pb-4" },
-                            e('p', { className: "text-lg font-bold text-blue-400 neon-text" }, languageText.code === 'UR' ? `${AUDIT_QUESTIONS.length} میں سے ${currentQ + 1} سوال` : `QUESTION ${currentQ + 1} OF ${AUDIT_QUESTIONS.length}`),
-                            e('span', { className: "text-sm font-bold bg-slate-800 px-3 py-1 rounded-full text-slate-300 uppercase" }, domainText)
+                return e('div', { className: "flex items-center justify-center min-h-screen p-4" },
+                    e('div', { className: "glass-panel w-full max-w-3xl p-8 rounded-xl shadow-2xl text-white " + LANGUAGES[langCode].font, dir: LANGUAGES[langCode].dir },
+                        // Header
+                        e('div', { className: "flex justify-between items-center border-b border-slate-700 pb-4 mb-8" },
+                            e('p', { className: "text-lg text-blue-400 font-mono" }, "QUESTION " + (currentQIndex + 1) + " OF " + questions.length),
+                            e('p', { className: "text-lg font-bold uppercase text-slate-400" }, languageText[q.domain])
                         ),
-                        e('h2', { className: "text-2xl font-bold mb-8", lang: languageText.code, dir: languageText.dir }, qText),
 
+                        // Question Body
+                        e('p', { className: "text-2xl font-bold mb-10 leading-snug" }, questionText),
+
+                        // Answer Options
                         e('div', { className: "space-y-4" },
                             OPTIONS.map(function(option) {
-                                var isSelected = answers[question.id] === option.score;
-                                var buttonClass = isSelected
-                                    ? (option.score === 100 ? 'bg-emerald-600 border-emerald-500' : option.score === 50 ? 'bg-amber-600 border-amber-500' : 'bg-red-600 border-red-500') + ' text-white'
-                                    : 'bg-slate-800 hover:bg-slate-700 border-slate-700 hover:border-blue-500 text-slate-300';
+                                var isSelected = answers[currentQIndex] && answers[currentQIndex].score === option.score;
+                                var baseClass = "w-full font-bold py-4 px-4 rounded-lg transition-all text-lg shadow-lg text-center hover:scale-[1.01]";
+                                var colorClass = '';
+
+                                if (isSelected) {
+                                    colorClass = 'bg-blue-600 border-2 border-blue-400';
+                                } else if (option.score === 100) {
+                                    colorClass = 'bg-emerald-600/20 hover:bg-emerald-600/50 border-2 border-emerald-600/50';
+                                } else if (option.score === 50) {
+                                    colorClass = 'bg-yellow-600/20 hover:bg-yellow-600/50 border-2 border-yellow-600/50';
+                                } else {
+                                    colorClass = 'bg-red-600/20 hover:bg-red-600/50 border-2 border-red-600/50';
+                                }
 
                                 return e('button', {
                                     key: option.score,
-                                    onClick: function() { handleAnswer(option.score); },
-                                    className: "w-full py-4 text-left px-5 font-bold rounded-lg border-2 transition-all " + buttonClass,
-                                    'aria-current': isSelected ? 'true' : 'false'
+                                    className: baseClass + " " + colorClass,
+                                    onClick: function() { handleAnswer(option.score, option.label); },
+                                    'aria-pressed': isSelected
                                 }, option.label);
                             })
-                        ),
-                        
-                        // Back Button
-                        currentQ > 0 && e('button', {
-                            onClick: function() { setCurrentQ(currentQ - 1); stopSpeaking(); },
-                            className: "mt-6 text-sm text-slate-500 hover:text-slate-300 underline transition-colors"
-                        }, languageText.code === 'UR' ? "پچھلا سوال" : "GO BACK")
+                        )
                     )
                 );
             };
 
+
             // --- SCREEN: REVIEW ---
             var ScreenReview = function(_ref8) {
-                var languageText = _ref8.languageText,
-                    answers = _ref8.answers,
-                    scores = _ref8.scores,
-                    setReviewed = _ref8.setReviewed,
-                    setFinalHash = _ref8.setFinalHash,
-                    setCurrentQ = _ref8.setCurrentQ,
-                    ttsEnabled = _ref8.ttsEnabled;
+                var answers = _ref8.answers,
+                    setQIndex = _ref8.setQIndex,
+                    setStep = _ref8.setStep,
+                    questions = _ref8.questions,
+                    langCode = _ref8.langCode;
 
-                var _useState = useState(false),
-                    isReviewing = _useState[0],
-                    setIsReviewing = _useState[1];
-                
-                // TTS Effect
-                useEffect(function() {
-                    if (ttsEnabled) {
-                        var speechText = languageText.code === 'EN' ? "Review your answers before finalizing the audit." : languageText.text.reviewSub;
-                        speakText(speechText, languageText.code);
-                    }
-                    return stopSpeaking;
-                }, [languageText, ttsEnabled]);
-
-                // Create a deterministic hash from the answers and current date (for immutability)
-                var generateReportHash = function() {
-                    var dataString = JSON.stringify(answers) + new Date().toISOString().slice(0, 10);
-                    var hashValue = 0;
-                    for (var i = 0; i < dataString.length; i++) {
-                        var char = dataString.charCodeAt(i);
-                        hashValue = ((hashValue << 5) - hashValue) + char;
-                        hashValue |= 0; // Convert to 32bit integer
-                    }
-                    // Add a strong random element for practical anchor security
-                    return generateCryptoHash() + hashValue.toString(16).toUpperCase();
-                };
+                var languageText = LANGUAGES[langCode].text;
 
                 var finalizeAudit = function() {
-                    // Generate and save the final hash
-                    var hash = generateReportHash();
-                    setFinalHash(hash);
-                    saveState(LS_KEY_HASH, hash);
-                    
-                    setReviewed(true); // Move to Report Screen
+                    setStep('report');
                 };
-                
-                // Determine the highest risk score among domains (lowest score = highest risk)
-                var riskDomains = AUDIT_QUESTIONS.map(function(q) { return q.domain; });
-                var domainScores = riskDomains.map(function(d) { return scores[d] || 0; });
-                var minScore = Math.min.apply(null, domainScores);
-                var mostCriticalDomains = riskDomains.filter(function(d) { return (scores[d] || 0) === minScore; });
 
-                return e('div', { className: "flex justify-center items-center min-h-screen p-4", dir: LANGUAGES[languageText.code].dir },
-                    e('div', { className: "glass-panel p-6 w-full max-w-xl rounded-lg shadow-2xl text-white" },
-                        e('h2', { className: "text-3xl font-bold mb-2 neon-text" }, languageText.text.reviewTitle),
-                        e('p', { className: "text-slate-400 mb-6" }, languageText.text.reviewSub),
+                return e('div', { className: "flex items-center justify-center min-h-screen p-4" },
+                    e('div', { className: "glass-panel w-full max-w-4xl p-8 rounded-xl shadow-2xl text-white " + LANGUAGES[langCode].font, dir: LANGUAGES[langCode].dir },
+                        e('h2', { className: "text-3xl font-bold neon-text border-b border-slate-700 pb-3 mb-4 text-center" }, languageText.reviewTitle),
+                        e('p', { className: "text-slate-400 text-center mb-8" }, languageText.reviewSub),
 
-                        e('div', { className: "space-y-4 mb-8" },
-                            AUDIT_QUESTIONS.map(function(q, index) {
-                                var answerScore = answers[q.id];
-                                var answerLabel = getLabelByScore(answerScore);
-                                
-                                var borderColor = answerScore === 100 ? 'border-emerald-500' : answerScore === 50 ? 'border-amber-500' : 'border-red-500';
-                                var bgColor = answerScore === 100 ? 'bg-emerald-900/30' : answerScore === 50 ? 'bg-amber-900/30' : 'bg-red-900/30';
+                        // Review List
+                        e('div', { className: "space-y-6 mb-8" },
+                            answers.map(function(answer, index) {
+                                var q = questions.find(function(q) { return q.id === answer.id; });
+                                var domainLabel = languageText[q.domain];
+                                var colorClass = answer.score === 100 ? 'text-emerald-400' : answer.score === 50 ? 'text-yellow-400' : 'text-red-400';
+                                var btnColorClass = answer.score === 100 ? 'bg-emerald-700/50 hover:bg-emerald-700' : answer.score === 50 ? 'bg-yellow-700/50 hover:bg-yellow-700' : 'bg-red-700/50 hover:bg-red-700';
 
-                                return e('div', { key: q.id, className: "p-4 border-l-4 rounded-r-lg " + borderColor + ' ' + bgColor },
-                                    e('h3', { className: "text-sm font-semibold uppercase text-slate-400 mb-1" }, languageText.text[q.domain]),
-                                    e('p', { className: "font-bold text-lg mb-2" }, q[languageText.code]),
-                                    e('p', { className: "text-sm text-slate-300 mb-3" }, e('span', { className: "font-semibold" }, languageText.code === 'UR' ? "آپ کا جواب: " : "YOUR ANSWER: "), e('span', { className: "font-bold" }, answerLabel)),
+                                return e('div', { key: answer.id, className: "p-4 border border-slate-700 rounded-lg flex justify-between items-start space-x-4" },
+                                    e('div', { className: "flex-1" },
+                                        e('p', { className: "text-lg font-bold" }, 
+                                            domainLabel, 
+                                            e('span', { className: "text-slate-500 font-normal ml-2 text-sm" }, ' - ' + (q[LANGUAGES[langCode].code] || q.en))
+                                        ),
+                                        e('p', { className: "text-sm font-mono mt-1 uppercase" }, 
+                                            "YOUR ANSWER: ", 
+                                            e('span', { className: colorClass }, answer.label)
+                                        )
+                                    ),
                                     e('button', {
-                                        onClick: function() { setCurrentQ(index); setReviewed(false); stopSpeaking(); },
-                                        className: "px-4 py-2 text-xs font-bold rounded bg-slate-700 hover:bg-slate-600 text-white transition-colors"
-                                    }, languageText.text.editBtn)
+                                        className: "flex-shrink-0 text-sm py-2 px-4 rounded-lg font-bold transition-colors text-white " + btnColorClass,
+                                        onClick: function() { 
+                                            var targetQIndex = questions.findIndex(function(q) { return q.id === answer.id; });
+                                            setQIndex(targetQIndex);
+                                            setStep('question');
+                                        }
+                                    }, languageText.editBtn)
                                 );
                             })
                         ),
 
-                        e('button', {
-                            onClick: finalizeAudit,
-                            className: "w-full py-4 bg-blue-600 hover:bg-blue-700 text-white text-xl font-bold rounded-lg transition-colors"
-                        }, languageText.text.continueBtn)
+                        // Finalize Button
+                        e('button', { 
+                            className: "w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-4 rounded-lg transition-colors text-lg shadow-lg",
+                            onClick: finalizeAudit
+                        }, languageText.continueBtn)
                     )
                 );
             };
@@ -836,339 +848,347 @@
 
             // --- SCREEN: REPORT ---
             var ScreenReport = function(_ref9) {
-                var languageText = _ref9.languageText,
-                    answers = _ref9.answers,
+                var answers = _ref9.answers,
                     scores = _ref9.scores,
+                    questions = _ref9.questions,
+                    resetSession = _ref9.resetSession,
                     finalHash = _ref9.finalHash,
                     userInfo = _ref9.userInfo,
-                    resetSession = _ref9.resetSession,
-                    copied = _ref9.copied,
-                    setCopied = _ref9.setCopied,
-                    hashStream = _ref9.hashStream,
-                    ttsEnabled = _ref9.ttsEnabled;
+                    langCode = _ref9.langCode;
 
-                // TTS Effect
-                useEffect(function() {
-                    if (ttsEnabled) {
-                        var speechText = languageText.code === 'EN' ? "Audit summary report generated. Confidence score is " + calculateOverallScore(scores) + " percent. Projected EU liability is " + calculateLiability(getViolations(answers)) : languageText.text.report;
-                        speakText(speechText, languageText.code);
-                    }
-                    return stopSpeaking;
-                }, [languageText, ttsEnabled, scores]);
+                var languageText = LANGUAGES[langCode].text;
 
-
-                var getViolations = function(ans) {
-                    return AUDIT_QUESTIONS.filter(function(q) {
-                        var score = ans[q.id];
-                        return score === 0 || score === 50;
-                    }).map(function(q) {
-                        return Object.assign({}, q, {
-                            score: ans[q.id],
-                            status: ans[q.id] === 0 ? 'FAIL' : 'PARTIAL'
-                        });
-                    });
-                };
+                var totalScore = Object.keys(scores).reduce(function(sum, key) { return sum + scores[key]; }, 0);
+                var totalConfidence = (totalScore / (questions.length * 100)) * 100;
                 
-                var calculateOverallScore = function(s) {
-                    var totalScore = Object.keys(s).reduce(function(acc, key) { return acc + s[key]; }, 0);
-                    return Math.round(totalScore / 5);
-                };
+                // Filter only the questions that scored less than 100 (FAIL or PARTIAL)
+                var violations = questions.map(function(q) {
+                    var answer = answers.find(function(a) { return a.id === q.id; });
+                    return {
+                        id: q.id,
+                        domain: q.domain,
+                        question: q.en,
+                        score: answer ? answer.score : 0,
+                        remediation: q.remediation[langCode] || q.remediation.EN,
+                        references: q.references,
+                        riskWeight: q.riskWeight
+                    };
+                }).filter(function(v) { return v.score < 100; });
 
-                var violations = getViolations(answers);
-                var overallScore = calculateOverallScore(scores);
                 var liability = calculateLiability(violations);
-                var domainLabels = {
-                    gov: languageText.text.gov, sec: languageText.text.sec, risk: languageText.text.risk,
-                    data: languageText.text.data, docs: languageText.text.docs
-                };
+                
+                // Score for Radar Chart (max 100 for each domain)
+                var radarScores = {};
+                Object.keys(initialScores).forEach(function(domain) {
+                    var domainAnswers = answers.filter(function(a) { return a.domain === domain; });
+                    var domainTotalScore = domainAnswers.reduce(function(sum, a) { return sum + a.score; }, 0);
+                    var domainTotalMax = domainAnswers.length * 100;
+                    
+                    radarScores[domain] = domainTotalMax > 0 ? (domainTotalScore / domainTotalMax) * 100 : 0;
+                });
+
 
                 var copyHash = function() {
-                    if (navigator.clipboard) {
+                    // Use clipboard API for modern browsers
+                    if (navigator.clipboard && window.isSecureContext) {
                         navigator.clipboard.writeText(finalHash).then(function() {
-                            setCopied(true);
-                            setTimeout(function() { setCopied(false); }, 3000);
-                        }).catch(function(err) {
-                            console.error('Could not copy text: ', err);
-                            alert("Copy failed. Hash: " + finalHash);
+                            alert(languageText.copied + ": " + finalHash);
+                        }, function(err) {
+                            console.error('Could not copy hash: ', err);
+                            fallbackCopy(finalHash);
                         });
                     } else {
-                        alert("Clipboard API not supported. Hash: " + finalHash);
+                        fallbackCopy(finalHash);
+                    }
+
+                    function fallbackCopy(text) {
+                        var textArea = document.createElement("textarea");
+                        textArea.value = text;
+                        textArea.style.position = "fixed";  // Avoid scrolling to bottom
+                        document.body.appendChild(textArea);
+                        textArea.focus();
+                        textArea.select();
+                        try {
+                            document.execCommand('copy');
+                            alert(languageText.copied + ": " + finalHash);
+                        } catch (err) {
+                            console.error('Fallback: Oops, unable to copy', err);
+                        }
+                        document.body.removeChild(textArea);
                     }
                 };
-
-                var getStatusColor = function(status) {
-                    return status === 'FAIL' ? 'text-red-500' : status === 'PARTIAL' ? 'text-amber-500' : 'text-emerald-500';
-                };
-
-                return e('div', { className: "flex justify-center items-center min-h-screen p-4", dir: LANGUAGES[languageText.code].dir },
-                    e('div', { id: "report-container", className: "glass-panel p-6 w-full max-w-xl rounded-lg shadow-2xl text-white report-container" },
-                        e('h2', { className: "text-3xl font-bold mb-4 text-center neon-text" }, languageText.text.report),
-                        
-                        // Confidence Score
-                        e('div', { className: "text-center mb-6 p-4 rounded-lg bg-slate-900/50" },
-                            e('p', { className: "text-lg text-slate-400 mb-1" }, "CONFIDENCE SCORE"),
-                            e('p', { className: "text-5xl font-extrabold " + getStatusColor(overallScore < 50 ? 'FAIL' : 'PARTIAL') }, overallScore + "%")
-                        ),
-
-                        // Projected Liability (EU AI Act Focus)
-                        e('div', { className: "text-center mb-6 p-4 rounded-lg bg-red-900/50 border border-red-800" },
-                            e('p', { className: "text-lg text-red-300 mb-1" }, "PROJECTED EU LIABILITY"),
-                            e('p', { className: "text-4xl font-extrabold text-white" }, liability)
+                
+                return e('div', { className: "flex items-center justify-center min-h-screen p-4" },
+                    e('div', { id: "report-container", className: "glass-panel w-full max-w-5xl p-8 rounded-xl shadow-2xl text-white " + LANGUAGES[langCode].font, dir: LANGUAGES[langCode].dir },
+                        // Header Section
+                        e('div', { className: "border-b border-slate-700 pb-4 mb-6 text-center" },
+                            e('h2', { className: "text-3xl font-bold neon-text" }, languageText.report),
+                            e('p', { className: "text-slate-400 mt-2" }, languageText.monitoring)
                         ),
                         
-                        // Risk Radar
-                        e('div', { className: "text-center mb-6 p-4 rounded-lg bg-slate-900/50" },
-                            e('p', { className: "text-lg text-slate-400 mb-4" }, "RISK TOPOLOGY"),
-                            e(RiskRadar, { scores: scores, labels: domainLabels })
-                        ),
-
-                        // Cryptographic Anchor
-                        e('div', { className: "text-center mb-6 p-4 rounded-lg bg-slate-900/50 border border-slate-700" },
-                            e('p', { className: "text-sm text-slate-400 mb-2" }, languageText.text.anchor),
-                            e('div', { className: "font-mono text-sm text-emerald-400 break-all mb-3" }, finalHash),
-                            e('button', {
-                                onClick: copyHash,
-                                className: "no-print px-4 py-2 text-xs font-bold rounded " + (copied ? 'bg-emerald-600' : 'bg-blue-600 hover:bg-blue-700') + " text-white transition-colors",
-                                'aria-label': copied ? 'Hash Copied' : 'Copy Report Cryptographic Anchor'
-                            }, copied ? languageText.text.copied : languageText.text.anchor)
-                        ),
-
-                        // Violation Summary
-                        e('div', { className: "mb-8" },
-                            e('h3', { className: "text-xl font-bold mb-4 neon-text" }, languageText.text.complianceSummary),
-                            violations.length > 0 ? (
-                                violations.map(function(v) {
-                                    var statusColor = getStatusColor(v.status);
-                                    var bgColor = v.status === 'FAIL' ? 'bg-red-900/50' : 'bg-amber-900/50';
-                                    var refString = "Ref: ";
-                                    Object.keys(v.references).forEach(function(key) {
-                                        refString += key + " " + v.references[key] + ", ";
-                                    });
-                                    refString = refString.slice(0, -2); // Remove trailing comma and space
-
-                                    return e('div', { key: v.id, className: "p-4 rounded-lg mb-4 " + bgColor + " border border-slate-700" },
-                                        e('h4', { className: "text-lg font-bold uppercase mb-1" }, languageText.text[v.domain] + " - " + e('span', { className: statusColor }, v.status)),
-                                        e('p', { className: "text-sm text-slate-300 mb-2" }, "ACTION REQUIRED:"),
-                                        e('p', { className: "text-sm font-semibold text-white mb-3" }, v.remediation[languageText.code]),
-                                        e('p', { className: "text-xs text-slate-500 font-mono" }, refString)
-                                    );
-                                })
-                            ) : (
-                                e('p', { className: "text-lg text-emerald-500 font-bold" }, languageText.code === 'UR' ? "تمام تقاضے مکمل ہیں" : "All requirements fully met. No major violations found.")
+                        // Score Metrics
+                        e('div', { className: "grid grid-cols-3 gap-4 mb-8" },
+                            // Confidence Score
+                            e('div', { className: "p-4 bg-slate-800/50 rounded-lg text-center" },
+                                e('p', { className: "text-xs uppercase text-slate-400" }, "Confidence Score"),
+                                e('p', { className: "text-4xl font-mono mt-2 text-emerald-400 neon-text" }, Math.round(totalConfidence) + "%")
+                            ),
+                            // Projected Liability
+                            e('div', { className: "col-span-1 p-4 bg-red-800/50 rounded-lg text-center" },
+                                e('p', { className: "text-xs uppercase text-white" }, languageText.iso + " / " + languageText.eu + " - Liability"),
+                                e('p', { className: "text-2xl font-mono mt-2 text-white font-bold" }, liability)
+                            ),
+                            // Immutable Hash
+                            e('div', { className: "p-4 bg-slate-800/50 rounded-lg text-center relative" },
+                                e('p', { className: "text-xs uppercase text-slate-400" }, languageText.integrity),
+                                e('p', { className: "text-xs font-mono mt-2 text-blue-400 font-bold break-all" }, finalHash),
+                                e('button', {
+                                    className: "absolute top-2 right-2 text-slate-500 hover:text-white transition-colors no-print",
+                                    onClick: copyHash,
+                                    title: languageText.anchor
+                                }, e('span', { 'data-lucide': 'Copy', className: "w-4 h-4" }))
                             )
                         ),
 
-                        // Report Actions
-                        e('div', { className: "no-print space-y-4" },
-                            e('button', {
-                                onClick: function() { exportPdfReport(finalHash, userInfo); },
-                                className: "w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg transition-colors"
-                            }, languageText.text.exportBtn),
+                        // Radar and Metrics
+                        e('div', { className: "grid md:grid-cols-2 gap-8 mb-8" },
+                            e('div', { className: "bg-slate-900/50 p-4 rounded-xl flex flex-col items-center" },
+                                e('p', { className: "text-lg font-bold text-slate-300 mb-4" }, languageText.metrics),
+                                e(RiskRadar, { scores: radarScores, labels: languageText }) // Pass the translation object
+                            ),
+                            e('div', { className: "bg-slate-900/50 p-4 rounded-xl" },
+                                e('p', { className: "text-lg font-bold text-slate-300 mb-4" }, languageText.complianceSummary),
+                                e('div', { className: "scrollable-summary space-y-3" },
+                                    violations.length > 0 ? (
+                                        violations.map(function(v) {
+                                            var status = v.score === 50 ? "PARTIAL" : "FAIL";
+                                            var color = v.score === 50 ? "text-yellow-400" : "text-red-400";
+                                            return e('div', { key: v.id, className: "border-l-4 border-slate-700 pl-3 py-1" },
+                                                e('p', { className: "font-bold text-sm uppercase " + color }, languageText[v.domain] + " - " + status),
+                                                e('p', { className: "text-xs text-slate-300 mt-1" }, "ACTION REQUIRED: " + v.remediation),
+                                                e('p', { className: "text-[10px] text-slate-500 mt-1" }, 
+                                                    "Ref: " + languageText.iso + " " + v.references.ISO + ", " + 
+                                                    languageText.eu + " " + v.references.EU + ", " + 
+                                                    languageText.us + " " + v.references.US 
+                                                )
+                                            );
+                                        })
+                                    ) : (
+                                        e('p', { className: "text-emerald-400 text-center py-10 text-lg font-bold" }, "NO VIOLATIONS DETECTED. FULL COMPLIANCE ACHIEVED.")
+                                    )
+                                )
+                            )
+                        ),
 
+                        // Action Buttons (No Print)
+                        e('div', { className: "mt-8 space-y-4 no-print" },
                             e('button', {
-                                onClick: resetSession,
-                                className: "w-full py-3 bg-slate-700 hover:bg-slate-600 text-white font-bold rounded-lg transition-colors"
-                            }, languageText.text.reset)
+                                className: "w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 px-4 rounded-lg transition-colors text-lg shadow-lg",
+                                onClick: function() { exportPdfReport(finalHash, userInfo); }
+                            }, languageText.exportBtn),
+                            e('button', {
+                                className: "w-full bg-slate-700 hover:bg-slate-800 text-white font-bold py-3 px-4 rounded-lg transition-colors text-lg shadow-lg",
+                                onClick: resetSession
+                            }, languageText.reset)
                         )
                     )
                 );
             };
 
 
-            // --- MAIN APP COMPONENT ---
+            // --- MAIN APPLICATION ENTRY POINT ---
             var App = function() {
-                // ... (State initialization remains the same) ...
                 
-                // --- Load initial state from LocalStorage ---
-                var initialLang = loadState(LS_KEY_LANG, 'EN');
-                var initialAnswers = loadState(LS_KEY_ANSWERS, {});
-                var initialScoresFromLS = loadState(LS_KEY_SCORES, initialScores);
-                var initialFinalHash = loadState(LS_KEY_HASH, null);
-                var initialTtsEnabled = loadState(LS_KEY_TTS, false); 
+                // --- 1. STATE INITIALIZATION ---
+                var [langCode, setLangCode] = useState(loadState(LS_KEY_LANG, 'EN'));
+                var [answers, setAnswers] = useState(loadState(LS_KEY_ANSWERS, []));
+                var [userInfo, setUserInfo] = useState(loadState(LS_KEY_USERINFO, ''));
+                var [finalHash, setFinalHash] = useState(loadState(LS_KEY_HASH, generateCryptoHash()));
+                var [ttsEnabled, setTtsEnabled] = useState(loadState(LS_KEY_TTS, false));
+
+                // NEW PHASE X STATES
+                var [tosAgreed, setTosAgreed] = useState(loadState(LS_KEY_AGREED, false));
                 
-                // PHASE X: Load ToS agreement and User Info
-                var initialAgreed = loadState(LS_KEY_AGREED, false);
-                var initialUserInfo = loadState(LS_KEY_USERINFO, null); 
-
-
-                // Determine starting progress:
-                var answerKeys = Object.keys(initialAnswers);
-                var initialQ = answerKeys.length > 0 ? answerKeys.length : 0;
-                // Assessment is only 'started' if user info is present AND progress exists
-                var initialStarted = (initialQ > 0 || loadState(LS_KEY_PROGRESS, false)) && initialUserInfo !== null; 
-                var initialFinished = initialQ === AUDIT_QUESTIONS.length;
-                var initialReviewed = initialFinalHash !== null;
+                // --- CRITICAL FIX: GitHub Pages Routing Logic ---
                 
-                // If finished on last load, set up for review or report view
-                if (initialReviewed) { initialFinished = true; } 
-                else if (initialFinished) { initialStarted = true; } 
-
-                // State initialization
-                var _useState = useState(initialLang),
-                    lang = _useState[0],
-                    setLang = _useState[1];
-
-                var _useState2 = useState(initialStarted),
-                    started = _useState2[0],
-                    setStarted = _useState2[1];
-
-                var _useState3 = useState(initialQ),
-                    currentQ = _useState3[0],
-                    setCurrentQ = _useState3[1];
+                // Map the URL path segments to your application's steps
+                var pathMap = {
+                    'intro': 'intro',
+                    'tos': 'tos',
+                    'userinfo': 'userinfo',
+                    'questions': 'question', 
+                    'review': 'review',
+                    'report': 'report'
+                };
                 
-                var _useState9 = useState(initialFinished),
-                    finished = _useState9[0],
-                    setFinished = _useState9[1];
+                var initialStep = 'intro'; // Default step
 
-                var _useState4 = useState(initialReviewed),
-                    reviewed = _useState4[0],
-                    setReviewed = _useState4[1];
+                // 1. Check for the redirect path stored by the 404.html file
+                var redirectedPath = sessionStorage.getItem('redirectPath');
+                sessionStorage.removeItem('redirectPath'); // Clean up immediately
 
-                var _useState5 = useState(initialScoresFromLS),
-                    scores = _useState5[0],
-                    setScores = _useState5[1];
-
-                var _useState6 = useState(initialAnswers),
-                    answers = _useState6[0],
-                    setAnswers = _useState6[1];
-                
-                var _useState7 = useState(initialFinalHash),
-                    finalHash = _useState7[0],
-                    setFinalHash = _useState7[1];
-
-                var _useState8 = useState(generateCryptoHash()),
-                    hashStream = _useState8[0],
-                    setHashStream = _useState8[1];
-                
-                var _useState10 = useState(false), // For Copy Button feedback
-                    copied = _useState10[0],
-                    setCopied = _useState10[1];
-
-                var _useState11 = useState(initialTtsEnabled), 
-                    ttsEnabled = _useState11[0],
-                    setTtsEnabled = _useState11[1];
+                if (redirectedPath) {
+                    // Remove leading slash and grab the first path segment (e.g., 'review')
+                    var pathSegment = redirectedPath.toLowerCase().replace(/^\/+/g, '').split('/')[0];
                     
-                // PHASE X: NEW STATES
-                var _useState12 = useState(initialAgreed),
-                    agreed = _useState12[0],
-                    setAgreed = _useState12[1];
+                    // If the path segment maps to a known step, use it for the initial step.
+                    initialStep = pathMap[pathSegment] || 'intro';
+                } else {
+                    // 2. Fall back to stored progress if no redirect was needed
+                    initialStep = loadState(LS_KEY_PROGRESS, 'intro');
+                }
                 
-                var _useState13 = useState(initialUserInfo),
-                    userInfo = _useState13[0],
-                    setUserInfo = _useState13[1];
+                // 3. Apply phase X logic to the initial step
+                if (initialStep === 'intro' || initialStep === 'tos' || initialStep === 'userinfo') {
+                    if (!tosAgreed) {
+                        initialStep = 'tos';
+                    } else if (!userInfo) {
+                        initialStep = 'userinfo';
+                    } else {
+                        // Check if a session already exists
+                        if (answers.length === AUDIT_QUESTIONS.length && finalHash && initialStep !== 'report') {
+                            initialStep = 'report'; // Automatically go to report if audit is complete
+                        }
+                    }
+                }
 
 
-                // Persistence Effects (Save state on change)
-                useEffect(function() { saveState(LS_KEY_LANG, lang); }, [lang]);
-                useEffect(function() { saveState(LS_KEY_ANSWERS, answers); saveState(LS_KEY_SCORES, scores); }, [answers, scores]);
-                useEffect(function() { saveState(LS_KEY_PROGRESS, started); }, [started]);
-                useEffect(function() { saveState(LS_KEY_HASH, finalHash); }, [finalHash]);
-                useEffect(function() { saveState(LS_KEY_TTS, ttsEnabled); }, [ttsEnabled]);
-                
-                // PHASE X: Persistence for TOS and User Info
-                useEffect(function() { saveState(LS_KEY_AGREED, agreed); }, [agreed]);
-                useEffect(function() { saveState(LS_KEY_USERINFO, userInfo); }, [userInfo]);
+                var [currentStep, setCurrentStep] = useState(initialStep); // The current step/view
+                var [currentQIndex, setCurrentQIndex] = useState(0);
 
+                var languageText = LANGUAGES[langCode].text;
 
-                // HashStream Updater (for "Live Monitoring")
-                useEffect(function() {
-                    var interval = setInterval(function() {
-                        setHashStream(generateCryptoHash());
-                    }, 500); // Faster update for better visual effect
+                // --- 2. EFFECT HOOKS FOR PERSISTENCE ---
 
-                    return function() { clearInterval(interval); };
-                }, []);
-                
-                // Reset Function (for new session button)
-                var resetSession = function() {
-                    stopSpeaking();
-                    localStorage.clear();
-                    // Reset all React state to initial values, forcing a full screen reset
-                    setLang('EN');
-                    setStarted(false);
-                    setCurrentQ(0);
-                    setFinished(false);
-                    setReviewed(false);
-                    setScores(initialScores);
-                    setAnswers({});
-                    setFinalHash(null);
-                    setAgreed(false);
-                    setUserInfo(null);
-                    setTtsEnabled(false);
-                    // Force a hard page reload to ensure all memory is cleared (best practice for full reset)
-                    window.location.reload();
+                // Save the current step/progress and update the URL
+                var setStep = function(step) {
+                    setCurrentStep(step);
+                    saveState(LS_KEY_PROGRESS, step);
+                    
+                    // Update the URL path for visual feedback
+                    var repoName = '/imsss-sync-services'; 
+                    var pathSegment = step === 'intro' ? '' : step;
+                    
+                    // Use history.pushState to update the URL without triggering a full page reload
+                    // This is key to displaying the correct URL path without full page refreshes
+                    window.history.pushState({}, '', repoName + '/' + pathSegment);
                 };
 
-                // Determine the current language text object
-                var currentLangText = LANGUAGES[lang];
+                // Save the language preference
+                useEffect(function() {
+                    saveState(LS_KEY_LANG, langCode);
+                    document.body.dir = LANGUAGES[langCode].dir;
+                    document.body.className = LANGUAGES[langCode].font;
+                }, [langCode]);
 
-                // --- RENDER LOGIC: Determine which screen to show ---
+                // Save the TTS preference
+                useEffect(function() {
+                    saveState(LS_KEY_TTS, ttsEnabled);
+                    if (!ttsEnabled) {
+                        stopSpeaking();
+                    }
+                }, [ttsEnabled]);
                 
-                // 1. Must agree to TOS first
-                if (!agreed) return e('div', { className: currentLangText.font + ' ' + currentLangText.dir }, 
-                    e(LangSwitcher, { current: lang, setLang: setLang, ttsEnabled: ttsEnabled, setTtsEnabled: setTtsEnabled }),
-                    e(ScreenTOS, { languageText: currentLangText, setAgreed: setAgreed })
-                );
+                // Save answers on change
+                useEffect(function() {
+                    saveState(LS_KEY_ANSWERS, answers);
+                    // After saving answers, calculate scores
+                    var newScores = calculateScores(answers);
+                    saveState(LS_KEY_SCORES, newScores);
+                }, [answers]);
+                
+                // Save hash
+                useEffect(function() {
+                    saveState(LS_KEY_HASH, finalHash);
+                }, [finalHash]);
+                
+                // Save TOS agreement
+                useEffect(function() {
+                    saveState(LS_KEY_AGREED, tosAgreed);
+                    if (tosAgreed && currentStep === 'tos') {
+                        setStep('userinfo'); // Auto-advance to user info if agreed
+                    }
+                }, [tosAgreed]);
 
-                // 2. Must enter user info next (only if agreed)
-                if (agreed && !userInfo) return e('div', { className: currentLangText.font + ' ' + currentLangText.dir }, 
-                    e(LangSwitcher, { current: lang, setLang: setLang, ttsEnabled: ttsEnabled, setTtsEnabled: setTtsEnabled }),
-                    e(ScreenUserInfo, { languageText: currentLangText, setUserInfo: setUserInfo, resetSession: resetSession })
-                );
 
-                // 3. Show Final Report
-                if (reviewed) return e('div', { className: currentLangText.font + ' ' + currentLangText.dir }, 
-                    e(LangSwitcher, { current: lang, setLang: setLang, ttsEnabled: ttsEnabled, setTtsEnabled: setTtsEnabled }),
-                    e(ScreenReport, {
-                        languageText: currentLangText,
-                        answers: answers,
-                        scores: scores,
-                        finalHash: finalHash,
-                        userInfo: userInfo,
-                        resetSession: resetSession,
-                        copied: copied,
-                        setCopied: setCopied,
-                        hashStream: hashStream,
-                        ttsEnabled: ttsEnabled
-                    })
-                );
+                // --- 3. CORE LOGIC / RESET ---
 
-                // 4. Show Review Screen
-                if (finished) return e('div', { className: currentLangText.font + ' ' + currentLangText.dir }, 
-                    e(LangSwitcher, { current: lang, setLang: setLang, ttsEnabled: ttsEnabled, setTtsEnabled: setTtsEnabled }),
-                    e(ScreenReview, {
-                        languageText: currentLangText,
-                        answers: answers,
-                        scores: scores,
-                        setReviewed: setReviewed,
-                        setFinalHash: setFinalHash,
-                        setCurrentQ: setCurrentQ,
-                        ttsEnabled: ttsEnabled
-                    })
-                );
+                var calculateScores = function(currentAnswers) {
+                    var scores = Object.assign({}, initialScores);
+                    currentAnswers.forEach(function(a) {
+                        // Check if the domain key exists before adding
+                        if (scores.hasOwnProperty(a.domain)) {
+                            scores[a.domain] += a.score;
+                        }
+                    });
+                    return scores;
+                };
 
-                // 5. Show Questions Screen
-                if (started) return e('div', { className: currentLangText.font + ' ' + currentLangText.dir }, 
-                    e(LangSwitcher, { current: lang, setLang: setLang, ttsEnabled: ttsEnabled, setTtsEnabled: setTtsEnabled }),
-                    e(ScreenQuestion, {
-                        currentQ: currentQ,
-                        setCurrentQ: setCurrentQ,
-                        languageText: currentLangText,
-                        answers: answers,
-                        setAnswers: setAnswers,
-                        scores: scores,
-                        setScores: setScores,
-                        setFinished: setFinished,
-                        ttsEnabled: ttsEnabled
-                    })
-                );
+                var resetSession = function() {
+                    if (!window.confirm("Are you sure you want to start a new session? All stored progress will be deleted.")) {
+                        return;
+                    }
+                    stopSpeaking();
+                    
+                    // Clear all stored data
+                    localStorage.removeItem(LS_KEY_ANSWERS);
+                    localStorage.removeItem(LS_KEY_SCORES);
+                    localStorage.removeItem(LS_KEY_PROGRESS);
+                    localStorage.removeItem(LS_KEY_HASH);
+                    localStorage.removeItem(LS_KEY_AGREED);
+                    localStorage.removeItem(LS_KEY_USERINFO); // Clear user info as well
 
-                // 6. Show Intro Screen
-                return e('div', { className: currentLangText.font + ' ' + currentLangText.dir }, 
-                    e(LangSwitcher, { current: lang, setLang: setLang, ttsEnabled: ttsEnabled, setTtsEnabled: setTtsEnabled }),
-                    e(Layout, { languageText: currentLangText, setStarted: setStarted, ttsEnabled: ttsEnabled })
+                    // Reset React state
+                    setAnswers([]);
+                    setUserInfo('');
+                    setFinalHash(generateCryptoHash()); // Generate a new hash
+                    setTosAgreed(false);
+                    setCurrentQIndex(0);
+                    setStep('intro'); // Start from the beginning
+                };
+
+
+                // --- 4. RENDERER ---
+                var renderScreen = function() {
+                    var scores = calculateScores(answers);
+
+                    // --- FLOW CONTROL (Phase X integrated) ---
+                    if (!tosAgreed && currentStep !== 'tos') {
+                        return e(ScreenTOS, { languageText: languageText, setAgreed: setTosAgreed, ttsEnabled: ttsEnabled, langCode: langCode });
+                    }
+                    
+                    if (tosAgreed && !userInfo && currentStep !== 'userinfo' && currentStep !== 'tos') {
+                        return e(ScreenUserInfo, { languageText: languageText, langCode: langCode, ttsEnabled: ttsEnabled, setUserInfo: setUserInfo, setStep: setStep, setHash: setFinalHash, resetSession: resetSession });
+                    }
+
+
+                    switch (currentStep) {
+                        case 'tos':
+                            return e(ScreenTOS, { languageText: languageText, setAgreed: setTosAgreed, ttsEnabled: ttsEnabled, langCode: langCode });
+                        case 'userinfo':
+                            return e(ScreenUserInfo, { languageText: languageText, langCode: langCode, ttsEnabled: ttsEnabled, setUserInfo: setUserInfo, setStep: setStep, setHash: setFinalHash, resetSession: resetSession });
+                        case 'question':
+                            return e(ScreenQuestion, { questions: AUDIT_QUESTIONS, currentQIndex: currentQIndex, setQIndex: setCurrentQIndex, answers: answers, setAnswers: setAnswers, setStep: setStep, langCode: langCode, ttsEnabled: ttsEnabled });
+                        case 'review':
+                            return e(ScreenReview, { answers: answers, setQIndex: setCurrentQIndex, setStep: setStep, questions: AUDIT_QUESTIONS, langCode: langCode });
+                        case 'report':
+                            return e(ScreenReport, { answers: answers, scores: scores, questions: AUDIT_QUESTIONS, resetSession: resetSession, finalHash: finalHash, userInfo: userInfo, langCode: langCode });
+                        case 'intro':
+                        default:
+                            return e(ScreenIntro, { languageText: languageText, setStep: setStep, resetSession: resetSession, langCode: langCode, ttsEnabled: ttsEnabled });
+                    }
+                };
+                
+                var currentLangData = LANGUAGES[langCode];
+
+                return e(React.Fragment, null, 
+                    e(LangSwitcher, { current: langCode, setLang: setLangCode, ttsEnabled: ttsEnabled, setTtsEnabled: setTtsEnabled }),
+                    e('div', { className: "app-container " + currentLangData.font, dir: currentLangData.dir, key: langCode }, 
+                        renderScreen()
+                    )
                 );
             };
+
 
             // --- RENDER APPLICATION ---
             ReactDOM.render(e(App, null), document.getElementById('root'), function() {
@@ -1177,15 +1197,15 @@
                     lucide.createIcons();
                 }
             });
-
+            
         }
-    </script>
-
-    <script>
-        // Initial icon rendering attempt for load screen
+        </script>
+        
+        <script>
+        // Initial Icon rendering attempt for load screen
         if (typeof lucide !== 'undefined' && typeof lucide.createIcons === 'function') {
             lucide.createIcons();
         }
-    </script>
+        </script>
 </body>
 </html>
