@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Redirecting...</title>
+  <script>
+    // ⚠️ IMPORTANT: Repository Name must match your URL structure: imsss-sync-services
+    var repoName = '/imsss-sync-services'; 
+    var path = window.location.pathname;
+    
+    // Check if the path starts with the repo name 
+    if (path.indexOf(repoName) === 0) {
+      // 1. Extract the internal route (e.g., /review)
+      var internalRoute = path.substring(repoName.length);
+      // 2. Save the intended path in session storage
+      sessionStorage.setItem('redirectPath', internalRoute);
+      // 3. Force a redirect to the main index.html file
+      window.location.replace(repoName + '/');
+    } else {
+      // Fallback 
+      sessionStorage.setItem('redirectPath', path);
+      window.location.replace('/');
+    }
+  </script>
+</head>
+<body>
+  <div style="font-family: sans-serif; text-align: center; padding-top: 50px;">
+    <p>Loading application...</p>
+  </div>
+</body>
+</html>
