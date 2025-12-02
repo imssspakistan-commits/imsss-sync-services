@@ -14,7 +14,24 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Noto+Sans+Arabic:wght@400;700&display=swap');
+    /* Global responsiveness fix to prevent horizontal scroll on small screens */
+    @media (max-width: 768px) {
+        body {
+            /* Ensures no hidden element causes horizontal scroll */
+            overflow-x: hidden; 
+        }
+        /* Targets the main content wrapper which likely has a max-width class like 'max-w-4xl' */
+        .max-w-4xl {
+            /* Overrides the fixed max-width for smaller screens */
+            max-width: 100% !important; 
+        }
+        /* Adds a small buffer space inside the container on mobile */
+        .p-8 {
+            padding: 1rem !important; /* Adjusts internal padding for mobile readability */
+        }
+    }
+</style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Noto+Sans+Arabic:wght@400;700&display=swap');
 
         :root {
             --bg-color: #0f172a; /* slate-900 */
