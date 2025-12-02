@@ -1,0 +1,12 @@
+/* FIX: Responsive CSS for Mobile Screens */
+@media (max-width: 768px) {
+    body {
+        overflow-x: hidden; 
+    }
+    .max-w-4xl {
+        max-width: 100% !important; 
+    }
+    .p-8 {
+        padding: 1rem !important; 
+    }
+}
