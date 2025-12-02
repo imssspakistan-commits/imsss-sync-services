@@ -104,7 +104,14 @@
         <div class="text-white text-center p-10">Loading Application...</div>
     </div>
 
-    <script>
+    <script>// --- STEP 4: FINAL UPGRADE BUTTON LOGIC (Insert immediately after the opening <script> tag) ---
+var handleUpgradeClick = function() {
+    alert("Thank you for your interest! The Premium Audit Service is currently under development. You will now be redirected to the IMSSS website to sign up for launch notifications.");
+    
+    // NOTE: This is the TEMPORARY placeholder URL. Update this later!
+    window.location.href = 'https://www.imsss.com/premium-signup-pending'; 
+};
+// -----------------------------------------------------------------------------
         // --- CRITICAL CHECK: Ensure React and ReactDOM are available globally ---
         if (typeof React === 'undefined' || typeof ReactDOM === 'undefined' || typeof lucide === 'undefined') {
             document.getElementById('root').innerHTML = '<div class="text-white p-10 bg-red-900/50">FATAL ERROR: External dependencies (React, ReactDOM, or Lucide Icons) failed to load. Check network connection or dependency URLs.</div>';
