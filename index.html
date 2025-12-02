@@ -410,7 +410,12 @@
                 // Hide buttons for printing
                 clone.querySelectorAll('.no-print').forEach(function(el) {
                     el.style.display = 'none';
-                });
+                });// --- STEP 1: LEGAL DISCLAIMER INTEGRATION ---
+                // Append the required Legal Disclaimer to the clone before rendering to PDF
+                var disclaimerDiv = document.createElement('div');
+                disclaimerDiv.innerHTML = '<div style="font-size: 8px; margin-top: 20px; padding: 10px; border-top: 1px solid #ccc; color: black; text-align: center;">LEGAL DISCLAIMER: The IMSSS AI Risk Assessor is provided "AS IS" without warranty of any kind. You assume the entire risk of using this tool for audit or compliance purposes. The authors and providers disclaim all liability for any damages arising from its use. This is a basic, preliminary report; a final legal opinion or compliance strategy requires consultation with a qualified professional.</div>';
+                clone.appendChild(disclaimerDiv);
+                // ---------------------------------------------
 
                 // Prepend the current date and hash to the PDF
                 var headerDiv = document.createElement('div');
