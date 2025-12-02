@@ -12,7 +12,24 @@
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+        /* Global responsiveness fix to prevent horizontal scroll on small screens */
+        @media (max-width: 768px) {
+            body {
+                overflow-x: hidden; 
+            }
+            /* Targets the main content wrapper (e.g., the dark box) */
+            .max-w-4xl {
+                max-width: 100% !important; 
+            }
+            .p-8 {
+                padding: 1rem !important; 
+            }
+        }
+    </style>
+    ```
 
+### ⏭️ Commit and Test
     <style>
     /* Global responsiveness fix to prevent horizontal scroll on small screens */
     @media (max-width: 768px) {
