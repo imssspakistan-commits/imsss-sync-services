@@ -2,44 +2,28 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>IMSSS AI Risk Assessor</title>    
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> 
+    <title>IMSSS AI Risk Assessor</title>
+
     <script src="https://cdn.tailwindcss.com?version=3.4.4"></script>
     <script src="https://unpkg.com/react@18.2.0/umd/react.production.min.js" crossorigin="anonymous"></script>
     <script src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js" crossorigin="anonymous"></script>
     <script src="https://unpkg.com/lucide@0.368.0"></script>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
     <style>
-        /* PASTE ALL YOUR ORIGINAL CSS (Fonts, :root, body styles) HERE */
-        
-        /* ----------------------------------------------------------------- */
-        /* INLINE MOBILE RESPONSIVENESS CSS */
-        /* ----------------------------------------------------------------- */
-        @media (max-width: 768px) {
-            body {
-                overflow-x: hidden; 
-            }
-            .max-w-4xl {
-                max-width: 100% !important; 
-            }
-            .p-8 {
-                padding: 1rem !important; 
-            }
-        }
-    </style>
-</head>
-<body>
-    <div id="root"></div>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Noto+Sans+Arabic:wght@400;700&display=swap');
 
-    <script>
-        // PASTE YOUR ENTIRE JAVASCRIPT BUNDLE (ALL CODE) HERE
-    </script>
-</body>
-</html>
+        :root {
+            --bg-color: #0f172a; /* slate-900 */
+            --glass-bg: rgba(30, 41, 59, 0.7); /* slate-800 with transparency */
+            --border-color: #334155; /* slate-700 */
+            --input-bg: #1e293b; /* slate-800 */
+        }
+
+        body {
             background-color: var(--bg-color);
             background-image: radial-gradient(circle at center, #1e293b 1px, transparent 1px);
             background-size: 50px 50px;
