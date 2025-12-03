@@ -1035,12 +1035,10 @@ e('div', { className: "flex flex-col space-y-4 mt-8 no-print" }, [
         e('button', { 
             onClick: function() { window.navigate('/'); window.clearSession(); }, 
             className: "bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 px-6 rounded-lg text-sm transition duration-200"
-        }, 'START NEW SESSION')
-    ]) // Closes the inner 'div' array
-]), // Closes the outer 'div' array
-; // <--- The essential semicolon to terminate the entire statement
+}, 'START NEW SESSION')
+    ])
+]);
 
-// --- MAIN APPLICATION ENTRY POINT ---
 var App = function() {
                 // --- 1. STATE INITIALIZATION ---
                 var [langCode, setLangCode] = useState(loadState(LS_KEY_LANG, 'EN'));
