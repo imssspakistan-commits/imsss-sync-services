@@ -1014,32 +1014,50 @@ var handleUpgradeClick = function() {
                         ),
 
                         // Action Buttons (No Print)
+// Action Buttons (No Print)
 e('div', { className: "flex flex-col space-y-4 mt-8 no-print" }, [
-    
-    e('div', {
-        style: { padding: '15px', marginTop: '15px', textAlign: 'center', backgroundColor: 'rgba(59, 130, 246, 0.1)', border: '1px solid #3b82f6', color: '#9ca3af', borderRadius: '8px', fontSize: '14px' }
-    }, 'The PDF report contains a Basic Remediation Summary. A ', e('strong', null, 'Premium Audit Report'), ' with detailed implementation guidance, expert review, and dedicated consultation is available for purchase.'),
-    
-    e('div', { className: "flex flex-col space-y-4 mt-4" }, [
-        
-        e('button', { 
-            onClick: function() { window.exportPdfReport(finalHash, userInfo); }, 
-            className: "bg-green-700 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg text-lg transition duration-200 shadow-xl"
-        }, 'DOWNLOAD BASIC PDF REPORT'),
-        
-        e('button', { 
-            onClick: function() { window.handleUpgradeClick(); },
-            className: "bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-6 rounded-lg text-lg transition duration-200 shadow-xl"
-        }, 'UPGRADE TO PREMIUM AUDIT'),
-        
-        e('button', { 
-            onClick: function() { window.navigate('/'); window.clearSession(); }, 
-            className: "bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 px-6 rounded-lg text-sm transition duration-200"
-        }, 'START NEW SESSION')
-    ]), // Closes the inner 'div' array
-]), // Closes the outer 'div' array and terminates the component return statement
+
+    e('div', {
+        style: {
+            padding: '15px',
+            marginTop: '15px',
+            textAlign: 'center',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            border: '1px solid #3b82f6',
+            color: '#9ca3af',
+            borderRadius: '8px',
+            fontSize: '14px'
+        }
+    }, [
+        'The PDF report contains a Basic Remediation Summary. A ',
+        e('strong', null, 'Premium Audit Report'),
+        ' with detailed implementation guidance, expert review, and dedicated consultation is available for purchase.'
+    ]),
+
+    e('div', { className: "flex flex-col space-y-4 mt-4" }, [
+
+        e('button', {
+            onClick: function() { window.exportPdfReport(finalHash, userInfo); },
+            className: "bg-green-700 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg text-lg transition duration-200 shadow-xl"
+        }, 'DOWNLOAD BASIC PDF REPORT'),
+
+        e('button', {
+            onClick: function() { window.handleUpgradeClick(); },
+            className: "bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-6 rounded-lg text-lg transition duration-200 shadow-xl"
+        }, 'UPGRADE TO PREMIUM AUDIT'),
+
+        e('button', {
+            onClick: function() { window.navigate('/'); window.clearSession(); },
+            className: "bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 px-6 rounded-lg text-sm transition duration-200"
+        }, 'START NEW SESSION')
+
+    ])
+
+]), // ✓ closes the outer "div" array cleanly
+
 // --- MAIN APPLICATION ENTRY POINT ---
 var App = function() {
+
             
                 // --- 1. STATE INITIALIZATION ---
                 var [langCode, setLangCode] = useState(loadState(LS_KEY_LANG, 'EN'));
