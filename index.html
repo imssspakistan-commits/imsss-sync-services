@@ -1052,10 +1052,11 @@ e('div', { className: "flex flex-col space-y-4 mt-8 no-print" }, [
         }, 'START NEW SESSION')
 
     ])
+]);  // <-- correct: closes the outer div WITH NO TRAILING COMMA
 
-]),  // <-- last closing bracket of your component
 // --- MAIN APPLICATION ENTRY POINT ---
 var App = function() {
+
 
             
                 // --- 1. STATE INITIALIZATION ---
