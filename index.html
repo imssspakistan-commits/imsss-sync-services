@@ -982,13 +982,12 @@ var handleUpgradeClick = function() {
                                 }, e('span', { 'data-lucide': 'Copy', className: "w-4 h-4" }))
                             )
                         ),
-
-// Radar and Metrics
-e('div', { className: "grid md:grid-cols-2 gap-8 mb-8" }, [ // <-- ADDED OPENING BRACKET [
+  // Radar and Metrics
+e('div', { className: "grid md:grid-cols-2 gap-8 mb-8" }, [ 
     e('div', { className: "bg-slate-900/50 p-4 rounded-xl flex flex-col items-center" },
         e('p', { className: "text-lg font-bold text-slate-300 mb-4" }, languageText.metrics),
         e(RiskRadar, { scores: radarScores, labels: languageText }) // Pass the translation object
-    ), // <-- ENSURE COMMA IS HERE FOR NEXT ARGUMENT
+    ), 
     e('div', { className: "bg-slate-900/50 p-4 rounded-xl" },
         e('p', { className: "text-lg font-bold text-slate-300 mb-4" }, languageText.complianceSummary),
         e('div', { className: "scrollable-summary space-y-3" },
@@ -1011,7 +1010,7 @@ e('div', { className: "grid md:grid-cols-2 gap-8 mb-8" }, [ // <-- ADDED OPENING
             )
         )
     )
-]), // <-- ADDED CLOSING BRACKET ] AND CLOSED e()
+]), // Cleaned closing line
 
 // Action Buttons (No Print)
 e('div', { className: "flex flex-col space-y-4 mt-8 no-print" }, [
@@ -1041,7 +1040,7 @@ e('div', { className: "flex flex-col space-y-4 mt-8 no-print" }, [
     
 ]) // Outer div closed
 
-var App = function() {                   
+var App = function() {             
                 // --- 1. STATE INITIALIZATION ---
                 var [langCode, setLangCode] = useState(loadState(LS_KEY_LANG, 'EN'));
                 var [answers, setAnswers] = useState(loadState(LS_KEY_ANSWERS, []));
