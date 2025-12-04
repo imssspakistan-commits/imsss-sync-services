@@ -3,195 +3,244 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IMSSPAKISTAN - AI Governance & Compliance Solutions</title>
-    <!-- Load Tailwind CSS -->
+    <title>AI Compliance Auditor - Next-Gen Governance</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Load Lucide Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
+    
     <style>
-        /* Custom styles for the dark theme and font consistency */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
         :root {
-            --primary-bg: #0d111c;
-            --secondary-bg: #1c2333;
-            --accent-color: #10b981; /* Emerald 500 */
+            --primary-color: #10b981; /* Emerald 500 */
+            --primary-dark: #059669;  /* Emerald 600 */
+            --dark-bg: #0f172a; /* Slate 900 */
+            --dark-surface: #1e293b; /* Slate 800 */
         }
         body {
             font-family: 'Inter', sans-serif;
-            background-color: var(--primary-bg);
+            background-color: var(--dark-bg);
             color: #e2e8f0;
-            overflow-x: hidden;
+            min-height: 100vh;
+        }
+        .header-bg {
+            background-color: var(--dark-surface);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: var(--dark-bg);
+            transition: background-color 0.3s, transform 0.1s;
+        }
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-1px);
         }
         .card {
-            background-color: var(--secondary-bg);
-            border: 1px solid #2d3748;
-            transition: all 0.3s ease;
+            background-color: var(--dark-surface);
+            border: 1px solid #334155;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
         }
-        .hero-section {
-            /* Subtle blue/purple glow to mimic AI/digital theme */
-            background: radial-gradient(circle at 50% 10%, #1d253f 0%, #0d111c 60%);
+        .gradient-text {
+            background: linear-gradient(90deg, #10b981, #34d399, #6ee7b7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
-        .button-primary {
-            background-color: var(--accent-color);
-            color: var(--primary-bg);
-            transition: transform 0.2s, box-shadow 0.2s;
-            box-shadow: 0 5px 20px rgba(16, 185, 129, 0.3);
-        }
-        .button-primary:hover {
-            box-shadow: 0 4px 30px rgba(16, 185, 129, 0.6);
-            transform: translateY(-2px);
+        .feature-icon {
+            color: var(--primary-color);
         }
     </style>
 </head>
-<body>
+<body class="antialiased">
 
-    <!-- Navigation Bar -->
-    <header class="sticky top-0 z-50 bg-opacity-95 backdrop-blur-sm bg-[var(--primary-bg)] shadow-xl">
+    <!-- Header & Navigation -->
+    <header class="header-bg sticky top-0 z-20">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-            <!-- Logo/Brand -->
-            <div class="flex items-center space-x-2">
-                <!-- Using the same logo icon as the assessor tool for brand consistency -->
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
-                    <path d="M2 17l10 5 10-5"></path>
-                    <path d="M2 12l10 5 10-5"></path>
-                </svg>
-                <span class="text-2xl font-extrabold text-white">IMSSPAKISTAN</span>
-            </div>
-
-            <!-- Desktop Navigation Links -->
-            <nav class="hidden md:flex space-x-8 text-sm font-medium">
-                <a href="#mission" class="text-slate-300 hover:text-[var(--accent-color)] transition duration-200">Our Mission</a>
-                <a href="#features" class="text-slate-300 hover:text-[var(--accent-color)] transition duration-200">Assessor Features</a>
-                <a href="#compliance" class="text-slate-300 hover:text-[var(--accent-color)] transition duration-200">Compliance Standards</a>
-                <a href="#contact" class="text-slate-300 hover:text-[var(--accent-color)] transition duration-200">Contact Us</a>
-            </nav>
-
-            <!-- CTA Button: Links to the assessor demo -->
-            <a href="index.html" class="px-5 py-2 rounded-full font-semibold button-primary shadow-lg hover:shadow-xl text-sm">
-                Launch Assessor Demo
+            <a href="#" class="text-2xl font-extrabold flex items-center gap-2 text-white">
+                <i data-lucide="ShieldCheck" class="w-7 h-7 text-green-400"></i>
+                AI Auditor
             </a>
-
-            <!-- Mobile Menu Button - Placeholder -->
-            <button class="md:hidden text-slate-300 focus:outline-none">
-                <i data-lucide="menu" class="w-6 h-6"></i>
+            <nav class="hidden md:flex space-x-6">
+                <a href="#features" class="text-slate-300 hover:text-white transition duration-150">Features</a>
+                <a href="#compliance" class="text-slate-300 hover:text-white transition duration-150">Standards</a>
+                <a href="#cta" class="text-slate-300 hover:text-white transition duration-150">Start Now</a>
+            </nav>
+            <a href="./app.html" class="hidden md:inline-flex btn-primary px-4 py-2 rounded-full font-semibold text-sm shadow-md">
+                Launch App
+            </a>
+            <!-- Mobile Menu Button -->
+            <button id="mobile-menu-button" class="md:hidden text-slate-300 hover:text-white focus:outline-none">
+                <i data-lucide="Menu" class="w-6 h-6"></i>
             </button>
         </div>
     </header>
 
-    <!-- Main Content -->
-    <main>
-        <!-- Hero Section -->
-        <section class="hero-section text-center py-24 md:py-36 lg:py-48 border-b border-slate-800">
-            <div class="max-w-4xl mx-auto px-4">
-                <span class="text-sm font-semibold uppercase text-[var(--accent-color)] tracking-widest mb-4 block">
-                    AI Governance & Trust Infrastructure
-                </span>
-                <h1 class="text-4xl md:text-6xl lg:text-7xl font-extrabold leading-tight mb-8 text-white tracking-tight">
-                    Minimize <span class="text-red-400">AI Liability.</span> Maximize Compliance.
-                </h1>
-                <p class="text-lg md:text-xl text-slate-300 mb-12 max-w-3xl mx-auto">
-                    Navigate the complex regulatory landscape of the EU AI Act, ISO 42001, and NIST RMF with our automated, risk-weighted compliance tools.
-                </p>
-                <div class="space-x-4">
-                    <a href="index.html" class="inline-block px-8 py-4 rounded-full font-bold text-lg button-primary shadow-2xl">
-                        Start Free Risk Assessment
-                    </a>
-                    <a href="#features" class="inline-block px-8 py-4 rounded-full font-bold text-lg text-white bg-slate-700 hover:bg-slate-600 transition-colors shadow-md">
-                        Learn More
-                    </a>
-                </div>
-            </div>
-        </section>
-
-        <!-- Our Mission Section (Referencing Content from the previous index.html) -->
-        <section id="mission" class="py-20 md:py-32">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                <h2 class="text-4xl font-bold text-white mb-4">Our Mission: Trust and Innovation</h2>
-                <p class="text-lg text-slate-400 max-w-4xl mx-auto">
-                    IMSSPAKISTAN is dedicated to building the infrastructure for ethical, compliant, and trustworthy AI adoption globally. We bridge the gap between innovation and regulatory integrity, ensuring your projects are future-proofed against evolving standards.
-                </p>
-            </div>
-        </section>
-
-        <!-- Key Features Section (Referencing Content from imssspakistan_product_description.md) -->
-        <section id="features" class="py-20 md:py-32 bg-[var(--secondary-bg)] border-t border-b border-slate-800">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <h2 class="text-4xl font-bold text-center text-[var(--accent-color)] mb-16">The Assessor Tool: Your Compliance Engine</h2>
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
-
-                    <!-- Feature 1: Multi-Standard Compliance -->
-                    <div class="card p-8 rounded-xl shadow-lg hover:shadow-2xl hover:ring-2 hover:ring-cyan-500">
-                        <i data-lucide="shield-half" class="w-10 h-10 mb-4 text-cyan-400"></i>
-                        <h3 class="text-xl font-semibold mb-3 text-white">Multi-Standard Compliance</h3>
-                        <p class="text-slate-400 text-sm">Assesses alignment with global benchmarks: **EU AI Act, ISO 42001, and NIST AI RMF.** Ensure readiness for international regulatory environments.</p>
-                    </div>
-
-                    <!-- Feature 2: Risk-Weighted Liability Score -->
-                    <div class="card p-8 rounded-xl shadow-lg hover:shadow-2xl hover:ring-2 hover:ring-red-500">
-                        <i data-lucide="alert-triangle" class="w-10 h-10 mb-4 text-red-400"></i>
-                        <h3 class="text-xl font-semibold mb-3 text-white">Risk-Weighted Liability Score</h3>
-                        <p class="text-slate-400 text-sm">Provides a clear **LOW, MODERATE, or HIGH RISK** rating based on the severity of identified violations. Instantly prioritize remediation efforts.</p>
-                    </div>
-
-                    <!-- Feature 3: Actionable Remediation -->
-                    <div class="card p-8 rounded-xl shadow-lg hover:shadow-2xl hover:ring-2 hover:ring-yellow-500">
-                        <i data-lucide="zap" class="w-10 h-10 mb-4 text-yellow-400"></i>
-                        <h3 class="text-xl font-semibold mb-3 text-white">Actionable Remediation</h3>
-                        <p class="text-slate-400 text-sm">For every violation detected, the report provides a specific **ACTION REQUIRED** recommendation, moving you immediately from identification to resolution.</p>
-                    </div>
-
-                    <!-- Feature 4: Immutable Integrity Hash -->
-                    <div class="card p-8 rounded-xl shadow-lg hover:shadow-2xl hover:ring-2 hover:ring-purple-500">
-                        <i data-lucide="fingerprint" class="w-10 h-10 mb-4 text-purple-400"></i>
-                        <h3 class="text-xl font-semibold mb-3 text-white">Immutable Integrity Hash</h3>
-                        <p class="text-slate-400 text-sm">Every assessment is assigned a unique, cryptographic **Integrity Hash**, providing a verifiable, audit-proof record of compliance status.</p>
-                    </div>
-
-                    <!-- Feature 5: Domain-Specific Metrics -->
-                    <div class="card p-8 rounded-xl shadow-lg hover:shadow-2xl hover:ring-2 hover:ring-emerald-500">
-                        <i data-lucide="layout-grid" class="w-10 h-10 mb-4 text-[var(--accent-color)]"></i>
-                        <h3 class="text-xl font-semibold mb-3 text-white">Domain-Specific Metrics</h3>
-                        <p class="text-slate-400 text-sm">Performance breakdown across **Data Quality, Model Governance, Bias & Fairness, Transparency, and Security.** Pinpoint technical weaknesses.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-        
-        <!-- CTA Section -->
-        <section class="py-16 md:py-24">
-            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center card p-10 rounded-xl">
-                <h2 class="text-3xl font-bold text-white mb-4">Ready to Assess Your AI Risk?</h2>
-                <p class="text-lg text-slate-400 mb-8">
-                    Stop guessing about AI risk. Start assessing today and build trust in your intelligent systems.
-                </p>
-                <a href="index.html" class="inline-block px-10 py-4 rounded-full font-bold text-xl button-primary shadow-2xl">
-                    Launch Assessor Now
+    <!-- Mobile Menu Drawer (Hidden by default) -->
+    <div id="mobile-menu" class="fixed top-0 left-0 w-full h-full bg-slate-900 bg-opacity-95 z-30 transform -translate-x-full transition-transform duration-300 md:hidden">
+        <div class="p-6">
+            <button id="close-menu-button" class="absolute top-4 right-4 text-white focus:outline-none">
+                <i data-lucide="X" class="w-6 h-6"></i>
+            </button>
+            <nav class="mt-12 flex flex-col space-y-4 text-xl">
+                <a href="#features" class="text-slate-200 hover:text-green-400 transition duration-150 py-2" onclick="closeMobileMenu()">Features</a>
+                <a href="#compliance" class="text-slate-200 hover:text-green-400 transition duration-150 py-2" onclick="closeMobileMenu()">Standards</a>
+                <a href="#cta" class="text-slate-200 hover:text-green-400 transition duration-150 py-2" onclick="closeMobileMenu()">Start Now</a>
+                <a href="./app.html" class="btn-primary mt-6 text-center px-4 py-3 rounded-xl font-bold shadow-lg">
+                    Launch AI Compliance Tool
                 </a>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32 text-center">
+        <h1 class="text-5xl md:text-7xl font-extrabold leading-tight mb-6">
+            Future-Proof Your AI with
+            <span class="gradient-text block">Automated Compliance</span>
+        </h1>
+        <p class="text-xl md:text-2xl text-slate-400 max-w-3xl mx-auto mb-10">
+            Instantly assess your AI systems against global regulatory frameworks like the EU AI Act, ISO 42001, and NIST RMF. Identify risks before they become liabilities.
+        </p>
+        <a href="./app.html" class="btn-primary inline-flex items-center gap-2 text-lg px-8 py-4 rounded-xl font-bold shadow-xl shadow-emerald-900/50 transform hover:scale-[1.01] transition duration-300">
+            <i data-lucide="Zap" class="w-6 h-6"></i>
+            Start Free Assessment
+        </a>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-16 md:py-24 bg-slate-800/50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-12">Key Capabilities</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                
+                <div class="card p-6 text-center space-y-4 transition duration-300 hover:ring-4 ring-emerald-500/30">
+                    <i data-lucide="CheckCircle" class="w-10 h-10 mx-auto feature-icon"></i>
+                    <h3 class="text-xl font-semibold text-white">Risk Scoring</h3>
+                    <p class="text-slate-400 text-sm">Receive a quantifiable risk score (out of 100) for fast decision-making and clear executive summaries.</p>
+                </div>
+                
+                <div class="card p-6 text-center space-y-4 transition duration-300 hover:ring-4 ring-emerald-500/30">
+                    <i data-lucide="ListChecks" class="w-10 h-10 mx-auto feature-icon"></i>
+                    <h3 class="text-xl font-semibold text-white">Regulatory Mapping</h3>
+                    <p class="text-slate-400 text-sm">Automatically map compliance gaps to specific articles and clauses in major international standards.</p>
+                </div>
+
+                <div class="card p-6 text-center space-y-4 transition duration-300 hover:ring-4 ring-emerald-500/30">
+                    <i data-lucide="Lightbulb" class="w-10 h-10 mx-auto feature-icon"></i>
+                    <h3 class="text-xl font-semibold text-white">Actionable Roadmap</h3>
+                    <p class="text-slate-400 text-sm">Get clear, practical recommendations to mitigate identified risks and achieve full compliance.</p>
+                </div>
+
             </div>
-        </section>
-    </main>
+        </div>
+    </section>
+
+    <!-- Compliance Standards Section -->
+    <section id="compliance" class="py-16 md:py-24">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="lg:flex lg:items-center lg:space-x-12">
+                <div class="lg:w-1/2 mb-10 lg:mb-0">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-4 text-white">Comprehensive Standards Coverage</h2>
+                    <p class="text-slate-400 text-lg mb-8">
+                        Our AI Auditor leverages up-to-date information to ensure your systems comply with the most current global requirements. We cover the core pillars of AI governance:
+                    </p>
+                    <div class="space-y-4">
+                        <div class="flex items-start">
+                            <i data-lucide="Scale" class="w-6 h-6 feature-icon flex-shrink-0 mt-1"></i>
+                            <div class="ml-3">
+                                <h4 class="text-lg font-semibold text-white">EU AI Act (High-Risk Focus)</h4>
+                                <p class="text-slate-400 text-sm">Mandatory requirements for transparency, robustness, and data governance for high-stakes AI applications.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <i data-lucide="Layers" class="w-6 h-6 feature-icon flex-shrink-0 mt-1"></i>
+                            <div class="ml-3">
+                                <h4 class="text-lg font-semibold text-white">ISO 42001 (AI Management System)</h4>
+                                <p class="text-slate-400 text-sm">A globally recognized framework for establishing, implementing, maintaining, and continually improving an AIMS.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <i data-lucide="Shield" class="w-6 h-6 feature-icon flex-shrink-0 mt-1"></i>
+                            <div class="ml-3">
+                                <h4 class="text-lg font-semibold text-white">NIST AI Risk Management Framework (RMF)</h4>
+                                <p class="text-slate-400 text-sm">A flexible, voluntary framework for managing risks associated with the design, development, and deployment of AI systems.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="lg:w-1/2">
+                    <!-- Placeholder image/diagram illustrating governance -->
+                    <div class="card p-8 bg-slate-700/50 border-emerald-500/30">
+                        <div class="text-center text-slate-300 space-y-4">
+                            <i data-lucide="Globe" class="w-12 h-12 text-emerald-400 mx-auto mb-2"></i>
+                            <p class="text-xl font-bold">The Global Governance Triad</p>
+                            <p class="text-sm">The core challenge of AI compliance is navigating intersecting standards. Our tool synthesizes these requirements for a single, unified risk view.</p>
+                            <p class="text-xs text-slate-500 mt-4">EU AI Act • ISO 42001 • NIST RMF • Sector-Specific Rules</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call to Action Section -->
+    <section id="cta" class="py-20 md:py-24 text-center bg-slate-900/50">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-4xl md:text-5xl font-extrabold mb-4 text-white">
+                Stop Guessing. Start Governing.
+            </h2>
+            <p class="text-xl text-slate-400 mb-10 max-w-2xl mx-auto">
+                Take the first step towards verifiable AI trustworthiness. No sign-up required—test your first system right now.
+            </p>
+            <a href="./app.html" class="btn-primary inline-flex items-center gap-3 text-2xl px-10 py-5 rounded-2xl font-extrabold shadow-2xl shadow-emerald-700/50 transform hover:scale-105 transition duration-300">
+                <i data-lucide="Rocket" class="w-7 h-7"></i>
+                Launch Compliance Tool
+            </a>
+        </div>
+    </section>
 
     <!-- Footer -->
-    <footer class="bg-[var(--primary-bg)] border-t border-slate-800 py-10" id="contact">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <div class="flex flex-col md:flex-row justify-center items-center space-y-4 md:space-y-0 md:space-x-12 mb-6">
-                <a href="#" class="text-sm text-slate-400 hover:text-[var(--accent-color)]">Privacy Policy</a>
-                <a href="#" class="text-sm text-slate-400 hover:text-[var(--accent-color)]">Terms of Service</a>
-                <a href="mailto:contact@imssspakistan.com" class="text-sm text-slate-400 hover:text-[var(--accent-color)]">contact@imssspakistan.com</a>
+    <footer class="bg-slate-900 border-t border-slate-700/50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10">
+            <div class="md:flex md:justify-between md:items-center">
+                <div class="text-center md:text-left mb-4 md:mb-0">
+                    <p class="text-sm text-slate-500">&copy; 2025 AI Compliance Auditor. All rights reserved.</p>
+                    <p class="text-xs text-slate-600 mt-1">Built with Gemini technology for Governance & Risk Compliance.</p>
+                </div>
+                <div class="flex justify-center md:justify-end space-x-6">
+                    <a href="#" class="text-slate-400 hover:text-green-400 transition duration-150"><i data-lucide="Twitter" class="w-5 h-5"></i></a>
+                    <a href="#" class="text-slate-400 hover:text-green-400 transition duration-150"><i data-lucide="Linkedin" class="w-5 h-5"></i></a>
+                    <a href="#" class="text-slate-400 hover:text-green-400 transition duration-150"><i data-lucide="Github" class="w-5 h-5"></i></a>
+                </div>
             </div>
-            <p class="text-sm text-slate-500">
-                &copy; 2025 IMSSPAKISTAN. All rights reserved. | Built for AI Governance & Integrity.
-            </p>
         </div>
     </footer>
 
-    <!-- Initialize Lucide Icons -->
     <script>
-        window.onload = function() {
-            lucide.createIcons();
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const closeMenuButton = document.getElementById('close-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        function openMobileMenu() {
+            mobileMenu.classList.remove('-translate-x-full');
+            document.body.style.overflow = 'hidden'; // Prevent scrolling when menu is open
         }
+
+        function closeMobileMenu() {
+            mobileMenu.classList.add('-translate-x-full');
+            document.body.style.overflow = ''; // Restore scrolling
+        }
+
+        mobileMenuButton.addEventListener('click', openMobileMenu);
+        closeMenuButton.addEventListener('click', closeMobileMenu);
+        
+        // Ensure menu closes when navigating from mobile links
+        document.querySelectorAll('#mobile-menu a').forEach(link => {
+            link.addEventListener('click', closeMobileMenu);
+        });
+
     </script>
 </body>
 </html>
-
