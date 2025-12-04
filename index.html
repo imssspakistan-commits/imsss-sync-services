@@ -879,168 +879,364 @@ var handleUpgradeClick = function() {
             };
 
 
-            // --- SCREEN: REPORT ---
-            var ScreenReport = function(_ref9) {
-                var answers = _ref9.answers,
-                    scores = _ref9.scores,
-                    questions = _ref9.questions,
-                    resetSession = _ref9.resetSession,
-                    finalHash = _ref9.finalHash,
-                    userInfo = _ref9.userInfo,
-                    langCode = _ref9.langCode;
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { Copy, RefreshCw, Download, Zap } from 'lucide-react';
+// Alias React.createElement to 'e' to match the user's provided style
+const e = React.createElement;
 
-                var languageText = LANGUAGES[langCode].text;
+// --- MOCK DATA AND UTILITIES (To make the component runnable) ---
 
-                var totalScore = Object.keys(scores).reduce(function(sum, key) { return sum + scores[key]; }, 0);
-                var totalConfidence = (totalScore / (questions.length * 100)) * 100;
-                
-                // Filter only the questions that scored less than 100 (FAIL or PARTIAL)
-                var violations = questions.map(function(q) {
-                    var answer = answers.find(function(a) { return a.id === q.id; });
-                    return {
-                        id: q.id,
-                        domain: q.domain,
-                        question: q.en,
-                        score: answer ? answer.score : 0,
-                        remediation: q.remediation[langCode] || q.remediation.EN,
-                        references: q.references,
-                        riskWeight: q.riskWeight
-                    };
-                }).filter(function(v) { return v.score < 100; });
+// 1. Languages and Translations
+const LANGUAGES = {
+    'en': {
+        dir: 'ltr',
+        font: 'font-sans',
+        text: {
+            // General
+            report: "AI Compliance Report",
+            monitoring: "Monitoring and Risk Assessment for AI Systems.",
+            copied: "Hash copied to clipboard",
+            anchor: "Copy Integrity Hash",
+            // Metrics
+            confidenceScore: "Confidence Score",
+            liability: "Projected Liability (Risk Weighted)",
+            integrity: "Immutable Integrity Hash",
+            metrics: "Domain Metrics",
+            complianceSummary: "Compliance Violations & Remediation",
+            iso: "ISO 42001",
+            eu: "EU AI Act",
+            us: "NIST AI RMF",
+            PARTIAL: "PARTIAL",
+            FAIL: "FAIL",
+            // Domains
+            data: "Data Quality",
+            model: "Model Governance",
+            bias: "Bias & Fairness",
+            transparency: "Transparency",
+            security: "Security",
+            // Buttons
+            downloadPdf: "DOWNLOAD BASIC PDF REPORT",
+            upgrade: "UPGRADE TO PREMIUM AUDIT",
+            newSession: "START NEW SESSION"
+        }
+    }
+    // Add other languages as needed
+};
 
-                var liability = calculateLiability(violations);
-                
-                // Score for Radar Chart (max 100 for each domain)
-                var radarScores = {};
-                Object.keys(initialScores).forEach(function(domain) {
-                    var domainAnswers = answers.filter(function(a) { return a.domain === domain; });
-                    var domainTotalScore = domainAnswers.reduce(function(sum, a) { return sum + a.score; }, 0);
-                    var domainTotalMax = domainAnswers.length * 100;
-                    
-                    radarScores[domain] = domainTotalMax > 0 ? (domainTotalScore / domainTotalMax) * 100 : 0;
-                });
+// 2. Initial Scores (Used in the user's code, defined here for completeness)
+const initialScores = {
+    data: 0,
+    model: 0,
+    bias: 0,
+    transparency: 0,
+    security: 0
+};
 
+// 3. Mock Questions and Answers (to simulate a completed assessment)
+const mockQuestions = [
+    { id: 'q1', domain: 'data', riskWeight: 10, en: "Is training data free of PII?", remediation: { en: "Implement PII scrubbing pipeline.", AR: "AR remediation 1" }, references: { ISO: '1.1', EU: 'A.1', US: 'C.1' } },
+    { id: 'q2', domain: 'data', riskWeight: 5, en: "Are data sources documented?", remediation: { en: "Create a formal data provenance ledger.", AR: "AR remediation 2" }, references: { ISO: '1.2', EU: 'A.2', US: 'C.2' } },
+    { id: 'q3', domain: 'model', riskWeight: 15, en: "Is model versioning managed?", remediation: { en: "Adopt MLops framework with git-based versioning.", AR: "AR remediation 3" }, references: { ISO: '2.1', EU: 'B.1', US: 'D.1' } },
+    { id: 'q4', domain: 'bias', riskWeight: 20, en: "Was bias detection performed?", remediation: { en: "Run fairness audits using demographic parity metrics.", AR: "AR remediation 4" }, references: { ISO: '3.1', EU: 'C.1', US: 'E.1' } },
+    { id: 'q5', domain: 'transparency', riskWeight: 10, en: "Is the model's purpose clearly stated?", remediation: { en: "Add an 'Intended Use' section to the model card.", AR: "AR remediation 5" }, references: { ISO: '4.1', EU: 'D.1', US: 'F.1' } },
+    { id: 'q6', domain: 'security', riskWeight: 5, en: "Are model endpoints protected from unauthorized access?", remediation: { en: "Implement API key rotation and rate limiting.", AR: "AR remediation 6" }, references: { ISO: '5.1', EU: 'E.1', US: 'G.1' } },
+];
 
-                var copyHash = function() {
-                    // Use clipboard API for modern browsers
-                    if (navigator.clipboard && window.isSecureContext) {
-                        navigator.clipboard.writeText(finalHash).then(function() {
-                            alert(languageText.copied + ": " + finalHash);
-                        }, function(err) {
-                            console.error('Could not copy hash: ', err);
-                            fallbackCopy(finalHash);
-                        });
-                    } else {
-                        fallbackCopy(finalHash);
+const mockAnswers = [
+    { id: 'q1', domain: 'data', score: 50 }, // PARTIAL
+    { id: 'q2', domain: 'data', score: 100 }, // PASS
+    { id: 'q3', domain: 'model', score: 0 }, // FAIL
+    { id: 'q4', domain: 'bias', score: 50 }, // PARTIAL
+    { id: 'q5', domain: 'transparency', score: 100 }, // PASS
+    { id: 'q6', domain: 'security', score: 100 }, // PASS
+];
+
+// 4. Utility Functions
+const calculateLiability = (violations) => {
+    // Risk is calculated based on total weight of failed/partial items
+    const totalRiskWeight = violations.reduce((sum, v) => sum + v.riskWeight, 0);
+    if (totalRiskWeight > 35) return "HIGH RISK";
+    if (totalRiskWeight > 15) return "MODERATE RISK";
+    return "LOW RISK";
+};
+
+// 5. Radar Chart Component (Simplified)
+const RiskRadar = ({ scores, labels }) => {
+    const data = Object.keys(initialScores).map(domain => ({
+        subject: labels[domain], 
+        A: scores[domain], // Actual Score
+        fullMark: 100,
+        domainKey: domain, // Added for unique key in the list map
+    }));
+
+    return e('div', { className: "w-full h-64 flex flex-col justify-center items-center" },
+        e('div', { className: "relative w-full h-full max-w-xs space-y-2" },
+            // Simplified visualization using a div block structure
+            data.map((item) => {
+                const color = item.A > 80 ? 'bg-emerald-600' : item.A > 50 ? 'bg-yellow-600' : 'bg-red-600';
+                return e('div', { 
+                    key: item.domainKey, // <-- PRIMARY FIX: Key applied to the outermost element in the map
+                    className: "text-xs p-1 rounded transition-all flex justify-between items-center shadow-md",
+                    style: {
+                        width: '100%',
                     }
+                }, [
+                    // Secondary Fix: Added keys to static children of the array to resolve the React warning
+                    e('span', { key: 'subject-name', className: "text-slate-200 w-1/2" }, item.subject), 
+                    e('div', { key: 'score-bar', className: "w-1/2 flex justify-end" }, 
+                        e('div', { 
+                            className: `h-3 rounded-full ${color} transition-all duration-500`, 
+                            style: { width: `${item.A}%`, maxWidth: '100%', minWidth: '10px' } 
+                        }),
+                        e('span', { className: "ml-2 text-slate-200 font-mono" }, `${Math.round(item.A)}%`)
+                    )
+                ]);
+            })
+        ),
+        e('p', { className: "text-xs text-slate-500 mt-2" }, "Visual representation of domain-specific compliance.")
+    );
+};
 
-                    function fallbackCopy(text) {
-                        var textArea = document.createElement("textarea");
-                        textArea.value = text;
-                        textArea.style.position = "fixed";  // Avoid scrolling to bottom
-                        document.body.appendChild(textArea);
-                        textArea.focus();
-                        textArea.select();
-                        try {
-                            document.execCommand('copy');
-                            alert(languageText.copied + ": " + finalHash);
-                        } catch (err) {
-                            console.error('Fallback: Oops, unable to copy', err);
-                        }
-                        document.body.removeChild(textArea);
-                    }
+
+// --- SCREEN: REPORT ---
+const ScreenReport = ({ answers, questions, finalHash, langCode, resetSession }) => {
+    const languageText = LANGUAGES[langCode].text;
+
+    // State for Toast Notification
+    const [toast, setToast] = useState({ message: '', visible: false, isError: false });
+
+    // Calculate Scores and Violations using useMemo for efficiency
+    const { totalConfidence, liability, violations, radarScores } = useMemo(() => {
+        const totalScore = answers.reduce((sum, a) => sum + a.score, 0);
+        const totalMax = questions.length * 100;
+        const totalConfidence = totalMax > 0 ? (totalScore / totalMax) * 100 : 0;
+
+        // Filter only the questions that scored less than 100 (FAIL or PARTIAL)
+        const violations = questions
+            .map(q => {
+                const answer = answers.find(a => a.id === q.id);
+                const score = answer ? answer.score : 0;
+                return {
+                    id: q.id,
+                    domain: q.domain,
+                    score,
+                    remediation: q.remediation[langCode] || q.remediation.en,
+                    references: q.references,
+                    riskWeight: q.riskWeight
                 };
-                
-                return e('div', { className: "flex items-center justify-center min-h-screen p-4" },
-                    e('div', { id: "report-container", className: "glass-panel w-full max-w-5xl p-8 rounded-xl shadow-2xl text-white " + LANGUAGES[langCode].font, dir: LANGUAGES[langCode].dir },
-                        // Header Section
-                        e('div', { className: "border-b border-slate-700 pb-4 mb-6 text-center" },
-                            e('h2', { className: "text-3xl font-bold neon-text" }, languageText.report),
-                            e('p', { className: "text-slate-400 mt-2" }, languageText.monitoring)
-                        ),
-                        
-                        // Score Metrics
-                        e('div', { className: "grid grid-cols-3 gap-4 mb-8" },
-                            // Confidence Score
-                            e('div', { className: "p-4 bg-slate-800/50 rounded-lg text-center" },
-                                e('p', { className: "text-xs uppercase text-slate-400" }, "Confidence Score"),
-                                e('p', { className: "text-4xl font-mono mt-2 text-emerald-400 neon-text" }, Math.round(totalConfidence) + "%")
-                            ),
-                            // Projected Liability
-                            e('div', { className: "col-span-1 p-4 bg-red-800/50 rounded-lg text-center" },
-                                e('p', { className: "text-xs uppercase text-white" }, languageText.iso + " / " + languageText.eu + " - Liability"),
-                                e('p', { className: "text-2xl font-mono mt-2 text-white font-bold" }, liability)
-                            ),
-                            // Immutable Hash
-                            e('div', { className: "p-4 bg-slate-800/50 rounded-lg text-center relative" },
-                                e('p', { className: "text-xs uppercase text-slate-400" }, languageText.integrity),
-                                e('p', { className: "text-xs font-mono mt-2 text-blue-400 font-bold break-all" }, finalHash),
-                                e('button', {
-                                className: "absolute top-2 right-2 text-slate-500 hover:text-white transition-colors no-print",
-                                onClick: copyHash,
-                                title: languageText.anchor
-                            }, e('span', { 'data-lucide': 'Copy', className: "w-4 h-4" }))
-                            ), // <-- Element 1 (Immutable Hash) closed with a comma
+            })
+            .filter(v => v.score < 100);
 
-// Radar and Metrics
-e('div', { className: "grid md:grid-cols-2 gap-8 mb-8" }, [ 
-    e('div', { className: "bg-slate-900/50 p-4 rounded-xl flex flex-col items-center" },
-        e('p', { className: "text-lg font-bold text-slate-300 mb-4" }, languageText.metrics),
-        e(RiskRadar, { scores: radarScores, labels: languageText }) // Pass the translation object
-    ), 
-    e('div', { className: "bg-slate-900/50 p-4 rounded-xl" },
-        e('p', { className: "text-lg font-bold text-slate-300 mb-4" }, languageText.complianceSummary),
-        e('div', { className: "scrollable-summary space-y-3" },
-            violations.length > 0 ? (
-                violations.map(function(v) {
-                    var status = v.score === 50 ? "PARTIAL" : "FAIL";
-                    var color = v.score === 50 ? "text-yellow-400" : "text-red-400";
-                    return e('div', { key: v.id, className: "border-l-4 border-slate-700 pl-3 py-1" },
-                        e('p', { className: "font-bold text-sm uppercase " + color }, languageText[v.domain] + " - " + status),
-                        e('p', { className: "text-xs text-slate-300 mt-1" }, "ACTION REQUIRED: " + v.remediation),
-                        e('p', { className: "text-[10px] text-slate-500 mt-1" }, 
-                            "Ref: " + languageText.iso + " " + v.references.ISO + ", " + 
-                            languageText.eu + " " + v.references.EU + ", " + 
-                            languageText.us + " " + v.references.US 
+        const liability = calculateLiability(violations);
+
+        // Score for Radar Chart (max 100 for each domain)
+        const radarScores = {};
+        Object.keys(initialScores).forEach(domain => {
+            const domainAnswers = answers.filter(a => a.domain === domain);
+            const domainTotalScore = domainAnswers.reduce((sum, a) => sum + a.score, 0);
+            const domainTotalMax = domainAnswers.length * 100;
+            radarScores[domain] = domainTotalMax > 0 ? (domainTotalScore / domainTotalMax) * 100 : 0;
+        });
+
+        return { totalConfidence, liability, violations, radarScores };
+    }, [answers, questions, langCode]);
+
+    // Custom Toast/Notification logic
+    useEffect(() => {
+        if (toast.visible) {
+            const timer = setTimeout(() => setToast(prev => ({ ...prev, visible: false })), 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [toast.visible]);
+
+    const showToast = useCallback((message, isError = false) => {
+        setToast({ message, visible: true, isError });
+    }, []);
+
+    // Function to handle clipboard copying, ensuring NO alert() is used
+    const copyHash = useCallback(() => {
+        // Fallback copy logic
+        const fallbackCopy = (text) => {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed"; 
+            textArea.style.opacity = "0"; 
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                // FIX: Using showToast instead of alert()
+                showToast(languageText.copied + ": " + finalHash.substring(0, 10) + "...", false);
+            } catch (err) {
+                console.error('Fallback: Oops, unable to copy', err);
+                showToast("Copy failed: Please copy manually.", true);
+            }
+            document.body.removeChild(textArea);
+        };
+
+        // Use modern clipboard API
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(finalHash).then(() => {
+                // FIX: Using showToast instead of alert()
+                showToast(languageText.copied + ": " + finalHash.substring(0, 10) + "...", false);
+            }, (err) => {
+                console.error('Could not copy hash: ', err);
+                fallbackCopy(finalHash);
+            });
+        } else {
+            fallbackCopy(finalHash);
+        }
+    }, [finalHash, languageText.copied, showToast]);
+
+    // Mock functions for button clicks
+    const exportPdfReport = () => showToast("Preparing PDF... (Mock function)", false);
+    const handleUpgradeClick = () => showToast("Redirecting to Premium Upgrade page... (Mock function)", false);
+
+    return e('div', { className: "flex flex-col items-center justify-center min-h-screen p-4 bg-slate-900" },
+        // Toast Notification
+        e('div', {
+            className: `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg transition-opacity duration-300 ${toast.visible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'} ${toast.isError ? 'bg-red-600' : 'bg-emerald-600'} text-white`
+        }, toast.message),
+
+        e('div', { id: "report-container", className: "glass-panel w-full max-w-5xl p-8 rounded-xl shadow-2xl text-white backdrop-blur-md bg-slate-800/80 " + LANGUAGES[langCode].font, dir: LANGUAGES[langCode].dir },
+            // Header Section
+            e('div', { className: "border-b border-slate-700 pb-4 mb-6 text-center" },
+                e('h2', { className: "text-3xl font-bold text-cyan-400" }, languageText.report),
+                e('p', { className: "text-slate-400 mt-2" }, languageText.monitoring)
+            ),
+
+            // Score Metrics
+            e('div', { className: "grid grid-cols-1 md:grid-cols-3 gap-4 mb-8" },
+                // Confidence Score
+                e('div', { className: "p-4 bg-slate-700/50 rounded-lg text-center shadow-inner" },
+                    e('p', { className: "text-xs uppercase text-slate-300" }, languageText.confidenceScore),
+                    e('p', { className: "text-4xl font-mono mt-2 text-emerald-400 font-extrabold" }, Math.round(totalConfidence) + "%")
+                ),
+                
+                // Projected Liability
+                e('div', { 
+                    className: "p-4 rounded-lg text-center shadow-inner " + (
+                        liability === "HIGH RISK" ? "bg-red-700/50" : 
+                        liability === "MODERATE RISK" ? "bg-yellow-700/50" : 
+                        "bg-green-700/50"
+                    )
+                },
+                    e('p', { className: "text-xs uppercase text-white" }, languageText.liability),
+                    e('p', { className: "text-2xl font-mono mt-2 text-white font-bold" }, liability)
+                ),
+                
+                // Immutable Hash
+                e('div', { className: "p-4 bg-slate-700/50 rounded-lg text-center relative shadow-inner" },
+                    e('p', { className: "text-xs uppercase text-slate-300" }, languageText.integrity),
+                    e('p', { className: "text-xs font-mono mt-2 text-blue-400 font-bold break-all px-6" }, finalHash),
+                    e('button', {
+                        className: "absolute top-2 right-2 p-2 rounded-full text-slate-400 hover:text-white hover:bg-slate-600 transition-colors",
+                        onClick: copyHash,
+                        title: languageText.anchor
+                    }, e(Copy, { className: "w-4 h-4" }))
+                )
+            ),
+
+            // Radar and Compliance Summary
+            e('div', { className: "grid grid-cols-1 md:grid-cols-2 gap-8 mb-8" },
+                // Domain Metrics
+                e('div', { className: "bg-slate-900/50 p-6 rounded-xl flex flex-col items-center shadow-2xl" },
+                    e('p', { className: "text-xl font-bold text-slate-200 mb-4" }, languageText.metrics),
+                    e(RiskRadar, { scores: radarScores, labels: languageText }) 
+                ),
+                // Compliance Summary
+                e('div', { className: "bg-slate-900/50 p-6 rounded-xl shadow-2xl" },
+                    e('p', { className: "text-xl font-bold text-slate-200 mb-4" }, languageText.complianceSummary),
+                    e('div', { className: "max-h-80 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-slate-800 space-y-4 pr-2" },
+                        violations.length > 0 ? (
+                            violations.map(v => {
+                                const isPartial = v.score === 50;
+                                const status = isPartial ? languageText.PARTIAL : languageText.FAIL;
+                                const colorClass = isPartial ? "border-yellow-500 bg-yellow-900/20" : "border-red-500 bg-red-900/20";
+                                const textColor = isPartial ? "text-yellow-400" : "text-red-400";
+
+                                return e('div', { key: v.id, className: `border-l-4 ${colorClass} p-3 rounded-md` },
+                                    e('p', { className: `font-bold text-sm uppercase ${textColor}` }, `${languageText[v.domain]} - ${status}`),
+                                    e('p', { className: "text-xs text-slate-300 mt-1" }, `ACTION REQUIRED: ${v.remediation}`),
+                                    e('p', { className: "text-[10px] text-slate-500 mt-1" },
+                                        `Ref: ${languageText.iso} ${v.references.ISO}, ${languageText.eu} ${v.references.EU}, ${languageText.us} ${v.references.US}`
+                                    )
+                                );
+                            })
+                        ) : (
+                            e('div', { className: "text-center py-10 bg-emerald-900/20 rounded-lg border border-emerald-700" },
+                                e('p', { className: "text-emerald-400 text-lg font-bold" }, "NO VIOLATIONS DETECTED"),
+                                e('p', { className: "text-sm text-emerald-300 mt-1" }, "FULL COMPLIANCE ACHIEVED.")
+                            )
                         )
-                    );
-                })
-            ) : (
-                e('p', { className: "text-emerald-400 text-center py-10 text-lg font-bold" }, "NO VIOLATIONS DETECTED. FULL COMPLIANCE ACHIEVED.")
+                    )
+                )
+            ),
+
+            // Action Buttons (No Print)
+            e('div', { className: "flex flex-col space-y-4 mt-8 no-print" },
+                e('div', {
+                    className: "p-4 text-center rounded-lg border border-blue-600 bg-blue-900/20 text-slate-300 text-sm"
+                }, 'The PDF report contains a Basic Remediation Summary. A ', e('strong', { className: "text-white" }, 'Premium Audit Report'), ' with detailed implementation guidance, expert review, and dedicated consultation is available for purchase.'),
+
+                // Use the correct grid layout and component functions
+                e('div', { className: "grid grid-cols-1 md:grid-cols-3 gap-4 mt-4" },
+                    e('button', {
+                        onClick: exportPdfReport, // Correctly calling the local function
+                        className: "flex items-center justify-center bg-green-700 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg text-lg transition duration-200 shadow-xl transform hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-green-500/50"
+                    }, e(Download, { className: "w-5 h-5 mr-2" }), languageText.downloadPdf),
+
+                    e('button', {
+                        onClick: handleUpgradeClick, // Correctly calling the local function
+                        className: "flex items-center justify-center bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-6 rounded-lg text-lg transition duration-200 shadow-xl transform hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-blue-500/50"
+                    }, e(Zap, { className: "w-5 h-5 mr-2" }), languageText.upgrade),
+
+                    e('button', {
+                        onClick: resetSession, // Correctly calling the prop function
+                        className: "flex items-center justify-center bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 px-6 rounded-lg text-sm transition duration-200 shadow-md"
+                    }, e(RefreshCw, { className: "w-4 h-4 mr-2" }), languageText.newSession)
+                )
             )
         )
-    )
-]), // <--- Comma RE-ADDED here to separate this element from the next one.
+    );
+};
 
-// Action Buttons (No Print)
-e('div', { className: "flex flex-col space-y-4 mt-8 no-print" }, [
-    
-    e('div', {
-        style: { padding: '15px', marginTop: '15px', textAlign: 'center', backgroundColor: 'rgba(59, 130, 246, 0.1)', border: '1px solid #3b82f6', color: '#9ca3af', borderRadius: '8px', fontSize: '14px' }
-    }, 'The PDF report contains a Basic Remediation Summary. A ', e('strong', null, 'Premium Audit Report'), ' with detailed implementation guidance, expert review, and dedicated consultation is available for purchase.'),
-    
-    e('div', { className: "flex flex-col space-y-4 mt-4" }, [
-        
-        e('button', { // Corrected: This line now properly starts the button element.
-            onClick: function() { window.exportPdfReport(finalHash, userInfo); }, 
-            className: "bg-green-700 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg text-lg transition duration-200 shadow-xl"
-        }, 'DOWNLOAD BASIC PDF REPORT'),
-        
-        e('button', { 
-            onClick: function() { window.handleUpgradeClick(); },
-            className: "bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-6 rounded-lg text-lg transition duration-200 shadow-xl"
-        }, 'UPGRADE TO PREMIUM AUDIT'),
-        
-        e('button', { 
-            onClick: function() { window.navigate('/'); window.clearSession(); }, 
-            className: "bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 px-6 rounded-lg text-sm transition duration-200"
-        }, 'START NEW SESSION')
-        
-    ])
-    
-])
 
-var App = function() {
+// --- MAIN APP COMPONENT ---
+// This component manages the state and provides the context for ScreenReport.
+const App = () => {
+    // Mock State for a full session
+    const [sessionState, setSessionState] = useState({
+        answers: mockAnswers,
+        questions: mockQuestions,
+        finalHash: 'a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0',
+        langCode: 'en',
+    });
+
+    const resetSession = () => {
+        // Resetting state for a new session (mocking navigation and state clear)
+        setSessionState({
+            answers: [],
+            questions: mockQuestions,
+            finalHash: 'NEW_SESSION_STARTED',
+            langCode: 'en',
+        });
+        console.log("Session cleared. Starting new assessment.");
+    };
+
+    // Only render the report screen with mock data
+    return e(ScreenReport, {
+        answers: sessionState.answers,
+        questions: sessionState.questions,
+        finalHash: sessionState.finalHash,
+        langCode: sessionState.langCode,
+        resetSession: resetSession,
+        // userInfo is currently unused but can be added if needed
+    });
+};
+
+export default App;
                           1. STATE INITIALIZATION ---
                 var [langCode, setLangCode] = useState(loadState(LS_KEY_LANG, 'EN'));
                 var [answers, setAnswers] = useState(loadState(LS_KEY_ANSWERS, []));
