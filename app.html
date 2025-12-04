@@ -3,194 +3,533 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IMSSPAKISTAN - AI Governance & Compliance Solutions</title>
+    <title>AI Compliance Assessor - Application</title>
     <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Use Inter font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <!-- Load Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    
     <style>
-        /* Custom styles for the dark theme and font consistency */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
         :root {
-            --primary-bg: #0d111c;
-            --secondary-bg: #1c2333;
-            --accent-color: #10b981; /* Emerald 500 */
+            --primary-color: #10b981; /* Emerald 500 */
+            --dark-bg: #0f172a; /* Slate 900 */
+            --dark-surface: #1e293b; /* Slate 800 */
         }
         body {
             font-family: 'Inter', sans-serif;
-            background-color: var(--primary-bg);
-            color: #e2e8f0;
-            overflow-x: hidden;
+            background-color: var(--dark-bg);
+            color: #e2e8f0; /* Slate 200 */
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .container-app {
+            max-width: 1000px;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 0 1rem;
+        }
+        .neon-text-primary {
+            color: var(--primary-color);
+            text-shadow: 0 0 5px rgba(16, 185, 129, 0.5), 0 0 10px rgba(16, 185, 129, 0.3);
+        }
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: var(--dark-bg);
+            padding: 0.75rem 2rem;
+            font-weight: 700;
+            border-radius: 0.5rem;
+            transition: all 0.3s;
+        }
+        .btn-primary:hover {
+            background-color: #059669; /* Emerald 600 */
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
         }
         .card {
-            background-color: var(--secondary-bg);
-            border: 1px solid #2d3748;
-            transition: all 0.3s ease;
+            background-color: var(--dark-surface);
+            border: 1px solid #334155; /* Slate 700 */
         }
-        .hero-section {
-            /* Subtle blue/purple glow to mimic AI/digital theme */
-            background: radial-gradient(circle at 50% 10%, #1d253f 0%, #0d111c 60%);
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            animation: spin 1s linear infinite;
         }
-        .button-primary {
-            background-color: var(--accent-color);
-            color: var(--primary-bg);
-            transition: transform 0.2s, box-shadow 0.2s;
-            box-shadow: 0 5px 20px rgba(16, 185, 129, 0.3);
-        }
-        .button-primary:hover {
-            box-shadow: 0 4px 30px rgba(16, 185, 129, 0.6);
-            transform: translateY(-2px);
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
 
-    <!-- Navigation Bar -->
-    <header class="sticky top-0 z-50 bg-opacity-95 backdrop-blur-sm bg-[var(--primary-bg)] shadow-xl">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+    <!-- Header / Navigation Bar -->
+    <header class="sticky top-0 z-10 bg-slate-900/90 backdrop-blur-sm shadow-lg">
+        <div class="container-app flex justify-between items-center h-16">
             <!-- Logo/Brand -->
-            <div class="flex items-center space-x-2">
-                <!-- Using the same logo icon as the assessor tool for brand consistency -->
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
-                    <path d="M2 17l10 5 10-5"></path>
-                    <path d="M2 12l10 5 10-5"></path>
-                </svg>
-                <span class="text-2xl font-extrabold text-white">IMSSPAKISTAN</span>
-            </div>
-
-            <!-- Desktop Navigation Links -->
-            <nav class="hidden md:flex space-x-8 text-sm font-medium">
-                <a href="#mission" class="text-slate-300 hover:text-[var(--accent-color)] transition duration-200">Our Mission</a>
-                <a href="#features" class="text-slate-300 hover:text-[var(--accent-color)] transition duration-200">Assessor Features</a>
-                <a href="#compliance" class="text-slate-300 hover:text-[var(--accent-color)] transition duration-200">Compliance Standards</a>
-                <a href="#contact" class="text-slate-300 hover:text-[var(--accent-color)] transition duration-200">Contact Us</a>
-            </nav>
-
-            <!-- CTA Button: Links to the assessor demo -->
-            <a href="index.html" class="px-5 py-2 rounded-full font-semibold button-primary shadow-lg hover:shadow-xl text-sm">
-                Launch Assessor Demo
+            <a href="index.html" class="text-2xl font-extrabold text-white tracking-widest">
+                <span class="neon-text-primary">IMSSS</span><span class="text-slate-400">Assessor</span>
             </a>
-
-            <!-- Mobile Menu Button - Placeholder -->
-            <button class="md:hidden text-slate-300 focus:outline-none">
-                <i data-lucide="menu" class="w-6 h-6"></i>
-            </button>
+            
+            <!-- Navigation link updated to point to the new landing page -->
+            <a href="index.html" class="bg-slate-700 hover:bg-slate-600 text-white py-2 px-4 rounded-lg font-bold text-sm transition duration-300 shadow-md">
+                <i data-lucide="Home" class="w-4 h-4 inline mr-1"></i> Back to Landing Page
+            </a>
         </div>
     </header>
 
-    <!-- Main Content -->
-    <main>
-        <!-- Hero Section -->
-        <section class="hero-section text-center py-24 md:py-36 lg:py-48 border-b border-slate-800">
-            <div class="max-w-4xl mx-auto px-4">
-                <span class="text-sm font-semibold uppercase text-[var(--accent-color)] tracking-widest mb-4 block">
-                    AI Governance & Trust Infrastructure
-                </span>
-                <h1 class="text-4xl md:text-6xl lg:text-7xl font-extrabold leading-tight mb-8 text-white tracking-tight">
-                    Minimize <span class="text-red-400">AI Liability.</span> Maximize Compliance.
-                </h1>
-                <p class="text-lg md:text-xl text-slate-300 mb-12 max-w-3xl mx-auto">
-                    Navigate the complex regulatory landscape of the EU AI Act, ISO 42001, and NIST RMF with our automated, risk-weighted compliance tools.
-                </p>
-                <div class="space-x-4">
-                    <a href="index.html" class="inline-block px-8 py-4 rounded-full font-bold text-lg button-primary shadow-2xl">
-                        Start Free Risk Assessment
-                    </a>
-                    <a href="#features" class="inline-block px-8 py-4 rounded-full font-bold text-lg text-white bg-slate-700 hover:bg-slate-600 transition-colors shadow-md">
-                        Learn More
-                    </a>
-                </div>
-            </div>
-        </section>
+    <main class="flex-grow py-12">
+        <div class="container-app">
+            <h1 class="text-3xl font-bold text-center mb-10 text-white">AI Compliance & Risk Assessment Tool</h1>
+            
+            <div id="app-container" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                
+                <!-- Assessment Form & History -->
+                <div class="lg:col-span-1 space-y-8">
+                    <!-- Assessment Form -->
+                    <div id="assessment-form-card" class="card p-6 rounded-xl shadow-lg">
+                        <h2 class="text-xl font-semibold mb-4 border-b border-slate-700 pb-2">New Assessment</h2>
+                        
+                        <form id="assessment-form">
+                            <div class="mb-4">
+                                <label for="ai-system-description" class="block text-sm font-medium text-slate-300 mb-1">AI System Description (Required)</label>
+                                <textarea id="ai-system-description" rows="3" class="w-full card p-3 rounded-lg border-slate-600 focus:border-emerald-500 focus:ring-emerald-500 text-slate-100 placeholder-slate-400 resize-none" placeholder="e.g., An NLP model used for automated credit scoring, impacting consumer finance decisions." required></textarea>
+                            </div>
 
-        <!-- Our Mission Section (Referencing Content from the previous index.html) -->
-        <section id="mission" class="py-20 md:py-32">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                <h2 class="text-4xl font-bold text-white mb-4">Our Mission: Trust and Innovation</h2>
-                <p class="text-lg text-slate-400 max-w-4xl mx-auto">
-                    IMSSPAKISTAN is dedicated to building the infrastructure for ethical, compliant, and trustworthy AI adoption globally. We bridge the gap between innovation and regulatory integrity, ensuring your projects are future-proofed against evolving standards.
-                </p>
-            </div>
-        </section>
+                            <div class="mb-4">
+                                <label for="risk-category" class="block text-sm font-medium text-slate-300 mb-1">Select Risk Category (EU AI Act based)</label>
+                                <select id="risk-category" class="w-full card p-3 rounded-lg border-slate-600 focus:border-emerald-500 focus:ring-emerald-500 text-slate-100" required>
+                                    <option value="">-- Select Category --</option>
+                                    <option value="Unacceptable Risk">Unacceptable Risk (Forbidden)</option>
+                                    <option value="High Risk (HR)">High Risk (HR) - e.g., Critical Infrastructure, Credit Scoring</option>
+                                    <option value="Limited Risk (LR)">Limited Risk (LR) - e.g., Chatbots, Emotion Recognition</option>
+                                    <option value="Minimal/No Risk (MNR)">Minimal/No Risk (MNR) - e.g., Simple spam filters, games</option>
+                                </select>
+                            </div>
 
-        <!-- Key Features Section (Referencing Content from imssspakistan_product_description.md) -->
-        <section id="features" class="py-20 md:py-32 bg-[var(--secondary-bg)] border-t border-b border-slate-800">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <h2 class="text-4xl font-bold text-center text-[var(--accent-color)] mb-16">The Assessor Tool: Your Compliance Engine</h2>
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                            <div class="mb-6">
+                                <label class="block text-sm font-medium text-slate-300 mb-2">Key Compliance Domains (Select all applicable)</label>
+                                <div class="space-y-2">
+                                    <label class="flex items-center text-slate-300">
+                                        <input type="checkbox" name="domains" value="Data Quality and Governance" class="text-emerald-500 rounded focus:ring-emerald-500 mr-2"> Data Quality and Governance
+                                    </label>
+                                    <label class="flex items-center text-slate-300">
+                                        <input type="checkbox" name="domains" value="Model Transparency and Explainability" class="text-emerald-500 rounded focus:ring-emerald-500 mr-2"> Model Transparency and Explainability
+                                    </label>
+                                    <label class="flex items-center text-slate-300">
+                                        <input type="checkbox" name="domains" value="Bias, Fairness, and Non-Discrimination" class="text-emerald-500 rounded focus:ring-emerald-500 mr-2"> Bias, Fairness, and Non-Discrimination
+                                    </label>
+                                    <label class="flex items-center text-slate-300">
+                                        <input type="checkbox" name="domains" value="Security, Robustness, and Resilience" class="text-emerald-500 rounded focus:ring-emerald-500 mr-2"> Security, Robustness, and Resilience
+                                    </label>
+                                </div>
+                            </div>
 
-                    <!-- Feature 1: Multi-Standard Compliance -->
-                    <div class="card p-8 rounded-xl shadow-lg hover:shadow-2xl hover:ring-2 hover:ring-cyan-500">
-                        <i data-lucide="shield-half" class="w-10 h-10 mb-4 text-cyan-400"></i>
-                        <h3 class="text-xl font-semibold mb-3 text-white">Multi-Standard Compliance</h3>
-                        <p class="text-slate-400 text-sm">Assesses alignment with global benchmarks: **EU AI Act, ISO 42001, and NIST AI RMF.** Ensure readiness for international regulatory environments.</p>
+                            <button type="submit" id="start-assessment-btn" class="btn-primary w-full flex justify-center items-center">
+                                <span id="btn-text">Run Compliance Assessment</span>
+                                <div id="loading-spinner" class="spinner ml-3 hidden"></div>
+                            </button>
+                            <p id="auth-status" class="text-xs mt-2 text-slate-500 text-center">Auth Status: Connecting...</p>
+                        </form>
                     </div>
 
-                    <!-- Feature 2: Risk-Weighted Liability Score -->
-                    <div class="card p-8 rounded-xl shadow-lg hover:shadow-2xl hover:ring-2 hover:ring-red-500">
-                        <i data-lucide="alert-triangle" class="w-10 h-10 mb-4 text-red-400"></i>
-                        <h3 class="text-xl font-semibold mb-3 text-white">Risk-Weighted Liability Score</h3>
-                        <p class="text-slate-400 text-sm">Provides a clear **LOW, MODERATE, or HIGH RISK** rating based on the severity of identified violations. Instantly prioritize remediation efforts.</p>
-                    </div>
-
-                    <!-- Feature 3: Actionable Remediation -->
-                    <div class="card p-8 rounded-xl shadow-lg hover:shadow-2xl hover:ring-2 hover:ring-yellow-500">
-                        <i data-lucide="zap" class="w-10 h-10 mb-4 text-yellow-400"></i>
-                        <h3 class="text-xl font-semibold mb-3 text-white">Actionable Remediation</h3>
-                        <p class="text-slate-400 text-sm">For every violation detected, the report provides a specific **ACTION REQUIRED** recommendation, moving you immediately from identification to resolution.</p>
-                    </div>
-
-                    <!-- Feature 4: Immutable Integrity Hash -->
-                    <div class="card p-8 rounded-xl shadow-lg hover:shadow-2xl hover:ring-2 hover:ring-purple-500">
-                        <i data-lucide="fingerprint" class="w-10 h-10 mb-4 text-purple-400"></i>
-                        <h3 class="text-xl font-semibold mb-3 text-white">Immutable Integrity Hash</h3>
-                        <p class="text-slate-400 text-sm">Every assessment is assigned a unique, cryptographic **Integrity Hash**, providing a verifiable, audit-proof record of compliance status.</p>
-                    </div>
-
-                    <!-- Feature 5: Domain-Specific Metrics -->
-                    <div class="card p-8 rounded-xl shadow-lg hover:shadow-2xl hover:ring-2 hover:ring-emerald-500">
-                        <i data-lucide="layout-grid" class="w-10 h-10 mb-4 text-[var(--accent-color)]"></i>
-                        <h3 class="text-xl font-semibold mb-3 text-white">Domain-Specific Metrics</h3>
-                        <p class="text-slate-400 text-sm">Performance breakdown across **Data Quality, Model Governance, Bias & Fairness, Transparency, and Security.** Pinpoint technical weaknesses.</p>
+                    <!-- Assessment History -->
+                    <div class="card p-6 rounded-xl shadow-lg">
+                        <h2 class="text-xl font-semibold mb-4 border-b border-slate-700 pb-2">Assessment History</h2>
+                        <ul id="assessment-history" class="space-y-3">
+                            <li class="text-slate-400 italic">Loading history...</li>
+                        </ul>
                     </div>
                 </div>
+
+                <!-- Results Display -->
+                <div class="lg:col-span-2">
+                    <div id="results-display" class="card p-8 rounded-xl shadow-2xl min-h-[500px]">
+                        <div class="text-center py-16">
+                            <i data-lucide="FlaskConical" class="w-16 h-16 mx-auto text-emerald-500 mb-4"></i>
+                            <h2 class="text-2xl font-bold text-white mb-2">Assessment Ready</h2>
+                            <p class="text-slate-400">Fill out the form and click 'Run Compliance Assessment' to generate a risk report grounded in the latest global standards (EU AI Act, ISO 42001, NIST RMF).</p>
+                        </div>
+                    </div>
+                </div>
+
             </div>
-        </section>
-        
-        <!-- CTA Section -->
-        <section class="py-16 md:py-24">
-            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center card p-10 rounded-xl">
-                <h2 class="text-3xl font-bold text-white mb-4">Ready to Assess Your AI Risk?</h2>
-                <p class="text-lg text-slate-400 mb-8">
-                    Stop guessing about AI risk. Start assessing today and build trust in your intelligent systems.
-                </p>
-                <a href="index.html" class="inline-block px-10 py-4 rounded-full font-bold text-xl button-primary shadow-2xl">
-                    Launch Assessor Now
-                </a>
-            </div>
-        </section>
+        </div>
     </main>
 
     <!-- Footer -->
-    <footer class="bg-[var(--primary-bg)] border-t border-slate-800 py-10" id="contact">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <div class="flex flex-col md:flex-row justify-center items-center space-y-4 md:space-y-0 md:space-x-12 mb-6">
-                <a href="#" class="text-sm text-slate-400 hover:text-[var(--accent-color)]">Privacy Policy</a>
-                <a href="#" class="text-sm text-slate-400 hover:text-[var(--accent-color)]">Terms of Service</a>
-                <a href="mailto:contact@imssspakistan.com" class="text-sm text-slate-400 hover:text-[var(--accent-color)]">contact@imssspakistan.com</a>
-            </div>
-            <p class="text-sm text-slate-500">
-                &copy; 2025 IMSSPAKISTAN. All rights reserved. | Built for AI Governance & Integrity.
-            </p>
-        </div>
+    <footer class="mt-12 py-4 border-t border-slate-800 text-center text-slate-500 text-sm">
+        <p>Your User ID (for private data storage): <span id="user-id">N/A</span></p>
+        <p>&copy; 2025 IMSSSPAKISTAN. Powered by Google Gemini API.</p>
     </footer>
 
-    <!-- Initialize Lucide Icons -->
-    <script>
-        window.onload = function() {
+    <!-- Firebase and Application Logic -->
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, addDoc, onSnapshot, collection, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Set Firebase log level to Debug
+        setLogLevel('Debug');
+        
+        let db, auth, userId = null;
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        const resultsDisplay = document.getElementById('results-display');
+        const assessmentForm = document.getElementById('assessment-form');
+        const startAssessmentBtn = document.getElementById('start-assessment-btn');
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const btnText = document.getElementById('btn-text');
+        const authStatusEl = document.getElementById('auth-status');
+        const userIdEl = document.getElementById('user-id');
+        const historyListEl = document.getElementById('assessment-history');
+
+        // --- Firebase Initialization and Authentication ---
+
+        try {
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+            
+            authStatusEl.textContent = 'Auth Status: Authenticating...';
+
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    userId = user.uid;
+                    userIdEl.textContent = userId;
+                    authStatusEl.textContent = 'Auth Status: Authenticated';
+                    loadAssessments(); // Load data only after authentication is complete
+                    console.log("Firebase Auth Complete. User ID:", userId);
+                } else {
+                    // Initial sign-in logic
+                    if (initialAuthToken) {
+                        await signInWithCustomToken(auth, initialAuthToken);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+                    // onAuthStateChanged will be triggered again with the signed-in user
+                }
+            });
+        } catch (error) {
+            console.error("Firebase initialization failed:", error);
+            authStatusEl.textContent = `Auth Status: Error (${error.code || 'unknown'})`;
+        }
+
+        // --- Gemini API Call Function with Exponential Backoff ---
+
+        async function apiCallWithBackoff(prompt, maxRetries = 5, delay = 1000) {
+            const systemPrompt = "You are a world-class AI Compliance Auditor. Based on the user's AI system description, risk category, and key compliance domains, generate a professional, risk-weighted compliance summary. The summary MUST be concise (under 300 words), highly actionable, and grounded in global standards like the EU AI Act, ISO 42001, and NIST RMF. DO NOT mention the word 'paragraph' in your response. Provide a clear final compliance risk score (LOW, MODERATE, HIGH, or UNACCEPTABLE).";
+            const apiKey = ""; // API key will be provided by the runtime
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }],
+                tools: [{ "google_search": {} }],
+                systemInstruction: {
+                    parts: [{ text: systemPrompt }]
+                },
+            };
+
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) {
+                        if (response.status === 429 && i < maxRetries - 1) {
+                            // Rate limit hit, wait and retry
+                            await new Promise(resolve => setTimeout(resolve, delay * Math.pow(2, i)));
+                            continue;
+                        }
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const result = await response.json();
+                    
+                    const candidate = result.candidates?.[0];
+
+                    if (candidate && candidate.content?.parts?.[0]?.text) {
+                        const text = candidate.content.parts[0].text;
+                        
+                        let sources = [];
+                        const groundingMetadata = candidate.groundingMetadata;
+                        if (groundingMetadata && groundingMetadata.groundingAttributions) {
+                            sources = groundingMetadata.groundingAttributions
+                                .map(attribution => ({
+                                    uri: attribution.web?.uri,
+                                    title: attribution.web?.title,
+                                }))
+                                .filter(source => source.uri && source.title);
+                        }
+                        
+                        return { text, sources };
+
+                    } else {
+                        throw new Error("Invalid response structure from Gemini API.");
+                    }
+
+                } catch (error) {
+                    console.error("Gemini API call attempt failed:", error);
+                    if (i === maxRetries - 1) throw error; // Re-throw on final failure
+                    await new Promise(resolve => setTimeout(resolve, delay * Math.pow(2, i)));
+                }
+            }
+        }
+
+        // --- Firestore Data Functions ---
+
+        /**
+         * Saves a new assessment result to Firestore.
+         * @param {object} data - The assessment data and result to save.
+         */
+        async function saveAssessment(data) {
+            if (!userId) {
+                console.error("Cannot save: User not authenticated.");
+                return;
+            }
+            try {
+                const path = `/artifacts/${appId}/users/${userId}/assessments`;
+                const docRef = await addDoc(collection(db, path), {
+                    ...data,
+                    timestamp: serverTimestamp(),
+                });
+                console.log("Document successfully written with ID:", docRef.id);
+            } catch (error) {
+                console.error("Error writing document to Firestore:", error);
+            }
+        }
+
+        /**
+         * Listens for and displays the current user's assessment history.
+         */
+        function loadAssessments() {
+            if (!userId) return;
+
+            const path = `/artifacts/${appId}/users/${userId}/assessments`;
+            const assessmentsRef = collection(db, path);
+            
+            // Note: We avoid orderBy() to prevent needing Firestore indexes, and instead sort in JS.
+            const q = query(assessmentsRef); 
+
+            onSnapshot(q, (snapshot) => {
+                const assessments = [];
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    assessments.push({ id: doc.id, ...data });
+                });
+
+                // Sort assessments by timestamp (newest first) in memory
+                assessments.sort((a, b) => {
+                    if (!a.timestamp || !b.timestamp) return 0;
+                    // Timestamp objects have a toMillis() method
+                    const aMillis = typeof a.timestamp.toMillis === 'function' ? a.timestamp.toMillis() : 0;
+                    const bMillis = typeof b.timestamp.toMillis === 'function' ? b.timestamp.toMillis() : 0;
+                    return bMillis - aMillis;
+                });
+
+                renderHistory(assessments); 
+            }, (error) => {
+                console.error("Error listening to assessment history:", error);
+                historyListEl.innerHTML = `<li class="text-red-400">Failed to load history.</li>`;
+            });
+        }
+        
+        // --- Rendering Functions ---
+
+        /**
+         * Renders the list of previous assessments.
+         * @param {Array<object>} assessments 
+         */
+        function renderHistory(assessments) {
+            if (assessments.length === 0) {
+                historyListEl.innerHTML = `<li class="text-slate-400 italic">No previous assessments found.</li>`;
+                return;
+            }
+
+            historyListEl.innerHTML = assessments.map(item => {
+                // Safely get date
+                const date = item.timestamp && typeof item.timestamp.toMillis === 'function' 
+                             ? new Date(item.timestamp.toMillis()).toLocaleDateString() 
+                             : 'N/A';
+                             
+                const description = item.description.substring(0, 50) + (item.description.length > 50 ? '...' : '');
+                
+                let riskColor = 'text-slate-400';
+                if (item.riskScore && item.riskScore.includes('HIGH')) riskColor = 'text-red-400';
+                if (item.riskScore && item.riskScore.includes('MODERATE')) riskColor = 'text-amber-400';
+                if (item.riskScore && item.riskScore.includes('LOW')) riskColor = 'text-emerald-400';
+
+                // We pass the entire item as a base64 encoded string to the global function for display
+                return `
+                    <li data-id="${item.id}" class="card p-3 rounded-lg hover:bg-slate-700/50 cursor-pointer transition duration-150 border border-slate-700/50" onclick="window.displayAssessmentResult('${item.id}', '${btoa(JSON.stringify(item))}')">
+                        <div class="flex justify-between items-center">
+                            <span class="font-medium text-white">${description}</span>
+                            <span class="text-xs ${riskColor}">${item.riskScore || 'Pending'}</span>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-1">On: ${date}</p>
+                    </li>
+                `;
+            }).join('');
+        }
+        
+        /**
+         * Extracts and renders the assessment result.
+         * @param {string} id - Document ID.
+         * @param {string} b64data - Base64 encoded JSON string of the assessment data.
+         */
+        window.displayAssessmentResult = function(id, b64data) {
+            const data = JSON.parse(atob(b64data));
+            
+            const riskColor = data.riskScore.includes('HIGH') ? 'text-red-400' :
+                              data.riskScore.includes('MODERATE') ? 'text-amber-400' :
+                              data.riskScore.includes('LOW') ? 'text-emerald-400' : 'text-slate-400';
+            
+            const formattedDate = data.timestamp && typeof data.timestamp.toMillis === 'function'
+                                 ? new Date(data.timestamp.toMillis()).toLocaleString() 
+                                 : 'N/A';
+            
+            let sourceHtml = '';
+            if (data.sources && data.sources.length > 0) {
+                sourceHtml = `
+                    <h4 class="text-lg font-semibold mt-6 mb-2 text-slate-300 border-t border-slate-700 pt-4">Grounded Sources</h4>
+                    <ul class="list-disc ml-5 space-y-1 text-sm text-slate-400">
+                        ${data.sources.map(source => `
+                            <li><a href="${source.uri}" target="_blank" class="hover:text-emerald-400 underline">${source.title || source.uri}</a></li>
+                        `).join('')}
+                    </ul>
+                `;
+            }
+
+            resultsDisplay.innerHTML = `
+                <div class="space-y-6">
+                    <div class="flex justify-between items-start border-b border-slate-700 pb-4">
+                        <div>
+                            <h2 class="text-3xl font-bold text-white mb-1">Compliance Report - ${data.riskCategory}</h2>
+                            <p class="text-slate-400 text-sm">Generated on: ${formattedDate} | ID: ${id}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-xl font-bold uppercase ${riskColor} p-2 rounded-lg bg-slate-700/50">Risk: ${data.riskScore}</p>
+                        </div>
+                    </div>
+                    
+                    <h3 class="text-2xl font-semibold neon-text-primary">System: ${data.description}</h3>
+                    <p class="text-lg text-slate-300">Targeted Domains: <span class="font-mono text-sm bg-slate-700 p-1 rounded">${data.domains.join(', ')}</span></p>
+
+                    <h4 class="text-lg font-semibold mt-4 mb-2 text-slate-300">Auditor's Summary and Recommendations</h4>
+                    <div class="card p-4 rounded-lg border-slate-600 prose prose-invert max-w-none text-slate-200">
+                        ${data.complianceReport.replace(/\n/g, '<br>')}
+                    </div>
+                    ${sourceHtml}
+                </div>
+            `;
+            // Re-render Lucide icons for the new content
             lucide.createIcons();
         }
+
+
+        // --- Event Listener and Core Logic ---
+
+        assessmentForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const description = document.getElementById('ai-system-description').value.trim();
+            const riskCategory = document.getElementById('risk-category').value;
+            const domains = Array.from(document.querySelectorAll('input[name="domains"]:checked')).map(el => el.value);
+
+            if (!description || !riskCategory || domains.length === 0) {
+                resultsDisplay.innerHTML = `<div class="p-4 text-center text-red-400">Please fill out all required fields and select at least one compliance domain.</div>`;
+                return;
+            }
+
+            // Set Loading State
+            startAssessmentBtn.disabled = true;
+            btnText.textContent = 'Analyzing...';
+            loadingSpinner.classList.remove('hidden');
+            resultsDisplay.innerHTML = `
+                <div class="text-center py-16">
+                    <div class="spinner mx-auto mb-4"></div>
+                    <p class="text-white text-lg font-semibold">Generating grounded compliance report...</p>
+                    <p class="text-slate-400 text-sm mt-2">This may take a moment while the auditor cross-references global standards.</p>
+                </div>
+            `;
+
+            try {
+                const userPrompt = `
+                    Generate a compliance report for the following AI system:
+                    - **System Description:** ${description}
+                    - **Declared Risk Category (EU AI Act):** ${riskCategory}
+                    - **Core Compliance Domains to Assess:** ${domains.join(', ')}
+                    
+                    Analyze the potential compliance risks across the selected domains against EU AI Act, ISO 42001, and NIST RMF. Conclude with a clear risk score (LOW, MODERATE, HIGH, or UNACCEPTABLE) and three concrete, actionable recommendations.
+                `;
+
+                const { text: complianceReport, sources } = await apiCallWithBackoff(userPrompt);
+
+                // Simple check to extract the Risk Score from the generated text
+                const riskMatch = complianceReport.match(/(LOW|MODERATE|HIGH|UNACCEPTABLE)/i);
+                const riskScore = riskMatch ? riskMatch[0].toUpperCase() : 'UNKNOWN';
+
+                const assessmentData = {
+                    description,
+                    riskCategory,
+                    domains,
+                    complianceReport,
+                    riskScore,
+                    sources,
+                };
+                
+                // Save and display the result
+                await saveAssessment(assessmentData);
+                
+                // Manually trigger display of the newly generated report
+                // We use setTimeout to ensure the onSnapshot listener has processed the new data first.
+                setTimeout(() => {
+                    // Check if the timestamp is available before creating the latest assessment object
+                    const latestTimestamp = { toMillis: () => Date.now() };
+                    
+                    const latestAssessment = { 
+                        ...assessmentData, 
+                        timestamp: latestTimestamp, 
+                        id: 'latest' // Temporary ID for immediate display
+                    };
+                    window.displayAssessmentResult('latest', btoa(JSON.stringify(latestAssessment)));
+                }, 500);
+
+
+            } catch (error) {
+                console.error("Assessment failed:", error);
+                resultsDisplay.innerHTML = `
+                    <div class="p-8 text-center bg-red-900/50 rounded-lg">
+                        <i data-lucide="AlertTriangle" class="w-8 h-8 mx-auto text-red-400 mb-3"></i>
+                        <p class="text-red-300 font-semibold">Compliance check failed.</p>
+                        <p class="text-red-400 text-sm mt-1">Could not generate the report. Please check the console for API errors or retry.</p>
+                    </div>
+                `;
+            } finally {
+                // Reset Loading State
+                startAssessmentBtn.disabled = false;
+                btnText.textContent = 'Run Compliance Assessment';
+                loadingSpinner.classList.add('hidden');
+                lucide.createIcons(); // Re-render icons after updating content
+            }
+        });
+
+        // Initial setup for icons
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+        });
+
     </script>
 </body>
 </html>
