@@ -3,405 +3,194 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IMSSSPAKISTAN - AI Risk & Compliance Solutions</title>
+    <title>IMSSPAKISTAN - AI Governance & Compliance Solutions</title>
     <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <!-- Load Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
+        /* Custom styles for the dark theme and font consistency */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
         :root {
-            /* Emerald green theme */
-            --primary-color: #059669; /* emerald-600 */
-            --secondary-color: #34d399; /* emerald-400 */
-            --bg-dark: #0f172a; /* slate-900 */
-            --bg-medium: #1e293b; /* slate-800 */
-            --text-light: #e2e8f0;
+            --primary-bg: #0d111c;
+            --secondary-bg: #1c2333;
+            --accent-color: #10b981; /* Emerald 500 */
         }
         body {
             font-family: 'Inter', sans-serif;
-            background-color: var(--bg-dark);
-            color: var(--text-light); /* slate-200 */
+            background-color: var(--primary-bg);
+            color: #e2e8f0;
+            overflow-x: hidden;
+        }
+        .card {
+            background-color: var(--secondary-bg);
+            border: 1px solid #2d3748;
+            transition: all 0.3s ease;
         }
         .hero-section {
-            background: linear-gradient(180deg, var(--bg-dark) 0%, rgba(15, 23, 42, 0.95) 100%), 
-                        url('https://placehold.co/1920x800/155e75/ffffff?text=AI+Governance+Background') no-repeat center center/cover;
-            background-attachment: fixed;
+            /* Subtle blue/purple glow to mimic AI/digital theme */
+            background: radial-gradient(circle at 50% 10%, #1d253f 0%, #0d111c 60%);
         }
-        .feature-card {
-            background-color: var(--bg-medium);
-            border: 1px solid rgba(5, 150, 105, 0.4); /* primary with transparency */
-            transition: transform 0.3s, box-shadow 0.3s;
+        .button-primary {
+            background-color: var(--accent-color);
+            color: var(--primary-bg);
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 5px 20px rgba(16, 185, 129, 0.3);
         }
-        .feature-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 15px -3px rgba(5, 150, 105, 0.3), 0 4px 6px -2px rgba(5, 150, 105, 0.2);
-        }
-        .cta-button {
-            background-color: var(--primary-color);
-            transition: background-color 0.3s, transform 0.3s;
-            box-shadow: 0 4px 15px rgba(5, 150, 105, 0.6);
-        }
-        .cta-button:hover:not(:disabled) {
-            background-color: #047857; /* emerald-700 */
-            transform: scale(1.05);
-        }
-        .cta-button:disabled {
-            background-color: #10b981; /* emerald-500 */
-            cursor: not-allowed;
-            opacity: 0.7;
-        }
-        .logo-text {
-            color: var(--secondary-color);
-            text-shadow: 0 0 5px rgba(52, 211, 153, 0.6);
+        .button-primary:hover {
+            box-shadow: 0 4px 30px rgba(16, 185, 129, 0.6);
+            transform: translateY(-2px);
         }
     </style>
 </head>
 <body>
 
-    <!-- Header & Navigation -->
-    <header class="sticky top-0 z-50 bg-slate-900/90 backdrop-blur-md border-b border-emerald-600/30">
+    <!-- Navigation Bar -->
+    <header class="sticky top-0 z-50 bg-opacity-95 backdrop-blur-sm bg-[var(--primary-bg)] shadow-xl">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <!-- Logo/Brand -->
             <div class="flex items-center space-x-2">
-                <!-- Logo/Brand -->
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-400">
+                <!-- Using the same logo icon as the assessor tool for brand consistency -->
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
                     <path d="M2 17l10 5 10-5"></path>
                     <path d="M2 12l10 5 10-5"></path>
                 </svg>
-                <span class="text-2xl font-extrabold logo-text">IMSSSPAKISTAN</span>
+                <span class="text-2xl font-extrabold text-white">IMSSPAKISTAN</span>
             </div>
-            <!-- Navigation Links -->
-            <nav class="hidden md:flex space-x-6 text-sm font-medium">
-                <a href="#mission" class="hover:text-emerald-400 transition duration-150">Our Mission</a>
-                <a href="#assessor-tool" class="hover:text-emerald-400 transition duration-150">Assessor Tool</a>
-                <a href="#features" class="hover:text-emerald-400 transition duration-150">Compliance</a>
-                <a href="#contact" class="hover:text-emerald-400 transition duration-150">Contact</a>
+
+            <!-- Desktop Navigation Links -->
+            <nav class="hidden md:flex space-x-8 text-sm font-medium">
+                <a href="#mission" class="text-slate-300 hover:text-[var(--accent-color)] transition duration-200">Our Mission</a>
+                <a href="#features" class="text-slate-300 hover:text-[var(--accent-color)] transition duration-200">Assessor Features</a>
+                <a href="#compliance" class="text-slate-300 hover:text-[var(--accent-color)] transition duration-200">Compliance Standards</a>
+                <a href="#contact" class="text-slate-300 hover:text-[var(--accent-color)] transition duration-200">Contact Us</a>
             </nav>
-            <!-- Link directly to the index.html file -->
-            <a href="index.html" id="launch-app-btn-nav" class="hidden md:inline-flex cta-button text-white font-semibold py-2 px-4 rounded-full text-sm hover:ring-2 ring-emerald-400/50">Launch Assessor Demo</a>
-            
-            <!-- Mobile Menu Button (Hamburger) -->
-            <button class="md:hidden p-2 rounded-md hover:bg-slate-800 focus:outline-none focus:ring-2 ring-emerald-400" onclick="toggleMenu()">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-400"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+
+            <!-- CTA Button: Links to the assessor demo -->
+            <a href="index.html" class="px-5 py-2 rounded-full font-semibold button-primary shadow-lg hover:shadow-xl text-sm">
+                Launch Assessor Demo
+            </a>
+
+            <!-- Mobile Menu Button - Placeholder -->
+            <button class="md:hidden text-slate-300 focus:outline-none">
+                <i data-lucide="menu" class="w-6 h-6"></i>
             </button>
-        </div>
-        <!-- Mobile Menu Drawer -->
-        <div id="mobile-menu" class="md:hidden hidden">
-            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 flex flex-col items-center">
-                <a href="#mission" onclick="toggleMenu()" class="block w-full text-center py-2 px-3 rounded-md text-base font-medium hover:bg-slate-700">Our Mission</a>
-                <a href="#assessor-tool" onclick="toggleMenu()" class="block w-full text-center py-2 px-3 rounded-md text-base font-medium hover:bg-slate-700">Assessor Tool</a>
-                <a href="#features" onclick="toggleMenu()" class="block w-full text-center py-2 px-3 rounded-md text-base font-medium hover:bg-slate-700">Compliance</a>
-                <a href="#contact" onclick="toggleMenu()" class="block w-full text-center py-2 px-3 rounded-md text-base font-medium hover:bg-slate-700">Contact</a>
-                <!-- Link directly to the index.html file -->
-                <a href="index.html" id="launch-app-btn-mobile" class="w-full text-center mt-3 cta-button text-white font-semibold py-2 px-4 rounded-full text-base">Launch Assessor Demo</a>
-            </div>
         </div>
     </header>
 
+    <!-- Main Content -->
     <main>
-        
-        <!-- Hero Section: AI Governance & Risk -->
-        <section class="hero-section text-center py-24 sm:py-32">
-            <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-                <h1 class="text-5xl sm:text-7xl font-extrabold tracking-tight text-white mb-6 leading-tight">
-                    <span class="logo-text">Governance</span> at the Speed of AI.
-                </h1>
-                <p class="text-xl sm:text-2xl text-slate-300 font-light mb-10 max-w-3xl mx-auto">
-                    Navigate the complexity of global AI regulations (EU AI Act, ISO 42001, NIST) with our automated compliance solutions.
-                </p>
-                <!-- Link directly to the index.html file -->
-                <a href="index.html" class="cta-button inline-flex items-center text-white font-bold py-4 px-10 rounded-full text-xl uppercase tracking-wider transition duration-300">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mr-3"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><line x1="10" y1="9" x2="8" y2="9"></line></svg>
-                    Start Risk Assessment
-                </a>
-            </div>
-        </section>
-
-        <!-- Mission Section -->
-        <section id="mission" class="py-16 sm:py-24 bg-slate-800/50">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                <h2 class="text-4xl font-extrabold text-white mb-4">Our Mission: Trust and Innovation</h2>
-                <p class="text-xl text-slate-400 max-w-4xl mx-auto mb-12">
-                    IMSSSPAKISTAN is dedicated to building the infrastructure for ethical, compliant, and trustworthy AI adoption globally. We bridge the gap between innovation and regulation.
-                </p>
-                
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
-                    <div class="p-6 rounded-xl feature-card shadow-lg">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-400 mb-3"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                        <h3 class="text-xl font-bold mb-2 text-white">Global Reach</h3>
-                        <p class="text-slate-400 text-sm">Providing compliance coverage across the EU, US, and emerging Asian markets, making complex laws actionable.</p>
-                    </div>
-                    <div class="p-6 rounded-xl feature-card shadow-lg">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-400 mb-3"><path d="M12 2v20M17 5H7l5 5-5 5h10l-5-5z"></path></svg>
-                        <h3 class="text-xl font-bold mb-2 text-white">Automation First</h3>
-                        <p class="text-slate-400 text-sm">Our tools automate the tedious parts of audit and documentation, saving engineering and legal teams thousands of hours.</p>
-                    </div>
-                    <div class="p-6 rounded-xl feature-card shadow-lg">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-400 mb-3"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2z"></path><path d="M12 8v4l3 3"></path></svg>
-                        <h3 class="text-xl font-bold mb-2 text-white">Real-Time Risk</h3>
-                        <p class="text-slate-400 text-sm">Continuous monitoring and Risk-Weighted Liability Scoring help you mitigate issues before they become liabilities.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- AI Assessor Tool Section -->
-        <section id="assessor-tool" class="py-16 sm:py-24">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                <span class="inline-block py-1 px-3 mb-4 text-xs font-semibold uppercase rounded-full bg-emerald-700/50 text-emerald-300 border border-emerald-500">
-                    Product Demo
+        <!-- Hero Section -->
+        <section class="hero-section text-center py-24 md:py-36 lg:py-48 border-b border-slate-800">
+            <div class="max-w-4xl mx-auto px-4">
+                <span class="text-sm font-semibold uppercase text-[var(--accent-color)] tracking-widest mb-4 block">
+                    AI Governance & Trust Infrastructure
                 </span>
-                <h2 class="text-4xl font-extrabold text-white mb-4">The AI Compliance Assessor Tool</h2>
-                <p class="text-xl text-slate-400 max-w-3xl mx-auto mb-10">
-                    Instantly determine your AI system's compliance level against mandatory High-Risk requirements. Get a verifiable **Risk-Weighted Liability Score** in under five minutes.
+                <h1 class="text-4xl md:text-6xl lg:text-7xl font-extrabold leading-tight mb-8 text-white tracking-tight">
+                    Minimize <span class="text-red-400">AI Liability.</span> Maximize Compliance.
+                </h1>
+                <p class="text-lg md:text-xl text-slate-300 mb-12 max-w-3xl mx-auto">
+                    Navigate the complex regulatory landscape of the EU AI Act, ISO 42001, and NIST RMF with our automated, risk-weighted compliance tools.
                 </p>
-
-                <div class="bg-slate-800 p-8 rounded-xl shadow-2xl max-w-3xl mx-auto text-left border border-emerald-600/50">
-                    <h3 class="text-2xl font-bold text-emerald-400 mb-4">Core Assessment Domains:</h3>
-                    <ul class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-lg text-slate-300">
-                        <li class="flex items-center"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-400 mr-2"><path d="M12 20h0v-4h0v-4h0"></path><path d="M18 20h0v-4h0"></path><path d="M6 20h0v-4h0v-8h0"></path></svg>Data Quality & Provenance</li>
-                        <li class="flex items-center"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-400 mr-2"><path d="M12 20h0v-4h0v-4h0v-4h0"></path><path d="M18 20h0v-4h0v-8h0"></path><path d="M6 20h0v-4h0"></path></svg>Model Governance & Versioning</li>
-                        <li class="flex items-center"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-400 mr-2"><path d="M12 20h0v-4h0v-4h0"></path><path d="M18 20h0v-4h0v-8h0v-4h0"></path><path d="M6 20h0v-4h0v-8h0v-4h0"></path></svg>Bias & Algorithmic Fairness</li>
-                        <li class="flex items-center"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-400 mr-2"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2z"></path><path d="M12 8v4l3 3"></path></svg>Transparency & Explainability</li>
-                        <li class="flex items-center"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-400 mr-2"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect><path d="M7 7h10v10H7z"></path></svg>Security & Adversarial Robustness</li>
-                    </ul>
+                <div class="space-x-4">
+                    <a href="index.html" class="inline-block px-8 py-4 rounded-full font-bold text-lg button-primary shadow-2xl">
+                        Start Free Risk Assessment
+                    </a>
+                    <a href="#features" class="inline-block px-8 py-4 rounded-full font-bold text-lg text-white bg-slate-700 hover:bg-slate-600 transition-colors shadow-md">
+                        Learn More
+                    </a>
                 </div>
-                
-                <!-- Link directly to the index.html file -->
-                <a href="index.html" class="cta-button inline-flex items-center text-white font-bold py-3 px-8 rounded-full text-xl mt-10 hover:ring-2 ring-emerald-400/50">
-                    Try the Live Assessor Demo
-                </a>
-                <p class="text-sm text-slate-500 mt-3">No sign-up required. View the report instantly.</p>
             </div>
         </section>
 
-        <!-- Compliance Frameworks Section -->
-        <section id="features" class="py-16 sm:py-24 bg-slate-800/50">
+        <!-- Our Mission Section (Referencing Content from the previous index.html) -->
+        <section id="mission" class="py-20 md:py-32">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <h2 class="text-4xl font-bold text-white mb-4">Our Mission: Trust and Innovation</h2>
+                <p class="text-lg text-slate-400 max-w-4xl mx-auto">
+                    IMSSPAKISTAN is dedicated to building the infrastructure for ethical, compliant, and trustworthy AI adoption globally. We bridge the gap between innovation and regulatory integrity, ensuring your projects are future-proofed against evolving standards.
+                </p>
+            </div>
+        </section>
+
+        <!-- Key Features Section (Referencing Content from imssspakistan_product_description.md) -->
+        <section id="features" class="py-20 md:py-32 bg-[var(--secondary-bg)] border-t border-b border-slate-800">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <h2 class="text-3xl font-extrabold text-white mb-10 text-center">Built on Global Regulatory Standards</h2>
-                
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <!-- EU AI Act -->
-                    <div class="p-6 rounded-xl feature-card">
-                        <span class="text-lg font-bold text-emerald-400 mb-2 block">EU AI Act</span>
-                        <h3 class="text-2xl font-bold mb-3 text-white">High-Risk Focus</h3>
-                        <p class="text-slate-400 mb-4 text-sm">
-                            Mandatory compliance with the nine core requirements for High-Risk systems (e.g., in employment, critical infrastructure). Our tool ensures traceability and conformity assessment readiness.
-                        </p>
-                        <ul class="list-disc list-inside text-sm text-slate-300 space-y-1">
-                            <li>Risk Management System</li>
-                            <li>Data Governance & Bias Mitigation</li>
-                            <li>Technical Robustness & Accuracy</li>
-                        </ul>
+                <h2 class="text-4xl font-bold text-center text-[var(--accent-color)] mb-16">The Assessor Tool: Your Compliance Engine</h2>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+
+                    <!-- Feature 1: Multi-Standard Compliance -->
+                    <div class="card p-8 rounded-xl shadow-lg hover:shadow-2xl hover:ring-2 hover:ring-cyan-500">
+                        <i data-lucide="shield-half" class="w-10 h-10 mb-4 text-cyan-400"></i>
+                        <h3 class="text-xl font-semibold mb-3 text-white">Multi-Standard Compliance</h3>
+                        <p class="text-slate-400 text-sm">Assesses alignment with global benchmarks: **EU AI Act, ISO 42001, and NIST AI RMF.** Ensure readiness for international regulatory environments.</p>
                     </div>
 
-                    <!-- ISO 42001 -->
-                    <div class="p-6 rounded-xl feature-card">
-                        <span class="text-lg font-bold text-emerald-400 mb-2 block">ISO/IEC 42001:2023</span>
-                        <h3 class="text-2xl font-bold mb-3 text-white">AI Management System</h3>
-                        <p class="text-slate-400 mb-4 text-sm">
-                            The first international standard for AI Management Systems (AIMS). We help you define, implement, and continually improve your governance model for AI systems.
-                        </p>
-                        <ul class="list-disc list-inside text-sm text-slate-300 space-y-1">
-                            <li>AIMS Documentation</li>
-                            <li>AI System Development Life Cycle</li>
-                            <li>Contextual & Legal Requirements</li>
-                        </ul>
+                    <!-- Feature 2: Risk-Weighted Liability Score -->
+                    <div class="card p-8 rounded-xl shadow-lg hover:shadow-2xl hover:ring-2 hover:ring-red-500">
+                        <i data-lucide="alert-triangle" class="w-10 h-10 mb-4 text-red-400"></i>
+                        <h3 class="text-xl font-semibold mb-3 text-white">Risk-Weighted Liability Score</h3>
+                        <p class="text-slate-400 text-sm">Provides a clear **LOW, MODERATE, or HIGH RISK** rating based on the severity of identified violations. Instantly prioritize remediation efforts.</p>
                     </div>
-                    
-                    <!-- NIST AI RMF -->
-                    <div class="p-6 rounded-xl feature-card">
-                        <span class="text-lg font-bold text-emerald-400 mb-2 block">NIST AI RMF</span>
-                        <h3 class="text-2xl font-bold mb-3 text-white">Risk Management Framework</h3>
-                        <p class="text-slate-400 mb-4 text-sm">
-                            Aligning with the U.S. voluntary framework for managing risks across the AI lifecycle. Focuses on Govern, Map, Measure, and Manage functions for reliable AI.
-                        </p>
-                        <ul class="list-disc list-inside text-sm text-slate-300 space-y-1">
-                            <li>Impact Assessment</li>
-                            <li>Continuous Monitoring</li>
-                            <li>Human-AI Teaming & Trustworthiness</li>
-                        </ul>
+
+                    <!-- Feature 3: Actionable Remediation -->
+                    <div class="card p-8 rounded-xl shadow-lg hover:shadow-2xl hover:ring-2 hover:ring-yellow-500">
+                        <i data-lucide="zap" class="w-10 h-10 mb-4 text-yellow-400"></i>
+                        <h3 class="text-xl font-semibold mb-3 text-white">Actionable Remediation</h3>
+                        <p class="text-slate-400 text-sm">For every violation detected, the report provides a specific **ACTION REQUIRED** recommendation, moving you immediately from identification to resolution.</p>
+                    </div>
+
+                    <!-- Feature 4: Immutable Integrity Hash -->
+                    <div class="card p-8 rounded-xl shadow-lg hover:shadow-2xl hover:ring-2 hover:ring-purple-500">
+                        <i data-lucide="fingerprint" class="w-10 h-10 mb-4 text-purple-400"></i>
+                        <h3 class="text-xl font-semibold mb-3 text-white">Immutable Integrity Hash</h3>
+                        <p class="text-slate-400 text-sm">Every assessment is assigned a unique, cryptographic **Integrity Hash**, providing a verifiable, audit-proof record of compliance status.</p>
+                    </div>
+
+                    <!-- Feature 5: Domain-Specific Metrics -->
+                    <div class="card p-8 rounded-xl shadow-lg hover:shadow-2xl hover:ring-2 hover:ring-emerald-500">
+                        <i data-lucide="layout-grid" class="w-10 h-10 mb-4 text-[var(--accent-color)]"></i>
+                        <h3 class="text-xl font-semibold mb-3 text-white">Domain-Specific Metrics</h3>
+                        <p class="text-slate-400 text-sm">Performance breakdown across **Data Quality, Model Governance, Bias & Fairness, Transparency, and Security.** Pinpoint technical weaknesses.</p>
                     </div>
                 </div>
-            </div>
-        </section>
-
-        <!-- Contact Section (UPDATED with Form and Firebase Integration) -->
-        <section id="contact" class="py-16 sm:py-24 text-center">
-            <div class="max-w-xl mx-auto px-4 sm:px-6 lg:px-8 bg-slate-800 p-8 rounded-xl shadow-2xl border border-emerald-600/50">
-                <h2 class="text-4xl font-extrabold text-white mb-4">Ready to Achieve Full AI Compliance?</h2>
-                <p class="text-lg text-slate-400 mb-8">
-                    Contact our AI governance experts today. Your inquiry will be securely saved.
-                </p>
-                
-                <!-- Contact Form -->
-                <form id="inquiryForm" class="space-y-4 text-left" onsubmit="event.preventDefault(); submitInquiry();">
-                    
-                    <div>
-                        <label for="name" class="block text-sm font-medium text-slate-300 mb-1">Your Name</label>
-                        <input type="text" id="name" required
-                               class="w-full px-4 py-2 rounded-lg bg-slate-900 border border-slate-700 text-white focus:border-emerald-500 focus:ring focus:ring-emerald-500/50 transition"
-                               placeholder="John Doe">
-                    </div>
-
-                    <div>
-                        <label for="email" class="block text-sm font-medium text-slate-300 mb-1">Your Email</label>
-                        <input type="email" id="email" required
-                               class="w-full px-4 py-2 rounded-lg bg-slate-900 border border-slate-700 text-white focus:border-emerald-500 focus:ring focus:ring-emerald-500/50 transition"
-                               placeholder="you@company.com">
-                    </div>
-
-                    <div>
-                        <label for="message" class="block text-sm font-medium text-slate-300 mb-1">Your Message or Inquiry</label>
-                        <textarea id="message" rows="4" required
-                                  class="w-full px-4 py-2 rounded-lg bg-slate-900 border border-slate-700 text-white focus:border-emerald-500 focus:ring focus:ring-emerald-500/50 transition"
-                                  placeholder="I am interested in an audit for a high-risk system..."></textarea>
-                    </div>
-
-                    <button type="submit" id="submitBtn" class="cta-button w-full inline-flex items-center justify-center text-white font-bold py-3 px-8 rounded-full text-lg mt-4 transition duration-300">
-                        <span id="buttonText">Send Inquiry</span>
-                        <div id="loadingSpinner" class="hidden animate-spin rounded-full h-5 w-5 border-b-2 border-white ml-2"></div>
-                    </button>
-
-                    <p id="formMessage" class="mt-4 text-center text-sm font-medium"></p>
-                </form>
             </div>
         </section>
         
+        <!-- CTA Section -->
+        <section class="py-16 md:py-24">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center card p-10 rounded-xl">
+                <h2 class="text-3xl font-bold text-white mb-4">Ready to Assess Your AI Risk?</h2>
+                <p class="text-lg text-slate-400 mb-8">
+                    Stop guessing about AI risk. Start assessing today and build trust in your intelligent systems.
+                </p>
+                <a href="index.html" class="inline-block px-10 py-4 rounded-full font-bold text-xl button-primary shadow-2xl">
+                    Launch Assessor Now
+                </a>
+            </div>
+        </section>
     </main>
 
     <!-- Footer -->
-    <footer class="bg-slate-900 border-t border-emerald-600/30 py-8">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm text-slate-400">
-            <p>&copy; 2025 IMSSSPAKISTAN. All rights reserved. | <a href="#" class="hover:text-emerald-400">Privacy Policy</a> | <a href="#" class="hover:text-emerald-400">Terms of Service</a></p>
+    <footer class="bg-[var(--primary-bg)] border-t border-slate-800 py-10" id="contact">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div class="flex flex-col md:flex-row justify-center items-center space-y-4 md:space-y-0 md:space-x-12 mb-6">
+                <a href="#" class="text-sm text-slate-400 hover:text-[var(--accent-color)]">Privacy Policy</a>
+                <a href="#" class="text-sm text-slate-400 hover:text-[var(--accent-color)]">Terms of Service</a>
+                <a href="mailto:contact@imssspakistan.com" class="text-sm text-slate-400 hover:text-[var(--accent-color)]">contact@imssspakistan.com</a>
+            </div>
+            <p class="text-sm text-slate-500">
+                &copy; 2025 IMSSPAKISTAN. All rights reserved. | Built for AI Governance & Integrity.
+            </p>
         </div>
     </footer>
 
-    <script type="module">
-        // Import Firebase modules
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, addDoc, collection, serverTimestamp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // Global Firebase variables
-        let app;
-        let db;
-        let auth;
-        let userId = 'anonymous';
-
-        // Get environment variables
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-
-        // UI elements
-        const formMessage = document.getElementById('formMessage');
-        const submitBtn = document.getElementById('submitBtn');
-        const buttonText = document.getElementById('buttonText');
-        const loadingSpinner = document.getElementById('loadingSpinner');
-
-        // --- Firebase Initialization and Authentication ---
-        async function initFirebase() {
-            if (!firebaseConfig) {
-                console.error("Firebase configuration not found.");
-                formMessage.textContent = "Error: System setup failed. Cannot send inquiry.";
-                formMessage.className = "mt-4 text-center text-sm font-medium text-red-500";
-                return;
-            }
-
-            try {
-                // setLogLevel('debug'); // Enable for debugging
-                app = initializeApp(firebaseConfig);
-                auth = getAuth(app);
-                db = getFirestore(app);
-                
-                // Ensure persistence for the session
-                await setPersistence(auth, browserLocalPersistence);
-
-                // Authenticate user
-                if (initialAuthToken) {
-                    await signInWithCustomToken(auth, initialAuthToken);
-                } else {
-                    await signInAnonymously(auth);
-                }
-
-                userId = auth.currentUser?.uid || 'anonymous';
-                console.log("Firebase initialized. User ID:", userId);
-
-            } catch (error) {
-                console.error("Error initializing Firebase or authenticating:", error);
-                formMessage.textContent = "Error: Authentication failed. Inquiry cannot be saved.";
-                formMessage.className = "mt-4 text-center text-sm font-medium text-red-500";
-            }
+    <!-- Initialize Lucide Icons -->
+    <script>
+        window.onload = function() {
+            lucide.createIcons();
         }
-
-        // --- Inquiry Submission Logic ---
-        window.submitInquiry = async function() {
-            if (!db || !userId) {
-                console.error("Database not ready or user not authenticated.");
-                formMessage.textContent = "Error: Please wait for system initialization and try again.";
-                formMessage.className = "mt-4 text-center text-sm font-medium text-yellow-500";
-                return;
-            }
-
-            const name = document.getElementById('name').value.trim();
-            const email = document.getElementById('email').value.trim();
-            const message = document.getElementById('message').value.trim();
-            
-            if (!name || !email || !message) {
-                formMessage.textContent = "Please fill in all fields.";
-                formMessage.className = "mt-4 text-center text-sm font-medium text-yellow-500";
-                return;
-            }
-
-            // UI feedback: Loading
-            submitBtn.disabled = true;
-            buttonText.textContent = "Sending...";
-            loadingSpinner.classList.remove('hidden');
-            formMessage.textContent = "";
-
-            try {
-                // Path: /artifacts/{appId}/public/data/inquiries
-                const collectionPath = `artifacts/${appId}/public/data/inquiries`;
-                
-                await addDoc(collection(db, collectionPath), {
-                    submitterId: userId,
-                    name: name,
-                    email: email,
-                    message: message,
-                    timestamp: serverTimestamp(),
-                    status: 'New'
-                });
-
-                // Success feedback
-                formMessage.textContent = "Thank you! Your inquiry has been sent and will be reviewed shortly.";
-                formMessage.className = "mt-4 text-center text-sm font-medium text-emerald-400";
-                document.getElementById('inquiryForm').reset(); // Clear form
-                
-            } catch (error) {
-                console.error("Error adding document: ", error);
-                formMessage.textContent = "An error occurred while submitting. Please try again later.";
-                formMessage.className = "mt-4 text-center text-sm font-medium text-red-500";
-                
-            } finally {
-                // UI feedback: Reset
-                submitBtn.disabled = false;
-                buttonText.textContent = "Send Inquiry";
-                loadingSpinner.classList.add('hidden');
-            }
-        }
-
-        // --- General Utility ---
-        function toggleMenu() {
-            const menu = document.getElementById('mobile-menu');
-            menu.classList.toggle('hidden');
-        }
-
-        // Expose toggleMenu globally for inline HTML click handler
-        window.toggleMenu = toggleMenu;
-
-        // Initialize Firebase when the window loads
-        window.onload = initFirebase;
     </script>
-
 </body>
 </html>
