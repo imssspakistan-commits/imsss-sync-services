@@ -971,16 +971,16 @@ var handleUpgradeClick = function() {
                                 e('p', { className: "text-xs uppercase text-white" }, languageText.iso + " / " + languageText.eu + " - Liability"),
                                 e('p', { className: "text-2xl font-mono mt-2 text-white font-bold" }, liability)
                             ),
-           // Immutable Hash
-e('div', { className: "p-4 bg-slate-800/50 rounded-lg text-center relative" },
-    e('p', { className: "text-xs uppercase text-slate-400" }, languageText.integrity),
-    e('p', { className: "text-xs font-mono mt-2 text-blue-400 font-bold break-all" }, finalHash),
-    e('button', {
-        className: "absolute top-2 right-2 text-slate-500 hover:text-white transition-colors no-print",
-        onClick: copyHash,
-        title: languageText.anchor
-    }, e('span', { 'data-lucide': 'Copy', className: "w-4 h-4" }))
-), // <-- Element 1 (Immutable Hash) closed with a comma
+                            // Immutable Hash
+                            e('div', { className: "p-4 bg-slate-800/50 rounded-lg text-center relative" },
+                                e('p', { className: "text-xs uppercase text-slate-400" }, languageText.integrity),
+                                e('p', { className: "text-xs font-mono mt-2 text-blue-400 font-bold break-all" }, finalHash),
+                                e('button', {
+                                className: "absolute top-2 right-2 text-slate-500 hover:text-white transition-colors no-print",
+                                onClick: copyHash,
+                                title: languageText.anchor
+                            }, e('span', { 'data-lucide': 'Copy', className: "w-4 h-4" }))
+                            ), // <-- Element 1 (Immutable Hash) closed with a comma
 
 // Radar and Metrics
 e('div', { className: "grid md:grid-cols-2 gap-8 mb-8" }, [ 
@@ -1010,7 +1010,7 @@ e('div', { className: "grid md:grid-cols-2 gap-8 mb-8" }, [
             )
         )
     )
-]), // Comma removed to fix the argument list error.
+]), // <--- Comma RE-ADDED here to separate this element from the next one.
 
 // Action Buttons (No Print)
 e('div', { className: "flex flex-col space-y-4 mt-8 no-print" }, [
