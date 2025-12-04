@@ -1,535 +1,742 @@
+<!-- 
+  AI Compliance Readiness Assessment and Reporting Tool
+  
+  This single-file application uses Tailwind CSS for styling, 
+  Firebase Firestore for real-time, persistent data storage, 
+  and CryptoJS for generating secure audit hashes. 
+  It simulates an AI compliance audit process based on 
+  structured regulatory frameworks.
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Compliance Assessor - Application</title>
+    <title>AI Compliance Assessor</title>
     <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Use Inter font -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <!-- Load Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    
-    <style>
-        :root {
-            --primary-color: #10b981; /* Emerald 500 */
-            --dark-bg: #0f172a; /* Slate 900 */
-            --dark-surface: #1e293b; /* Slate 800 */
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'dark-bg': '#1e293b',
+                        'card-bg': '#334155',
+                        'primary-green': '#10b981',
+                        'secondary-blue': '#3b82f6',
+                        'low-risk': '#10b981',
+                        'moderate-risk': '#f59e0b',
+                        'high-risk': '#ef4444',
+                    }
+                }
+            }
         }
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--dark-bg);
-            color: #e2e8f0; /* Slate 200 */
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-        .container-app {
-            max-width: 1000px;
-            margin-left: auto;
-            margin-right: auto;
-            padding: 0 1rem;
-        }
-        .neon-text-primary {
-            color: var(--primary-color);
-            text-shadow: 0 0 5px rgba(16, 185, 129, 0.5), 0 0 10px rgba(16, 185, 129, 0.3);
-        }
-        .btn-primary {
-            background-color: var(--primary-color);
-            color: var(--dark-bg);
-            padding: 0.75rem 2rem;
-            font-weight: 700;
-            border-radius: 0.5rem;
-            transition: all 0.3s;
-        }
-        .btn-primary:hover {
-            background-color: #059669; /* Emerald 600 */
-            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
-        }
-        .card {
-            background-color: var(--dark-surface);
-            border: 1px solid #334155; /* Slate 700 */
-        }
-        .spinner {
-            border: 4px solid rgba(255, 255, 255, 0.1);
-            border-top: 4px solid var(--primary-color);
-            border-radius: 50%;
-            width: 32px;
-            height: 32px;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
-</head>
-<body>
-
-    <!-- Header / Navigation Bar -->
-    <header class="sticky top-0 z-10 bg-slate-900/90 backdrop-blur-sm shadow-lg">
-        <div class="container-app flex justify-between items-center h-16">
-            <!-- Logo/Brand -->
-            <a href="index.html" class="text-2xl font-extrabold text-white tracking-widest">
-                <span class="neon-text-primary">IMSSS</span><span class="text-slate-400">Assessor</span>
-            </a>
-            
-            <!-- Navigation link updated to point to the new landing page -->
-            <a href="index.html" class="bg-slate-700 hover:bg-slate-600 text-white py-2 px-4 rounded-lg font-bold text-sm transition duration-300 shadow-md">
-                <i data-lucide="Home" class="w-4 h-4 inline mr-1"></i> Back to Landing Page
-            </a>
-        </div>
-    </header>
-
-    <main class="flex-grow py-12">
-        <div class="container-app">
-            <h1 class="text-3xl font-bold text-center mb-10 text-white">AI Compliance & Risk Assessment Tool</h1>
-            
-            <div id="app-container" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                
-                <!-- Assessment Form & History -->
-                <div class="lg:col-span-1 space-y-8">
-                    <!-- Assessment Form -->
-                    <div id="assessment-form-card" class="card p-6 rounded-xl shadow-lg">
-                        <h2 class="text-xl font-semibold mb-4 border-b border-slate-700 pb-2">New Assessment</h2>
-                        
-                        <form id="assessment-form">
-                            <div class="mb-4">
-                                <label for="ai-system-description" class="block text-sm font-medium text-slate-300 mb-1">AI System Description (Required)</label>
-                                <textarea id="ai-system-description" rows="3" class="w-full card p-3 rounded-lg border-slate-600 focus:border-emerald-500 focus:ring-emerald-500 text-slate-100 placeholder-slate-400 resize-none" placeholder="e.g., An NLP model used for automated credit scoring, impacting consumer finance decisions." required></textarea>
-                            </div>
-
-                            <div class="mb-4">
-                                <label for="risk-category" class="block text-sm font-medium text-slate-300 mb-1">Select Risk Category (EU AI Act based)</label>
-                                <select id="risk-category" class="w-full card p-3 rounded-lg border-slate-600 focus:border-emerald-500 focus:ring-emerald-500 text-slate-100" required>
-                                    <option value="">-- Select Category --</option>
-                                    <option value="Unacceptable Risk">Unacceptable Risk (Forbidden)</option>
-                                    <option value="High Risk (HR)">High Risk (HR) - e.g., Critical Infrastructure, Credit Scoring</option>
-                                    <option value="Limited Risk (LR)">Limited Risk (LR) - e.g., Chatbots, Emotion Recognition</option>
-                                    <option value="Minimal/No Risk (MNR)">Minimal/No Risk (MNR) - e.g., Simple spam filters, games</option>
-                                </select>
-                            </div>
-
-                            <div class="mb-6">
-                                <label class="block text-sm font-medium text-slate-300 mb-2">Key Compliance Domains (Select all applicable)</label>
-                                <div class="space-y-2">
-                                    <label class="flex items-center text-slate-300">
-                                        <input type="checkbox" name="domains" value="Data Quality and Governance" class="text-emerald-500 rounded focus:ring-emerald-500 mr-2"> Data Quality and Governance
-                                    </label>
-                                    <label class="flex items-center text-slate-300">
-                                        <input type="checkbox" name="domains" value="Model Transparency and Explainability" class="text-emerald-500 rounded focus:ring-emerald-500 mr-2"> Model Transparency and Explainability
-                                    </label>
-                                    <label class="flex items-center text-slate-300">
-                                        <input type="checkbox" name="domains" value="Bias, Fairness, and Non-Discrimination" class="text-emerald-500 rounded focus:ring-emerald-500 mr-2"> Bias, Fairness, and Non-Discrimination
-                                    </label>
-                                    <label class="flex items-center text-slate-300">
-                                        <input type="checkbox" name="domains" value="Security, Robustness, and Resilience" class="text-emerald-500 rounded focus:ring-emerald-500 mr-2"> Security, Robustness, and Resilience
-                                    </label>
-                                </div>
-                            </div>
-
-                            <button type="submit" id="start-assessment-btn" class="btn-primary w-full flex justify-center items-center">
-                                <span id="btn-text">Run Compliance Assessment</span>
-                                <div id="loading-spinner" class="spinner ml-3 hidden"></div>
-                            </button>
-                            <p id="auth-status" class="text-xs mt-2 text-slate-500 text-center">Auth Status: Connecting...</p>
-                        </form>
-                    </div>
-
-                    <!-- Assessment History -->
-                    <div class="card p-6 rounded-xl shadow-lg">
-                        <h2 class="text-xl font-semibold mb-4 border-b border-slate-700 pb-2">Assessment History</h2>
-                        <ul id="assessment-history" class="space-y-3">
-                            <li class="text-slate-400 italic">Loading history...</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- Results Display -->
-                <div class="lg:col-span-2">
-                    <div id="results-display" class="card p-8 rounded-xl shadow-2xl min-h-[500px]">
-                        <div class="text-center py-16">
-                            <i data-lucide="FlaskConical" class="w-16 h-16 mx-auto text-emerald-500 mb-4"></i>
-                            <h2 class="text-2xl font-bold text-white mb-2">Assessment Ready</h2>
-                            <p class="text-slate-400">Fill out the form and click 'Run Compliance Assessment' to generate a risk report grounded in the latest global standards (EU AI Act, ISO 42001, NIST RMF).</p>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </main>
-
-    <!-- Footer -->
-    <footer class="mt-12 py-4 border-t border-slate-800 text-center text-slate-500 text-sm">
-        <p>Your User ID (for private data storage): <span id="user-id">N/A</span></p>
-        <p>&copy; 2025 IMSSSPAKISTAN. Powered by Google Gemini API.</p>
-    </footer>
-
-    <!-- Firebase and Application Logic -->
+    </script>
+    <!-- Load Firebase SDKs -->
     <script type="module">
-        // Import Firebase modules
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, addDoc, onSnapshot, collection, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, addDoc, setDoc, onSnapshot, collection, query, where, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // Set Firebase log level to Debug
-        setLogLevel('Debug');
         
-        let db, auth, userId = null;
+        // Disable log messages for production environment
+        // setLogLevel('Debug'); // Uncomment for debugging
+        
+        // Global Variables provided by the Canvas environment
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
-        const resultsDisplay = document.getElementById('results-display');
-        const assessmentForm = document.getElementById('assessment-form');
-        const startAssessmentBtn = document.getElementById('start-assessment-btn');
-        const loadingSpinner = document.getElementById('loading-spinner');
-        const btnText = document.getElementById('btn-text');
-        const authStatusEl = document.getElementById('auth-status');
-        const userIdEl = document.getElementById('user-id');
-        const historyListEl = document.getElementById('assessment-history');
+        let app;
+        let db;
+        let auth;
+        let userId = 'anonymous';
 
         // --- Firebase Initialization and Authentication ---
-
-        try {
-            const app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            auth = getAuth(app);
-            
-            authStatusEl.textContent = 'Auth Status: Authenticating...';
-
-            onAuthStateChanged(auth, async (user) => {
-                if (user) {
-                    userId = user.uid;
-                    userIdEl.textContent = userId;
-                    authStatusEl.textContent = 'Auth Status: Authenticated';
-                    loadAssessments(); // Load data only after authentication is complete
-                    console.log("Firebase Auth Complete. User ID:", userId);
-                } else {
-                    // Initial sign-in logic
-                    if (initialAuthToken) {
-                        await signInWithCustomToken(auth, initialAuthToken);
-                    } else {
-                        await signInAnonymously(auth);
-                    }
-                    // onAuthStateChanged will be triggered again with the signed-in user
-                }
-            });
-        } catch (error) {
-            console.error("Firebase initialization failed:", error);
-            authStatusEl.textContent = `Auth Status: Error (${error.code || 'unknown'})`;
-        }
-
-        // --- Gemini API Call Function with Exponential Backoff ---
-
-        async function apiCallWithBackoff(prompt, maxRetries = 5, delay = 1000) {
-            const systemPrompt = "You are a world-class AI Compliance Auditor. Based on the user's AI system description, risk category, and key compliance domains, generate a professional, risk-weighted compliance summary. The summary MUST be concise (under 300 words), highly actionable, and grounded in global standards like the EU AI Act, ISO 42001, and NIST RMF. DO NOT mention the word 'paragraph' in your response. Provide a clear final compliance risk score (LOW, MODERATE, HIGH, or UNACCEPTABLE).";
-            const apiKey = ""; // API key will be provided by the runtime
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-
-            const payload = {
-                contents: [{ parts: [{ text: prompt }] }],
-                tools: [{ "google_search": {} }],
-                systemInstruction: {
-                    parts: [{ text: systemPrompt }]
-                },
-            };
-
-            for (let i = 0; i < maxRetries; i++) {
-                try {
-                    const response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-
-                    if (!response.ok) {
-                        if (response.status === 429 && i < maxRetries - 1) {
-                            // Rate limit hit, wait and retry
-                            await new Promise(resolve => setTimeout(resolve, delay * Math.pow(2, i)));
-                            continue;
-                        }
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-
-                    const result = await response.json();
-                    
-                    const candidate = result.candidates?.[0];
-
-                    if (candidate && candidate.content?.parts?.[0]?.text) {
-                        const text = candidate.content.parts[0].text;
-                        
-                        let sources = [];
-                        const groundingMetadata = candidate.groundingMetadata;
-                        if (groundingMetadata && groundingMetadata.groundingAttributions) {
-                            sources = groundingMetadata.groundingAttributions
-                                .map(attribution => ({
-                                        uri: attribution.web?.uri,
-                                        title: attribution.web?.title,
-                                    }))
-                                .filter(source => source.uri && source.title);
-                        }
-                        
-                        return { text, sources };
-
-                    } else {
-                        throw new Error("Invalid response structure from Gemini API.");
-                    }
-
-                } catch (error) {
-                    console.error("Gemini API call attempt failed:", error);
-                    if (i === maxRetries - 1) throw error; // Re-throw on final failure
-                    await new Promise(resolve => setTimeout(resolve, delay * Math.pow(2, i)));
-                }
-            }
-        }
-
-        // --- Firestore Data Functions ---
-
-        /**
-         * Saves a new assessment result to Firestore.
-         * @param {object} data - The assessment data and result to save.
-         */
-        async function saveAssessment(data) {
-            if (!userId) {
-                console.error("Cannot save: User not authenticated.");
-                return;
-            }
+        window.initFirebase = async () => {
             try {
-                const path = `/artifacts/${appId}/users/${userId}/assessments`;
-                const docRef = await addDoc(collection(db, path), {
-                    ...data,
-                    timestamp: serverTimestamp(),
-                });
-                console.log("Document successfully written with ID:", docRef.id);
-            } catch (error) {
-                console.error("Error writing document to Firestore:", error);
-            }
-        }
-
-        /**
-         * Listens for and displays the current user's assessment history.
-         */
-        function loadAssessments() {
-            if (!userId) return;
-
-            const path = `/artifacts/${appId}/users/${userId}/assessments`;
-            const assessmentsRef = collection(db, path);
-            
-            // Note: We avoid orderBy() to prevent needing Firestore indexes, and instead sort in JS.
-            const q = query(assessmentsRef); 
-
-            onSnapshot(q, (snapshot) => {
-                const assessments = [];
-                snapshot.forEach((doc) => {
-                    const data = doc.data();
-                    assessments.push({ id: doc.id, ...data });
-                });
-
-                // Sort assessments by timestamp (newest first) in memory
-                assessments.sort((a, b) => {
-                    if (!a.timestamp || !b.timestamp) return 0;
-                    // Timestamp objects have a toMillis() method
-                    const aMillis = typeof a.timestamp.toMillis === 'function' ? a.timestamp.toMillis() : 0;
-                    const bMillis = typeof b.timestamp.toMillis === 'function' ? b.timestamp.toMillis() : 0;
-                    return bMillis - aMillis;
-                });
-
-                renderHistory(assessments); 
-            }, (error) => {
-                console.error("Error listening to assessment history:", error);
-                historyListEl.innerHTML = `<li class="text-red-400">Failed to load history.</li>`;
-            });
-        }
-        
-        // --- Rendering Functions ---
-
-        /**
-         * Renders the list of previous assessments.
-         * @param {Array<object>} assessments 
-         */
-        function renderHistory(assessments) {
-            if (assessments.length === 0) {
-                historyListEl.innerHTML = `<li class="text-slate-400 italic">No previous assessments found.</li>`;
-                return;
-            }
-
-            historyListEl.innerHTML = assessments.map(item => {
-                // Safely get date
-                const date = item.timestamp && typeof item.timestamp.toMillis === 'function' 
-                             ? new Date(item.timestamp.toMillis()).toLocaleDateString() 
-                             : 'N/A';
-                             
-                const description = item.description.substring(0, 50) + (item.description.length > 50 ? '...' : '');
+                if (Object.keys(firebaseConfig).length === 0) {
+                    console.error("Firebase config is empty. Cannot initialize Firebase.");
+                    document.getElementById('auth-status').textContent = 'Error (config-missing)';
+                    return;
+                }
                 
-                let riskColor = 'text-slate-400';
-                if (item.riskScore && item.riskScore.includes('HIGH')) riskColor = 'text-red-400';
-                if (item.riskScore && item.riskScore.includes('MODERATE')) riskColor = 'text-amber-400';
-                if (item.riskScore && item.riskScore.includes('LOW')) riskColor = 'text-emerald-400';
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                window.db = db; // Make db globally accessible for saveAssessment
 
-                // We pass the entire item as a base64 encoded string to the global function for display
-                return `
-                    <li data-id="${item.id}" class="card p-3 rounded-lg hover:bg-slate-700/50 cursor-pointer transition duration-150 border border-slate-700/50" onclick="window.displayAssessmentResult('${item.id}', '${btoa(JSON.stringify(item))}')">
-                        <div class="flex justify-between items-center">
-                            <span class="font-medium text-white">${description}</span>
-                            <span class="text-xs ${riskColor}">${item.riskScore || 'Pending'}</span>
-                        </div>
-                        <p class="text-xs text-slate-500 mt-1">On: ${date}</p>
-                    </li>
-                `;
-            }).join('');
-        }
-        
-        /**
-         * Extracts and renders the assessment result.
-         * @param {string} id - Document ID.
-         * @param {string} b64data - Base64 encoded JSON string of the assessment data.
-         */
-        window.displayAssessmentResult = function(id, b64data) {
-            const data = JSON.parse(atob(b64data));
-            
-            const riskColor = data.riskScore.includes('HIGH') ? 'text-red-400' :
-                              data.riskScore.includes('MODERATE') ? 'text-amber-400' :
-                              data.riskScore.includes('LOW') ? 'text-emerald-400' : 'text-slate-400';
-            
-            const formattedDate = data.timestamp && typeof data.timestamp.toMillis === 'function'
-                                 ? new Date(data.timestamp.toMillis()).toLocaleString() 
-                                 : 'N/A';
-            
-            let sourceHtml = '';
-            if (data.sources && data.sources.length > 0) {
-                sourceHtml = `
-                    <h4 class="text-lg font-semibold mt-6 mb-2 text-slate-300 border-t border-slate-700 pt-4">Grounded Sources</h4>
-                    <ul class="list-disc ml-5 space-y-1 text-sm text-slate-400">
-                        ${data.sources.map(source => `
-                            <li><a href="${source.uri}" target="_blank" class="hover:text-emerald-400 underline">${source.title || source.uri}</a></li>
-                        `).join('')}
-                    </ul>
-                `;
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        document.getElementById('auth-status').textContent = `Auth Complete. User ID: ${userId.substring(0, 10)}...`;
+                        window.userId = userId; // Make userId globally accessible
+                        // Start listeners or data fetch after auth
+                    } else {
+                        // User is signed out (e.g., anonymous sign-in failed or sign-out occurred)
+                        userId = crypto.randomUUID(); // Fallback to a random ID
+                        document.getElementById('auth-status').textContent = 'Auth Failed. Using random ID.';
+                        window.userId = userId;
+                    }
+                });
+
+            } catch (error) {
+                console.error("Firebase initialization or auth error:", error);
+                document.getElementById('auth-status').textContent = `Error (${error.code || error.message})`;
             }
+        };
 
-            resultsDisplay.innerHTML = `
-                <div class="space-y-6">
-                    <div class="flex justify-between items-start border-b border-slate-700 pb-4">
-                        <div>
-                            <h2 class="text-3xl font-bold text-white mb-1">Compliance Report - ${data.riskCategory}</h2>
-                            <p class="text-slate-400 text-sm">Generated on: ${formattedDate} | ID: ${id}</p>
+        window.initFirebase();
+    </script>
+    <!-- Load Chart.js and CryptoJS for the Report View -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom scrollbar for dark theme */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4b5563;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6b7280;
+        }
+        /* Style for the remediation list */
+        .remediation-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 1rem 0;
+            border-bottom: 1px solid #475569;
+        }
+        .remediation-item:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body class="bg-dark-bg text-gray-100 min-h-screen">
+
+    <div id="app" class="flex flex-col lg:flex-row h-full">
+
+        <!-- Sidebar / Assessment Setup (Always Visible on Left/Top) -->
+        <div id="setup-sidebar" class="w-full lg:w-96 bg-card-bg p-6 space-y-6 flex-shrink-0 rounded-b-xl lg:rounded-r-xl lg:rounded-b-none shadow-2xl">
+            <h1 class="text-3xl font-bold text-primary-green flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mr-2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><path d="M22 4L12 14.01l-3-3"></path></svg>
+                IMSSS Assessor
+            </h1>
+            <h2 class="text-xl font-semibold border-b border-gray-600 pb-2">New Assessment</h2>
+
+            <form id="assessment-form" class="space-y-4">
+                <h3 class="text-lg font-medium pt-2 border-t border-gray-700">AI System Context (5 Key Questions)</h3>
+                
+                <!-- Structured AI System Description Inputs -->
+                <div class="space-y-3">
+                    <div class="space-y-1">
+                        <label for="system-purpose" class="text-sm font-medium">1. Purpose: What does the AI system do?</label>
+                        <input type="text" id="system-purpose" required class="w-full p-3 bg-gray-700 text-gray-100 rounded-lg border border-gray-600 focus:border-primary-green focus:ring-primary-green transition-colors" placeholder="e.g., NLP model for credit scoring.">
+                    </div>
+
+                    <div class="space-y-1">
+                        <label for="system-deployment" class="text-sm font-medium">2. Deployment: Where is it used?</label>
+                        <input type="text" id="system-deployment" required class="w-full p-3 bg-gray-700 text-gray-100 rounded-lg border border-gray-600 focus:border-primary-green focus:ring-primary-green transition-colors" placeholder="e.g., Production environment, Internal testing only.">
+                    </div>
+
+                    <div class="space-y-1">
+                        <label for="system-impact" class="text-sm font-medium">3. Impact: Who or what does it affect?</label>
+                        <input type="text" id="system-impact" required class="w-full p-3 bg-gray-700 text-gray-100 rounded-lg border border-gray-600 focus:border-primary-green focus:ring-primary-green transition-colors" placeholder="e.g., Consumer finance, Hiring decisions (High Risk).">
+                    </div>
+
+                    <div class="space-y-1">
+                        <label for="system-data" class="text-sm font-medium">4. Key Data: What kind of data does it process?</label>
+                        <input type="text" id="system-data" required class="w-full p-3 bg-gray-700 text-gray-100 rounded-lg border border-gray-600 focus:border-primary-green focus:ring-primary-green transition-colors" placeholder="e.g., PII, Medical records, Sensor data.">
+                    </div>
+                    
+                    <!-- NEW JURISDICTION FIELD -->
+                    <div class="space-y-1">
+                        <label for="system-provider-location" class="text-sm font-medium text-yellow-300">5. Provider Location: Where is the AI provider/developer registered?</label>
+                        <input type="text" id="system-provider-location" required class="w-full p-3 bg-gray-700 text-gray-100 rounded-lg border border-gray-600 focus:border-primary-green focus:ring-primary-green transition-colors" placeholder="e.g., USA (Delaware), Ireland (EU), Singapore.">
+                    </div>
+                </div>
+
+                <!-- Risk Category Selection -->
+                <div class="space-y-1 pt-4 border-t border-gray-700">
+                    <label for="risk-category" class="text-sm font-medium">Select Risk Category (EU AI Act based)</label>
+                    <select id="risk-category" required class="w-full p-3 bg-gray-700 text-gray-100 rounded-lg border border-gray-600 focus:border-primary-green focus:ring-primary-green transition-colors">
+                        <option value="1">Limited Risk (LR) - e.g., Basic chatbot</option>
+                        <option value="3" selected>Minimal Risk (MR) - e.g., Inventory optimization</option>
+                        <option value="5">High Risk (HR) - e.g., Critical infrastructure, HR/Finance decisions</option>
+                    </select>
+                </div>
+
+                <!-- Compliance Domains Selection -->
+                <div class="space-y-2">
+                    <label class="text-sm font-medium">Key Compliance Domains (Select all applicable)</label>
+                    <div class="space-y-1 text-sm bg-gray-700 p-3 rounded-lg">
+                        <div class="flex items-center">
+                            <input type="checkbox" id="domain-data" name="domains" value="Data Quality and Governance" checked class="form-checkbox h-4 w-4 text-primary-green rounded bg-gray-600 border-gray-500 focus:ring-primary-green">
+                            <label for="domain-data" class="ml-2">Data Quality and Governance</label>
                         </div>
-                        <div class="text-right">
-                            <p class="text-xl font-bold uppercase ${riskColor} p-2 rounded-lg bg-slate-700/50">Risk: ${data.riskScore}</p>
+                        <div class="flex items-center">
+                            <input type="checkbox" id="domain-model" name="domains" value="Model Transparency and Explainability" checked class="form-checkbox h-4 w-4 text-primary-green rounded bg-gray-600 border-gray-500 focus:ring-primary-green">
+                            <label for="domain-model" class="ml-2">Model Transparency and Explainability</label>
+                        </div>
+                        <div class="flex items-center">
+                            <input type="checkbox" id="domain-bias" name="domains" value="Bias and Fairness Assessment" checked class="form-checkbox h-4 w-4 text-primary-green rounded bg-gray-600 border-gray-500 focus:ring-primary-green">
+                            <label for="domain-bias" class="ml-2">Bias and Fairness Assessment</label>
+                        </div>
+                        <div class="flex items-center">
+                            <input type="checkbox" id="domain-security" name="domains" value="Robustness and Security" checked class="form-checkbox h-4 w-4 text-primary-green rounded bg-gray-600 border-gray-500 focus:ring-primary-green">
+                            <label for="domain-security" class="ml-2">Robustness and Security</label>
+                        </div>
+                        <div class="flex items-center">
+                            <input type="checkbox" id="domain-governance" name="domains" value="Model Governance and Oversight" checked class="form-checkbox h-4 w-4 text-primary-green rounded bg-gray-600 border-gray-500 focus:ring-primary-green">
+                            <label for="domain-governance" class="ml-2">Model Governance and Oversight</label>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full bg-primary-green hover:bg-green-600 text-gray-900 font-bold py-3 px-4 rounded-lg transition duration-200 shadow-md">
+                    Run Compliance Assessment
+                </button>
+            </form>
+            <p id="auth-status" class="text-xs text-gray-400 text-center mt-4">Initializing Firebase...</p>
+            <p class="text-xs text-gray-400 text-center">User ID: <span id="display-user-id">Loading...</span></p>
+        </div>
+        
+        <!-- Main Content Area (Assessment or Report) -->
+        <main id="main-content" class="flex-grow p-6 overflow-y-auto">
+            <!-- Initial State / Welcome Screen -->
+            <div id="welcome-screen" class="max-w-3xl mx-auto text-center py-20">
+                <h2 class="text-4xl font-extrabold text-white mb-4">AI Compliance Readiness Tool</h2>
+                <p class="text-lg text-gray-300 mb-8">Start a new assessment using the form on the left to evaluate your AI system's compliance maturity across key regulatory domains.</p>
+                <div class="inline-flex items-center space-x-4 text-left p-4 bg-gray-700 rounded-lg shadow-inner">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-9 h-9"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                    <p class="text-gray-300 text-sm">Please answer the **5 context questions** precisely to tailor the audit results effectively, including the provider's legal location.</p>
+                </div>
+            </div>
+
+            <!-- Assessment Screen (Hidden initially) -->
+            <div id="assessment-screen" class="hidden max-w-4xl mx-auto">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-3xl font-bold text-white">AI Compliance Assessment</h2>
+                    <div class="flex items-center space-x-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 text-secondary-blue"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                        <span id="current-question-indicator" class="text-lg font-medium text-secondary-blue">1 / 0</span>
+                    </div>
+                </div>
+                
+                <!-- Progress Bar -->
+                <div class="w-full bg-gray-700 rounded-full h-2.5 mb-8">
+                    <div id="progress-bar" class="bg-primary-green h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+
+                <!-- Question Card -->
+                <div id="question-card" class="bg-card-bg p-8 rounded-xl shadow-lg space-y-6">
+                    <p id="question-domain" class="text-sm font-semibold text-primary-green uppercase tracking-wider">Domain: Loading...</p>
+                    <h3 id="question-text" class="text-xl font-semibold text-white">Loading question...</h3>
+                    
+                    <div class="space-y-2">
+                        <p id="question-guidance" class="text-gray-400 text-sm italic">Guidance: Loading...</p>
+                        <p id="question-action-required" class="text-yellow-400 text-sm font-medium">Action Required: Loading...</p>
+                    </div>
+
+                    <!-- Answer Buttons -->
+                    <div class="flex flex-col sm:flex-row gap-4 pt-4">
+                        <button onclick="handleAnswer(1)" class="flex-1 py-3 px-6 bg-primary-green hover:bg-green-600 text-gray-900 font-bold rounded-lg transition duration-150 shadow-lg">
+                            Fully Compliant (1)
+                        </button>
+                        <button onclick="handleAnswer(0.5)" class="flex-1 py-3 px-6 bg-moderate-risk hover:bg-yellow-600 text-gray-900 font-bold rounded-lg transition duration-150 shadow-lg">
+                            Partially Compliant (0.5)
+                        </button>
+                        <button onclick="handleAnswer(0)" class="flex-1 py-3 px-6 bg-high-risk hover:bg-red-600 text-white font-bold rounded-lg transition duration-150 shadow-lg">
+                            Not Compliant (0)
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Report Screen (Hidden initially) -->
+            <div id="report-screen" class="hidden max-w-4xl mx-auto">
+                <div class="bg-card-bg p-8 rounded-xl shadow-2xl space-y-8">
+                    <div class="text-center border-b border-gray-700 pb-4">
+                        <h2 class="text-4xl font-extrabold text-primary-green mb-2">AI Compliance Assessment Report</h2>
+                        <p class="text-lg text-gray-300">Final Audit for: <span id="report-system-description" class="font-medium text-white italic"></span></p>
+                    </div>
+                    
+                    <!-- Summary Card -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+                        <div class="p-4 rounded-lg border border-gray-700">
+                            <p class="text-sm uppercase text-gray-400">Calculated Risk Category</p>
+                            <p id="report-risk-level" class="text-2xl font-bold mt-1" style="color:white;"></p>
+                        </div>
+                        <div class="p-4 rounded-lg border border-gray-700">
+                            <p class="text-sm uppercase text-gray-400">Overall Compliance Score</p>
+                            <p id="report-compliance-score" class="text-2xl font-bold text-secondary-blue mt-1">--%</p>
+                        </div>
+                        <div class="p-4 rounded-lg border border-gray-700">
+                            <p class="text-sm uppercase text-gray-400">AI Act Risk Level</p>
+                            <p id="report-ai-act-risk" class="text-2xl font-bold text-gray-200 mt-1">Loading...</p>
+                        </div>
+                    </div>
+
+                    <!-- Integrity Hash and Timestamp -->
+                    <div class="bg-gray-700 p-4 rounded-lg text-sm space-y-1">
+                        <p class="text-gray-400">Audit Integrity Hash (SHA-256): <span id="report-integrity-hash" class="font-mono text-xs text-yellow-400 break-all"></span></p>
+                        <p class="text-gray-400">Timestamp: <span id="report-timestamp" class="font-mono text-xs text-gray-300"></span></p>
+                    </div>
+
+                    <!-- Domain Breakdown (Radar Chart) -->
+                    <div class="pt-4">
+                        <h3 class="text-2xl font-semibold text-white mb-4 border-b border-gray-700 pb-2">Compliance Domain Breakdown</h3>
+                        <div class="flex justify-center">
+                            <canvas id="radar-chart" class="max-w-md max-h-96"></canvas>
                         </div>
                     </div>
                     
-                    <h3 class="text-2xl font-semibold neon-text-primary">System: ${data.description}</h3>
-                    <p class="text-lg text-slate-300">Targeted Domains: <span class="font-mono text-sm bg-slate-700 p-1 rounded">${data.domains.join(', ')}</span></p>
-
-                    <h4 class="text-lg font-semibold mt-4 mb-2 text-slate-300">Auditor's Summary and Recommendations</h4>
-                    <div class="card p-4 rounded-lg border-slate-600 prose prose-invert max-w-none text-slate-200">
-                        ${data.complianceReport.replace(/\n/g, '<br>')}
+                    <!-- Actionable Remediation Plan -->
+                    <div id="remediation-plan" class="pt-8">
+                        <h3 class="text-2xl font-semibold text-white mb-4 border-b border-gray-700 pb-2 flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mr-2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                            Actionable Remediation Plan (<span id="remediation-count">0</span> items)
+                        </h3>
+                        <div id="remediation-list" class="divide-y divide-gray-700">
+                            <p class="text-gray-400 italic" id="no-remediation-message">Congratulations! No critical remediation items found.</p>
+                        </div>
                     </div>
-                    ${sourceHtml}
+
+                    <!-- Footer Actions -->
+                    <div class="pt-8 flex flex-col sm:flex-row justify-center gap-4 border-t border-gray-700">
+                        <button onclick="window.print()" class="flex items-center justify-center py-3 px-6 bg-secondary-blue hover:bg-blue-600 text-white font-bold rounded-lg transition duration-150 shadow-md">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 mr-2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                            Download Basic PDF Report
+                        </button>
+                        <button onclick="document.getElementById('welcome-screen').classList.remove('hidden'); document.getElementById('report-screen').classList.add('hidden');" class="flex items-center justify-center py-3 px-6 bg-gray-600 hover:bg-gray-500 text-white font-bold rounded-lg transition duration-150 shadow-md">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 mr-2"><path d="M21 12.5c0 .3-.2.5-.5.5h-13c-.2 0-.4-.1-.5-.2-.1-.1-.2-.3-.2-.5s.1-.4.2-.5c.1-.1.3-.2.5-.2h13c.3 0 .5.2.5.5z"></path><path d="M12 21.5c.3 0 .5-.2.5-.5v-13c0-.2-.1-.4-.2-.5-.1-.1-.3-.2-.5-.2s-.4.1-.5.2c-.1.1-.2.3-.2.5v13c0 .3.2.5.5.5z"></path></svg>
+                            Start New Session
+                        </button>
+                    </div>
                 </div>
-            `;
-            // Re-render Lucide icons for the new content
-            lucide.createIcons();
-        }
+            </div>
+            
+            <!-- Message Box for Custom Alerts/Confirmations (Hidden initially) -->
+            <div id="message-box" class="hidden fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50">
+                <div class="bg-card-bg p-6 rounded-lg shadow-2xl max-w-sm w-full space-y-4">
+                    <h4 id="message-title" class="text-xl font-bold text-white">Notification</h4>
+                    <p id="message-text" class="text-gray-300">Message content.</p>
+                    <div class="flex justify-end">
+                        <button onclick="document.getElementById('message-box').classList.add('hidden')" class="py-2 px-4 bg-primary-green hover:bg-green-600 text-gray-900 font-semibold rounded-lg">
+                            OK
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script type="text/javascript">
+        // Global State
+        let assessmentQuestions = [];
+        let currentQuestionIndex = 0;
+        let assessmentResults = [];
+        let systemDescription = {}; // Changed from string to object
+        let aiActRisk = "Minimal Risk (MR)";
+        let selectedDomains = [];
+        let chartInstance = null;
+        
+        // Use a generic placeholder if firebase is not ready
+        window.userId = window.userId || 'placeholder-user'; 
+
+        // Show the current user ID in the sidebar
+        document.addEventListener('DOMContentLoaded', () => {
+            const displayUserId = document.getElementById('display-user-id');
+            // Wait for auth to complete to display the real ID, otherwise show loading
+            if (window.userId && window.userId !== 'anonymous') {
+                displayUserId.textContent = window.userId;
+            } else {
+                // Polling/listener logic from firebase init will update this later
+                displayUserId.textContent = 'Authenticating...';
+                
+                // Simple observer for the auth-status element to update the user ID display
+                const authStatusObserver = new MutationObserver(mutations => {
+                    mutations.forEach(mutation => {
+                        if (mutation.target.textContent.includes('User ID:')) {
+                            const match = mutation.target.textContent.match(/User ID: (.+)/);
+                            if (match && match[1]) {
+                                displayUserId.textContent = match[1];
+                            }
+                        }
+                    });
+                });
+
+                const authStatusElement = document.getElementById('auth-status');
+                if (authStatusElement) {
+                    authStatusObserver.observe(authStatusElement, { childList: true, characterData: true, subtree: true });
+                }
+            }
+        });
 
 
-        // --- Event Listener and Core Logic ---
+        // Assessment Data (Structured Questions)
+        const questionsData = [
+            // Domain: Data Quality and Governance (Base Risk: 4 - High Importance)
+            { domain: "Data Quality and Governance", text: "Are data sources, collection methods, and transformations (ETL/ELT) fully documented and version-controlled?", guidance: "Good data governance requires immutable history of data pipelines.", actionRequired: "Implement a data governance framework to log and version all data sources and transformations.", baseRisk: 4 },
+            { domain: "Data Quality and Governance", text: "Are processes in place to monitor data drift and ensure data integrity over time in production?", guidance: "Data integrity and consistency are paramount for model stability.", actionRequired: "Establish data quality checks (e.g., schema validation, constraint checks) to run before model training and inference.", baseRisk: 4 },
+            { domain: "Data Quality and Governance", text: "Has a dedicated data bias audit been performed on the training data using fairness metrics?", guidance: "Unaddressed data bias can lead to discriminatory outcomes.", actionRequired: "Conduct a data bias audit using fairness metrics (e.g., demographic parity, equalized odds) and document mitigation strategies.", baseRisk: 5 },
 
-        assessmentForm.addEventListener('submit', async (e) => {
+            // Domain: Model Transparency and Explainability (Base Risk: 5 - Very High Importance)
+            { domain: "Model Transparency and Explainability", text: "Is there a Model Card or comparable documentation detailing model limits, performance, and ethical considerations?", guidance: "Transparency is a core requirement for regulatory compliance.", actionRequired: "Create and maintain a comprehensive Model Card, including intended use, evaluation metrics, limitations, and ethical considerations.", baseRisk: 5 },
+            { domain: "Model Transparency and Explainability", text: "Are explainability techniques (e.g., SHAP, LIME) used to provide clear, human-readable reasons for critical decisions?", guidance: "Users/subjects must understand why a decision was made, especially in high-risk contexts.", actionRequired: "Implement model-agnostic or model-specific explainability tools (like SHAP) to generate explanations for every critical decision.", baseRisk: 5 },
+            
+            // Domain: Bias and Fairness Assessment (Base Risk: 5 - Very High Importance)
+            { domain: "Bias and Fairness Assessment", text: "Are different demographic groups evaluated for performance disparity (e.g., checking False Positive/Negative rates across different protected groups)?", guidance: "Fairness requires checking performance parity, not just overall accuracy.", actionRequired: "Define and test for performance metrics (e.g., FNR, FPR) across all protected groups to ensure equitable outcomes and document any disparities.", baseRisk: 5 },
+            { domain: "Bias and Fairness Assessment", text: "Is there a documented process for human oversight and intervention when the model flags a potentially biased or uncertain decision?", guidance: "Human-in-the-loop ensures accountability and error correction.", actionRequired: "Establish a clear human-in-the-loop process with clear decision-making criteria and escalation paths for uncertain or high-risk outcomes.", baseRisk: 4 },
+            
+            // Domain: Robustness and Security (Base Risk: 3 - Medium Importance)
+            { domain: "Robustness and Security", text: "Are resistance measures against adversarial attacks (e.g., input validation, defensive distillation) regularly tested?", guidance: "Adversarial attacks can compromise model integrity and security.", actionRequired: "Implement and regularly test resistance measures against common adversarial attacks like perturbation or data poisoning.", baseRisk: 3 },
+            { domain: "Robustness and Security", text: "Is the model's performance monitored in real-time for sudden performance degradation or drift in production?", guidance: "Production monitoring is essential to catch real-world failures and maintain reliability.", actionRequired: "Implement a monitoring dashboard in production to track key metrics (accuracy, drift, latency) and trigger alerts upon deviation.", baseRisk: 3 },
+
+            // Domain: Model Governance and Oversight (Base Risk: 4 - High Importance)
+            { domain: "Model Governance and Oversight", text: "Is a dedicated team or committee responsible for reviewing, approving, and overseeing all AI system deployments?", guidance: "Clear accountability and oversight are regulatory requirements.", actionRequired: "Form an official AI Governance Committee with defined roles, responsibilities, and sign-off authority for all AI systems.", baseRisk: 4 },
+            { domain: "Model Governance and Oversight", text: "Are all compliance documentation and audit logs (including input data, model versions, and training runs) archived and easily accessible for regulatory review?", guidance: "The ability to audit the entire lifecycle is non-negotiable.", actionRequired: "Establish a secure, version-controlled repository (MLOps pipeline) for archiving all model artifacts, logs, and compliance documentation.", baseRisk: 4 },
+        ];
+
+
+        // Utility function to show custom message box
+        const showMessageBox = (title, text) => {
+            document.getElementById('message-title').textContent = title;
+            document.getElementById('message-text').textContent = text;
+            document.getElementById('message-box').classList.remove('hidden');
+        };
+
+        // --- Core Assessment Logic ---
+
+        document.getElementById('assessment-form').addEventListener('submit', function(e) {
             e.preventDefault();
             
-            const description = document.getElementById('ai-system-description').value.trim();
-            const riskCategory = document.getElementById('risk-category').value;
-            const domains = Array.from(document.querySelectorAll('input[name="domains"]:checked')).map(el => el.value);
+            // Reset state
+            currentQuestionIndex = 0;
+            assessmentResults = [];
+            
+            // Collect structured setup data
+            const purpose = document.getElementById('system-purpose').value.trim();
+            const deployment = document.getElementById('system-deployment').value.trim();
+            const impact = document.getElementById('system-impact').value.trim();
+            const data = document.getElementById('system-data').value.trim();
+            const providerLocation = document.getElementById('system-provider-location').value.trim(); // NEW FIELD
 
-            if (!description || !riskCategory || domains.length === 0) {
-                resultsDisplay.innerHTML = `<div class="p-4 text-center text-red-400">Please fill out all required fields and select at least one compliance domain.</div>`;
+            systemDescription = { purpose, deployment, impact, data, providerLocation };
+            
+            // Generate a combined, readable description for the report
+            const combinedDescription = `${purpose} (Provider: ${providerLocation}, Deployment: ${deployment}, Impact: ${impact}, Data: ${data})`; // Updated combined description
+
+            aiActRisk = document.getElementById('risk-category').options[document.getElementById('risk-category').selectedIndex].text;
+            
+            const domainCheckboxes = document.querySelectorAll('input[name="domains"]:checked');
+            selectedDomains = Array.from(domainCheckboxes).map(cb => cb.value);
+
+            // Updated validation check
+            if (!purpose || !deployment || !impact || !data || !providerLocation || selectedDomains.length === 0) {
+                 showMessageBox("Input Required", "Please fill in ALL FIVE system context fields and select at least one compliance domain.");
+                 return;
+            }
+
+            // Filter questions based on selected domains
+            assessmentQuestions = questionsData.filter(q => selectedDomains.includes(q.domain));
+
+            if (assessmentQuestions.length === 0) {
+                showMessageBox("No Questions", "Please select at least one compliance domain to run the assessment.");
+                return;
+            }
+            
+            // Switch UI to assessment screen
+            document.getElementById('welcome-screen').classList.add('hidden');
+            document.getElementById('report-screen').classList.add('hidden');
+            document.getElementById('assessment-screen').classList.remove('hidden');
+
+            // Set total question count
+            document.getElementById('current-question-indicator').textContent = `1 / ${assessmentQuestions.length}`;
+            
+            // Store the combined description for the report header
+            window.combinedDescription = combinedDescription; 
+            
+            loadQuestion();
+        });
+
+        const loadQuestion = () => {
+            if (currentQuestionIndex < assessmentQuestions.length) {
+                const q = assessmentQuestions[currentQuestionIndex];
+                
+                document.getElementById('question-domain').textContent = `DOMAIN: ${q.domain}`;
+                document.getElementById('question-text').textContent = q.text;
+                document.getElementById('question-guidance').textContent = `Guidance: ${q.guidance}`;
+                document.getElementById('question-action-required').textContent = `Action Required: ${q.actionRequired}`;
+                document.getElementById('current-question-indicator').textContent = `${currentQuestionIndex + 1} / ${assessmentQuestions.length}`;
+                
+                updateProgressBar();
+            } else {
+                // Assessment is complete
+                generateReport();
+            }
+        };
+
+        const updateProgressBar = () => {
+            const progress = (currentQuestionIndex / assessmentQuestions.length) * 100;
+            document.getElementById('progress-bar').style.width = `${progress}%`;
+        };
+
+        window.handleAnswer = (score) => {
+            const q = assessmentQuestions[currentQuestionIndex];
+            
+            assessmentResults.push({
+                domain: q.domain,
+                question: q.text,
+                actionRequired: q.actionRequired,
+                score: score,
+                baseRisk: q.baseRisk,
+                weightedScore: score * q.baseRisk
+            });
+            
+            currentQuestionIndex++;
+            loadQuestion();
+        };
+
+        // --- Report Generation and Saving ---
+
+        const calculateMetrics = () => {
+            let totalWeightedScore = 0;
+            let totalPossibleWeightedScore = 0;
+            const domainScores = {};
+
+            // Initialize domain scores
+            selectedDomains.forEach(domain => {
+                domainScores[domain] = { current: 0, possible: 0 };
+            });
+
+            assessmentResults.forEach(r => {
+                totalWeightedScore += r.weightedScore;
+                totalPossibleWeightedScore += r.baseRisk;
+
+                domainScores[r.domain].current += r.weightedScore;
+                domainScores[r.domain].possible += r.baseRisk;
+            });
+
+            const overallComplianceScore = totalPossibleWeightedScore > 0 
+                ? (totalWeightedScore / totalPossibleWeightedScore) * 100 
+                : 0;
+
+            // Calculate domain compliance percentages
+            const domainPercentages = {};
+            for (const domain in domainScores) {
+                const score = domainScores[domain];
+                domainPercentages[domain] = score.possible > 0 
+                    ? (score.current / score.possible) * 100 
+                    : 0;
+            }
+
+            return { overallComplianceScore, totalPossibleWeightedScore, totalWeightedScore, domainPercentages };
+        };
+
+        const generateReport = async () => {
+            // Calculate final scores
+            const { overallComplianceScore, totalPossibleWeightedScore, totalWeightedScore, domainPercentages } = calculateMetrics();
+
+            // Determine Risk Level (0-40% = HIGH, 41-75% = MODERATE, 76-100% = LOW)
+            let calculatedRiskLevel = 'HIGH';
+            let riskColor = 'text-high-risk';
+            
+            if (overallComplianceScore > 75) {
+                calculatedRiskLevel = 'LOW';
+                riskColor = 'text-low-risk';
+            } else if (overallComplianceScore > 40) {
+                calculatedRiskLevel = 'MODERATE';
+                riskColor = 'text-moderate-risk';
+            }
+
+            // Create the Audit Integrity Hash
+            const dataToHash = JSON.stringify({
+                system: systemDescription, // Now includes the structured details
+                risk: aiActRisk,
+                score: overallComplianceScore.toFixed(2),
+                weightedScore: totalWeightedScore,
+                results: assessmentResults.map(r => ({ q: r.question, s: r.score }))
+            });
+            const integrityHash = CryptoJS.SHA256(dataToHash).toString(CryptoJS.enc.Hex);
+            const reportTimestamp = new Date().toLocaleString();
+            
+            // --- Save to Firestore ---
+            await saveAssessment({
+                userId: window.userId,
+                appId: appId,
+                timestamp: serverTimestamp(),
+                reportTimestamp: reportTimestamp,
+                systemDescription: systemDescription, // Save as object with 5 fields
+                combinedDescription: window.combinedDescription, // Save the readable string for quick review
+                aiActRisk,
+                calculatedRiskLevel,
+                overallComplianceScore: parseFloat(overallComplianceScore.toFixed(2)),
+                integrityHash,
+                totalWeightedScore,
+                totalPossibleWeightedScore,
+                domainPercentages,
+                results: assessmentResults
+            });
+
+
+            // --- Update UI ---
+            document.getElementById('assessment-screen').classList.add('hidden');
+            document.getElementById('report-system-description').textContent = window.combinedDescription;
+            document.getElementById('report-ai-act-risk').textContent = aiActRisk;
+            
+            const riskLevelEl = document.getElementById('report-risk-level');
+            riskLevelEl.textContent = `${calculatedRiskLevel} LIABILITY`;
+            riskLevelEl.className = `text-2xl font-bold mt-1 ${riskColor}`;
+            
+            document.getElementById('report-compliance-score').textContent = `${overallComplianceScore.toFixed(2)}%`;
+            document.getElementById('report-integrity-hash').textContent = integrityHash;
+            document.getElementById('report-timestamp').textContent = reportTimestamp;
+            
+            renderRemediationPlan();
+            renderRadarChart(domainPercentages);
+
+            document.getElementById('report-screen').classList.remove('hidden');
+            updateProgressBar(); // Ensure progress bar is full
+        };
+
+        const saveAssessment = async (data) => {
+            try {
+                if (!window.db || !window.userId) {
+                    throw new Error("Firestore not initialized or User ID not available.");
+                }
+                
+                const collectionPath = `artifacts/${appId}/users/${window.userId}/assessments`;
+                
+                await addDoc(collection(window.db, collectionPath), data);
+                console.log("Assessment saved successfully.");
+
+            } catch (error) {
+                console.error("Error saving assessment to Firestore:", error);
+                showMessageBox("Save Error", "Failed to save the assessment report to the database. Check console for details.");
+            }
+        };
+
+        const renderRemediationPlan = () => {
+            const listEl = document.getElementById('remediation-list');
+            listEl.innerHTML = '';
+            document.getElementById('no-remediation-message').classList.add('hidden');
+
+            const remediationItems = assessmentResults.filter(r => r.score < 1);
+            
+            document.getElementById('remediation-count').textContent = remediationItems.length;
+
+            if (remediationItems.length === 0) {
+                document.getElementById('no-remediation-message').classList.remove('hidden');
                 return;
             }
 
-            // Set Loading State
-            startAssessmentBtn.disabled = true;
-            btnText.textContent = 'Analyzing...';
-            loadingSpinner.classList.remove('hidden');
-            resultsDisplay.innerHTML = `
-                <div class="text-center py-16">
-                    <div class="spinner mx-auto mb-4"></div>
-                    <p class="text-white text-lg font-semibold">Generating grounded compliance report...</p>
-                    <p class="text-slate-400 text-sm mt-2">This may take a moment while the auditor cross-references global standards.</p>
-                </div>
-            `;
+            remediationItems.forEach((item, index) => {
+                const riskColor = item.score === 0 ? 'text-high-risk' : 'text-moderate-risk';
+                const statusText = item.score === 0 ? 'FAIL (0)' : 'PARTIAL (0.5)';
 
-            try {
-                const userPrompt = `
-                    Generate a compliance report for the following AI system:
-                    - **System Description:** ${description}
-                    - **Declared Risk Category (EU AI Act):** ${riskCategory}
-                    - **Core Compliance Domains to Assess:** ${domains.join(', ')}
-                    
-                    Analyze the potential compliance risks across the selected domains against EU AI Act, ISO 42001, and NIST RMF. Conclude with a clear risk score (LOW, MODERATE, HIGH, or UNACCEPTABLE) and three concrete, actionable recommendations.
-                `;
-
-                const { text: complianceReport, sources } = await apiCallWithBackoff(userPrompt);
-
-                // Simple check to extract the Risk Score from the generated text
-                const riskMatch = complianceReport.match(/(LOW|MODERATE|HIGH|UNACCEPTABLE)/i);
-                const riskScore = riskMatch ? riskMatch[0].toUpperCase() : 'UNKNOWN';
-
-                const assessmentData = {
-                    description,
-                    riskCategory,
-                    domains,
-                    complianceReport,
-                    riskScore,
-                    sources,
-                };
-                
-                // Save and display the result
-                await saveAssessment(assessmentData);
-                
-                // Manually trigger display of the newly generated report
-                // We use setTimeout to ensure the onSnapshot listener has processed the new data first.
-                setTimeout(() => {
-                    // Check if the timestamp is available before creating the latest assessment object
-                    const latestTimestamp = { toMillis: () => Date.now() };
-                    
-                    const latestAssessment = { 
-                        ...assessmentData, 
-                        timestamp: latestTimestamp, 
-                        id: 'latest' // Temporary ID for immediate display
-                    };
-                    window.displayAssessmentResult('latest', btoa(JSON.stringify(latestAssessment)));
-                }, 500);
-
-
-            } catch (error) {
-                console.error("Assessment failed:", error);
-                resultsDisplay.innerHTML = `
-                    <div class="p-8 text-center bg-red-900/50 rounded-lg">
-                        <i data-lucide="AlertTriangle" class="w-8 h-8 mx-auto text-red-400 mb-3"></i>
-                        <p class="text-red-300 font-semibold">Compliance check failed.</p>
-                        <p class="text-red-400 text-sm mt-1">Could not generate the report. Please check the console for API errors or retry.</p>
+                listEl.innerHTML += `
+                    <div class="remediation-item">
+                        <div class="w-1/12 text-center pt-1">
+                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="${item.score === 0 ? '#ef4444' : '#f59e0b'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                        </div>
+                        <div class="w-11/12">
+                            <p class="text-sm font-bold text-gray-200 mb-1">${index + 1}. ${item.question}</p>
+                            <p class="text-xs ${riskColor} font-semibold">Status: ${statusText}</p>
+                            <p class="text-xs text-gray-300 mt-1"><span class="font-bold text-primary-green">ACTION:</span> ${item.actionRequired}</p>
+                        </div>
                     </div>
                 `;
-            } finally {
-                // Reset Loading State
-                startAssessmentBtn.disabled = false;
-                btnText.textContent = 'Run Compliance Assessment';
-                loadingSpinner.classList.add('hidden');
-                lucide.createIcons(); // Re-render icons after updating content
+            });
+        };
+
+        const renderRadarChart = (domainPercentages) => {
+            if (chartInstance) {
+                chartInstance.destroy();
             }
-        });
 
-        // Initial setup for icons
-        document.addEventListener('DOMContentLoaded', () => {
-            lucide.createIcons();
-        });
+            const labels = Object.keys(domainPercentages);
+            const dataValues = Object.values(domainPercentages).map(val => parseFloat(val.toFixed(1)));
+            
+            const ctx = document.getElementById('radar-chart').getContext('2d');
+            
+            // Register plugin globally
+            Chart.register(ChartDataLabels);
 
+            chartInstance = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Compliance Score (%)',
+                        data: dataValues,
+                        backgroundColor: 'rgba(16, 185, 129, 0.4)', // Primary Green transparent
+                        borderColor: '#10b981', // Primary Green
+                        pointBackgroundColor: '#10b981',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#10b981',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        r: {
+                            angleLines: { color: 'rgba(255, 255, 255, 0.2)' },
+                            grid: { color: 'rgba(255, 255, 255, 0.2)' },
+                            pointLabels: { color: '#e5e7eb', font: { size: 12, weight: '600' } },
+                            suggestedMin: 0,
+                            suggestedMax: 100,
+                            ticks: {
+                                display: true,
+                                color: '#9ca3af',
+                                backdropColor: '#334155', // Match card background
+                                beginAtZero: true,
+                                stepSize: 25,
+                                callback: function(value) { return value + "%"; }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false 
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => ` ${context.dataset.label}: ${context.parsed.r.toFixed(1)}%`
+                            }
+                        },
+                        datalabels: {
+                            color: '#e5e7eb',
+                            font: { weight: 'bold', size: 10 },
+                            formatter: (value) => `${value.toFixed(0)}%`,
+                            display: true,
+                            anchor: 'end',
+                            align: 'end',
+                            offset: 5
+                        }
+                    }
+                }
+            });
+        };
     </script>
 </body>
 </html>
