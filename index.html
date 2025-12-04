@@ -2,1448 +2,406 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IMSSS AI Risk Assessor</title>
-
-    <script src="https://cdn.tailwindcss.com?version=3.4.4"></script>
-    <script src="https://unpkg.com/react@18.2.0/umd/react.production.min.js" crossorigin="anonymous"></script>
-    <script src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js" crossorigin="anonymous"></script>
-    <script src="https://unpkg.com/lucide@0.368.0"></script>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
- <style>
-    @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Noto+Sans+Arabic:wght@400;700&display=swap');
-
-    :root {
-        --bg-color: #0f172a; /* slate-900 */
-        --glass-bg: rgba(30, 41, 59, 0.7); /* slate-800 with transparency */
-        --border-color: #334155; /* slate-700 */
-        --input-bg: #1e293b; /* slate-800 */
-    }
-
-    body {
-        background-color: var(--bg-color);
-        background-image: radial-gradient(circle at center, #1e293b 1px, transparent 1px);
-        background-size: 50px 50px;
-        min-height: 100vh;
-        margin: 0;
-        padding: 0;
-        touch-action: manipulation; 
-    }
-    
-    #root {
-        min-height: 100vh;
-    }
-
-    /* Custom Fonts */
-    .font-sans { font-family: 'Roboto Mono', sans-serif; }
-    .font-urdu { font-family: 'Noto Sans Arabic', sans-serif; }
-
-    /* Glass Panel Effect */
-    .glass-panel {
-        background-color: var(--glass-bg);
-        backdrop-filter: blur(8px);
-        border: 1px solid var(--border-color);
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-
-    /* Neon Text for Highlights */
-    .neon-text {
-        text-shadow: 0 0 5px rgba(59, 130, 246, 0.5), 0 0 10px rgba(59, 130, 246, 0.3);
-    }
-
-    /* Live Dot Animation */
-    .live-dot {
-        animation: pulse-red 1.5s infinite;
-    }
-
-    @keyframes pulse-red {
-        0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-        70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-        100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-    }
-
-    /* Ensure scrollable area is visible */
-    .scrollable-summary {
-        max-height: 300px; 
-        overflow-y: auto;
-        padding-right: 10px;
-    }
-    
-    /* Styles to hide components during PDF rendering */
-    @media print {
-        .no-print { display: none !important; }
-        .report-container { background-color: white !important; color: black !important; }
-        body { background-image: none !important; background-color: white !important; }
-    }
-
-    /* ----------------------------------------------------------------- */
-    /* FINAL MOBILE RESPONSIVENESS FIX */
-    /* ----------------------------------------------------------------- */
-    @media (max-width: 768px) {
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IMSSSPAKISTAN - AI Risk & Compliance Solutions</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Emerald green theme */
+            --primary-color: #059669; /* emerald-600 */
+            --secondary-color: #34d399; /* emerald-400 */
+            --bg-dark: #0f172a; /* slate-900 */
+            --bg-medium: #1e293b; /* slate-800 */
+            --text-light: #e2e8f0;
+        }
         body {
-            overflow-x: hidden; /* Prevents horizontal scrolling */
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-light); /* slate-200 */
         }
-        .max-w-4xl {
-            max-width: 100% !important; /* Forces large containers to fit the screen */
+        .hero-section {
+            background: linear-gradient(180deg, var(--bg-dark) 0%, rgba(15, 23, 42, 0.95) 100%), 
+                        url('https://placehold.co/1920x800/155e75/ffffff?text=AI+Governance+Background') no-repeat center center/cover;
+            background-attachment: fixed;
         }
-        .p-8 {
-            padding: 1rem !important; /* Reduces padding on small screens */
+        .feature-card {
+            background-color: var(--bg-medium);
+            border: 1px solid rgba(5, 150, 105, 0.4); /* primary with transparency */
+            transition: transform 0.3s, box-shadow 0.3s;
         }
-    }
-</style>
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(5, 150, 105, 0.3), 0 4px 6px -2px rgba(5, 150, 105, 0.2);
+        }
+        .cta-button {
+            background-color: var(--primary-color);
+            transition: background-color 0.3s, transform 0.3s;
+            box-shadow: 0 4px 15px rgba(5, 150, 105, 0.6);
+        }
+        .cta-button:hover:not(:disabled) {
+            background-color: #047857; /* emerald-700 */
+            transform: scale(1.05);
+        }
+        .cta-button:disabled {
+            background-color: #10b981; /* emerald-500 */
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        .logo-text {
+            color: var(--secondary-color);
+            text-shadow: 0 0 5px rgba(52, 211, 153, 0.6);
+        }
+    </style>
 </head>
 <body>
 
-    <div id="announcer" aria-live="polite" class="sr-only"></div> 
-
-    <div id="root" aria-live="polite">
-        <div class="text-white text-center p-10">Loading Application...</div>
-    </div>
-
-    <script>// --- STEP 4: FINAL UPGRADE BUTTON LOGIC (Insert immediately after the opening <script> tag) ---
-var handleUpgradeClick = function() {
-    alert("Thank you for your interest! The Premium Audit Service is currently under development. You will now be redirected to the IMSSS website to sign up for launch notifications.");
-    
-    // NOTE: This is the TEMPORARY placeholder URL. Update this later!
-    window.location.href = 'https://www.imsss.com/premium-signup-pending'; 
-};
-// -----------------------------------------------------------------------------
-        // --- CRITICAL CHECK: Ensure React and ReactDOM are available globally ---
-        if (typeof React === 'undefined' || typeof ReactDOM === 'undefined' || typeof lucide === 'undefined') {
-            document.getElementById('root').innerHTML = '<div class="text-white p-10 bg-red-900/50">FATAL ERROR: External dependencies (React, ReactDOM, or Lucide Icons) failed to load. Check network connection or dependency URLs.</div>';
-            console.error("FATAL ERROR: React, ReactDOM, or Lucide Icons are undefined. Dependencies failed to load.");
-        } else {
-            // Libraries loaded successfully, proceed with initialization
-            var useState = React.useState;
-            var useEffect = React.useState; 
-            var e = React.createElement;
-
-            // --- CRITICAL FIX: Ensure useEffect is correctly assigned ---
-            if (typeof React.useEffect === 'function') {
-                useEffect = React.useEffect;
-            } else {
-                console.warn("React.useEffect not found. Application integrity might be compromised.");
-            }
-            // --- CONSTANTS FOR LOCALSTORAGE KEYS ---
-            var LS_KEY_LANG = 'imsss_lang';
-            var LS_KEY_ANSWERS = 'imsss_answers';
-            var LS_KEY_SCORES = 'imsss_scores';
-            var LS_KEY_PROGRESS = 'imsss_progress';
-            var LS_KEY_HASH = 'imsss_final_hash'; 
-            var LS_KEY_TTS = 'imsss_tts_active'; 
+    <!-- Header & Navigation -->
+    <header class="sticky top-0 z-50 bg-slate-900/90 backdrop-blur-md border-b border-emerald-600/30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <!-- Logo/Brand -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-400">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                    <path d="M2 17l10 5 10-5"></path>
+                    <path d="M2 12l10 5 10-5"></path>
+                </svg>
+                <span class="text-2xl font-extrabold logo-text">IMSSSPAKISTAN</span>
+            </div>
+            <!-- Navigation Links -->
+            <nav class="hidden md:flex space-x-6 text-sm font-medium">
+                <a href="#mission" class="hover:text-emerald-400 transition duration-150">Our Mission</a>
+                <a href="#assessor-tool" class="hover:text-emerald-400 transition duration-150">Assessor Tool</a>
+                <a href="#features" class="hover:text-emerald-400 transition duration-150">Compliance</a>
+                <a href="#contact" class="hover:text-emerald-400 transition duration-150">Contact</a>
+            </nav>
+            <!-- Link directly to the index.html file -->
+            <a href="index.html" id="launch-app-btn-nav" class="hidden md:inline-flex cta-button text-white font-semibold py-2 px-4 rounded-full text-sm hover:ring-2 ring-emerald-400/50">Launch Assessor Demo</a>
             
-            // NEW KEYS FOR PHASE X (TOS & USER INFO)
-            var LS_KEY_AGREED = 'imsss_tos_agreed';
-            var LS_KEY_USERINFO = 'imsss_user_info';
-
-            // --- 1. GLOBALIZATION ENGINE ---
-            var LANGUAGES = {
-                EN: { 
-                    name: "English", code: "en", dir: "ltr", font: "font-sans", 
-                    text: { 
-                        title: "IMSSS ASSESSOR", subtitle: "AI ADVERSARIAL & RISK AUDIT", startBtn: "BEGIN ASSESSMENT", reset: "START NEW SESSION", 
-                        report: "AUDIT SUMMARY REPORT", monitoring: "LIVE MONITORING", integrity: "IMMUTABLE HASH", metrics: "System Metrics", 
-                        complianceSummary: "VIOLATION & REMEDIATION SUMMARY", 
-                        iso: "ISO 42001", eu: "EU AI Act", us: "NIST AI RMF", 
-                        gov: "Governance", risk: "Risk Mgmt", data: "Data Integrity", docs: "Documentation", sec: "Security",
-                        reviewTitle: "REVIEW ANSWERS", reviewSub: "Confirm your selections before finalizing the audit.", continueBtn: "FINALIZE AUDIT", editBtn: "GO BACK TO QUESTION", 
-                        exportBtn: "EXPORT PDF REPORT", anchor: "REPORT CRYPTOGRAPHIC ANCHOR", copied: "COPIED",
-                        ttsPrompt: "Loading Introduction Screen. Click BEGIN ASSESSMENT to start.",
-                        // PHASE X: NEW TEXTS (Revised for Utility)
-                        tosTitle: "SECURE AUDIT TERMS", 
-                        tosBody: "This Assessor is a **local, private, and server-less tool**. Your audit progress, answers, and contact information are stored **only in your browser's local storage** on this device. No data is transmitted externally. By proceeding, you acknowledge this localized data handling and agree to generate a PDF report for your permanent record.",
-                        tosAgree: "I AGREE & START AUDIT SETUP", 
-                        tosDisagree: "DISAGREE & EXIT",
-                        userInfoTitle: "AUDIT RECORD IDENTIFICATION", 
-                        userInfoBody: "Provide your email or phone number to be **embedded directly into the immutable PDF Report**. This formalizes the audit record, linking it to the responsible party. This data remains stored locally in your browser.", 
-                        userInfoInput: "Enter Email or Phone Number", 
-                        userInfoContinue: "CONTINUE TO QUESTIONS",
-                        userInfoInvalid: "Please enter a valid email or phone number.",
-                        troubleshootReset: "TROUBLESHOOT: Reset Session and Start Over"
-                    } 
-                },
-                ES: { 
-                    name: "Español", code: "es", dir: "ltr", font: "font-sans", 
-                    text: { 
-                        title: "IMSSS EVALUADOR", subtitle: "AUDITORÍA ADVERSARIA Y DE RIESGO", startBtn: "INICIAR EVALUACIÓN", reset: "NUEVA SESIÓN", 
-                        report: "RESUMEN DE AUDITORÍA", monitoring: "MONITOREO EN VIVO", integrity: "HASH INMUTABLE", metrics: "Métricas del Sistema", 
-                        complianceSummary: "RESUMEN DE VIOLACIONES Y ACCIONES", 
-                        iso: "Ley IA UE", eu: "Ley IA UE", us: "NIST IA RMF", 
-                        gov: "Gobernanza", risk: "Gestión de Riesgos", data: "Integridad de Datos", docs: "Documentación", sec: "Seguridad",
-                        reviewTitle: "REVISAR RESPUESTAS", reviewSub: "Confirme sus selecciones antes de finalizar la auditoría.", continueBtn: "FINALIZAR AUDITORÍA", editBtn: "VOLVER A PREGUNTA",
-                        exportBtn: "EXPORTAR REPORTE PDF", anchor: "ANCHOR CRIPTOGRÁFICO", copied: "COPIADO",
-                        ttsPrompt: "Cargando pantalla de introducción. Haz clic en INICIAR EVALUACIÓN para comenzar.",
-                        // PHASE X: NEW TEXTS (Using old translations for consistency)
-                        tosTitle: "TÉRMINOS DE SERVICIO", tosBody: "Este Evaluador de Riesgos de IA almacena sus respuestas e información de contacto (si se proporciona) localmente en el almacenamiento de su navegador. No se transmite ningún dato a un servidor externo. Al continuar, acepta estos términos y el almacenamiento de datos localizado.",
-                        tosAgree: "ACEPTO Y CONTINÚO", tosDisagree: "NO ACEPTO Y SALGO",
-                        userInfoTitle: "DETALLES DE CONTACTO", userInfoBody: "Proporcione su correo electrónico o número de teléfono para el registro de auditoría. Estos datos se almacenan localmente.", userInfoInput: "Ingrese Correo o Teléfono", userInfoContinue: "CONTINUAR",
-                        userInfoInvalid: "Por favor ingrese un correo electrónico o número de teléfono válido.",
-                        troubleshootReset: "SOLUCIÓN DE PROBLEMAS: Reiniciar Sesión"
-                    } 
-                },
-                UR: { 
-                    name: "اردو", code: "ur", dir: "rtl", font: "font-urdu", 
-                    text: { 
-                        title: "IMSSS آڈیٹر", subtitle: "مخالفانہ اور رسک آڈٹ", startBtn: "تشخیص شروع کریں", reset: "نئی نشست شروع کریں", 
-                        report: "آڈٹ کا خلاصہ", monitoring: "لائیو نگرانی", integrity: "ناقابل تغیر ہیش", metrics: "سسٹم میٹرکس", 
-                        complianceSummary: "خلاف ورزی اور ازالے کا خلاصہ", 
-                        iso: "آئی ایس او 42001", eu: "یورپی یونین AI ایکٹ", us: "NIST AI RMF", 
-                        gov: "انتظامیہ", risk: "رسک مینجمنٹ", data: "ڈیٹا کی سالمیت", docs: "دستاویزات", sec: "سیکیورٹی",
-                        reviewTitle: "جوابات کا جائزہ", reviewSub: "آڈٹ کو حتمی شکل دینے سے پہلے اپنی انتخابی تصدیق کریں۔", continueBtn: "آڈٹ کو حتمی شکل دیں", editBtn: "سوال پر واپس جائیں",
-                        exportBtn: "پی ڈی ایف رپورٹ ایکسپورٹ کریں", anchor: "رپورٹ کرپٹوگرافک اینکر", copied: "نقل کر لیا",
-                        ttsPrompt: "تعارف کی سکرین لوڈ ہو رہی ہے۔ تشخیص شروع کرنے کے لیے شروع کریں پر کلک کریں۔",
-                        // PHASE X: NEW TEXTS (Using old translations for consistency)
-                        tosTitle: "سروس کی شرائط", tosBody: "یہ AI رسک آڈیٹر آپ کے جوابات اور رابطہ معلومات (اگر فراہم کی گئی ہو) کو آپ کے براؤزر کے لوکل سٹوریج میں محفوظ کرتا ہے۔ کوئی ڈیٹا بیرونی سرور پر منتقل نہیں ہوتا۔ جاری رکھنے سے، آپ ان شرائط اور مقامی ڈیٹا سٹوریج سے اتفاق کرتے ہیں۔",
-                        tosAgree: "میں متفق ہوں اور آگے بڑھتا ہوں", tosDisagree: "متفق نہیں اور باہر نکلیں",
-                        userInfoTitle: "رابطہ کی تفصیلات", userInfoBody: "آڈٹ ریکارڈ رکھنے کے لیے اپنا ای میل یا فون نمبر فراہم کریں۔ یہ ڈیٹا مقامی طور پر محفوظ کیا جاتا ہے۔", userInfoInput: "ای میل یا فون نمبر درج کریں", userInfoContinue: "جاری رکھیں",
-                        userInfoInvalid: "براہ کرم ایک درست ای میل یا فون نمبر درج کریں۔",
-                        troubleshootReset: "خرابی کی درستگی: سیشن ری سیٹ کریں"
-                    } 
-                }
-            };
-
-            // --- 2. AUDIT DATA (AI GRC Focus) ---
-            var AUDIT_QUESTIONS = [
-                {
-                    id: 1, domain: "gov", en: "Does the organization possess a formally signed AI Policy defining accountability and responsibility?", ur: "کیا تنظیم کے پاس ذمہ داری کی وضاحت کرنے والی باضابطہ دستخط شدہ AI پالیسی موجود ہے؟",
-                    references: { ISO: "42001: 5.2", EU: "AI Act: Art. 8", US: "NIST AI RMF: Govern" },
-                    remediation: { EN: "Formalize Top Management sign-off. Assign clear roles (ISO 42001, 5.3).", ES: "Formalizar la firma de la Alta Dirección. Asignar funciones claras.", UR: "اعلیٰ انتظامیہ کے دستخط کو باضابطہ بنائیں۔ واضح کردار تفویض کریں۔" },
-                    riskWeight: 0.25 
-                },
-                {
-                    id: 2, domain: "sec", en: "Has the system undergone adversarial testing (e.g., data poisoning, model evasion, prompt injection defense)?", ur: "کیا سسٹم مخالفانہ جانچ (جیسے ڈیٹا پوائزننگ، ماڈل سے بچاؤ) سے گزرا ہے؟",
-                    references: { ISO: "42001: 8.6.2 (Security)", EU: "AI Act: Art. 15 (Robustness)", US: "NIST AI RMF: Manage (Defenses)" },
-                    remediation: { EN: "Implement adversarial attack testing/hardening procedures (NIST AI 100-2).", ES: "Implementar procedimientos de prueba/endurecimiento de ataques adversarios.", UR: "مخالفانہ حملے کی جانچ اور سختی کے طریقہ کار کو نافذ کریں۔" },
-                    riskWeight: 0.25 
-                },
-                {
-                    id: 3, domain: "risk", en: "Is the AI System subject to mandatory, independent internal audits to verify compliance and risk management?", ur: "کیا AI سسٹم لازمی اندرونی آڈٹ کے تابع ہے؟",
-                    references: { ISO: "42001: 9.2", EU: "AI Act: Art. 18", US: "NIST AI RMF: Measure" },
-                    remediation: { EN: "Schedule mandatory internal and external audits (ISO 42001, 9.2).", ES: "Programar auditorías internas y externas obligatorias.", UR: "لازمی اندرونی اور بیرونی آڈٹ کا شیڈول بنائیں۔" },
-                    riskWeight: 0.1667
-                },
-                {
-                    id: 4, domain: "data", en: "Are statistical controls applied to training data to map, measure, and mitigate algorithmic bias?", ur: "کیا الگورتھم کے تعصب کو کم کرنے کے لیے تربیتی ڈیٹا پر شماریاتی کنٹرول لاگو کیے گئے ہیں؟",
-                    references: { ISO: "42001: 8.2", EU: "AI Act: Art. 10", US: "NIST AI RMF: Map" },
-                    remediation: { EN: "Establish data quality metrics and bias detection procedures (EU AI Act, Art. 10).", ES: "Establecer métricas de calidad de datos y procedimientos de detección de sesgos.", UR: "ڈیٹا کوالٹی میٹرکس اور تعصب کا پتہ لگانے کے طریقہ کار قائم کریں۔" },
-                    riskWeight: 0.1667
-                },
-                {
-                    id: 5, domain: "docs", en: "Is a live Technical File maintained with version history, validation logs, and system specifications for all models?", ur: "کیا تمام ماڈلز کے لیے ورژن ہسٹری اور تصدیقی لاگز کے ساتھ لائیو ٹیکنیکل فائل برقرار رکھی گئی ہے؟",
-                    references: { ISO: "42001: 7.5", EU: "AI Act: Art. 11", US: "NIST AI RMF: Manage (Documentation)" },
-                    remediation: { EN: "Create an automated log and documentation repository (ISO 42001, 7.5).", ES: "Crear un repositorio automatizado de registro y documentación.", UR: "خودکار لاگ اور دستاویزی ذخیرہ بنائیں۔" },
-                    riskWeight: 0.1667
-                }
-            ];
-
-            // Scoring Options (Simplified labels for quick action)
-            var OPTIONS = [
-                { label: "YES, Fully Implemented", score: 100 },
-                { label: "PARTIAL, Ad-Hoc Only", score: 50 },
-                { label: "NO, Not Implemented", score: 0 }
-            ];
-
-            var initialScores = { gov: 0, sec: 0, risk: 0, data: 0, docs: 0 };
-
-            // --- 3. A11Y UTILITIES (Speech Synthesis) ---
-
-            var stopSpeaking = function() {
-                if ('speechSynthesis' in window) {
-                    window.speechSynthesis.cancel();
-                }
-            };
-
-            var speakText = function(text, langCode) {
-                // IMPORTANT: This utility is now called ONLY if the React state `ttsEnabled` is true
-                if (!('speechSynthesis' in window)) return;
-                
-                // Add a small delay and force a check to help mobile devices initialize the voice API
-                setTimeout(function() {
-                    stopSpeaking(); 
-                    var utterance = new SpeechSynthesisUtterance(text);
-                    
-                    var voiceLang = langCode === 'UR' ? 'ur-PK' : langCode === 'ES' ? 'es-ES' : 'en-US';
-                    utterance.lang = voiceLang;
-
-                    // Ensure voices are available before trying to select one
-                    var voices = window.speechSynthesis.getVoices();
-                    var voice = voices.find(function(v) { return v.lang.startsWith(voiceLang.substring(0, 2)); });
-                    if (voice) {
-                        utterance.voice = voice;
-                    }
-                    
-                    // Start speaking
-                    window.speechSynthesis.speak(utterance);
-
-                    // Announce to native screen readers (for redundancy)
-                    var announcer = document.getElementById('announcer');
-                    if (announcer) announcer.textContent = text;
-                }, 50); 
-            };
-
-
-            // --- 4. OTHER UTILITIES ---
-
-            // Function to load state from localStorage
-            var loadState = function(key, defaultVal) {
-                try {
-                    var serialized = localStorage.getItem(key);
-                    // Handle booleans correctly: check for "true" or "false" string, otherwise return default
-                    if (typeof defaultVal === 'boolean') {
-                        if (serialized === 'true') return true;
-                        if (serialized === 'false') return false;
-                        // For boolean defaults, if serialized is null/undefined, return the default boolean
-                        if (serialized === null || serialized === undefined) return defaultVal;
-                    }
-
-                    if (serialized === null || serialized === undefined) return defaultVal;
-                    // Safely parse JSON or return the string if it's not an object
-                    try {
-                        return JSON.parse(serialized);
-                    } catch (e) {
-                        return serialized; // Return as string if parsing fails (for user info, hash, etc.)
-                    }
-                } catch(e) {
-                    console.error("Could not load state:", key, e);
-                    return defaultVal;
-                }
-            };
-
-            // Function to save state to localStorage
-            var saveState = function(key, value) {
-                try {
-                    // Store booleans as strings for consistent loading
-                    var serialized = (typeof value === 'boolean') ? String(value) : JSON.stringify(value);
-                    // For strings (like user info), ensure we don't double-JSON-encode
-                    if (typeof value === 'string' && key === LS_KEY_USERINFO) {
-                        serialized = value;
-                    }
-                    localStorage.setItem(key, serialized);
-                } catch (e) {
-                    console.error("Could not save state:", key, e);
-                }
-            };
-            
-            // Basic validation for email or phone number
-            var isValidContact = function(input) {
-                if (!input || typeof input !== 'string') return false;
-                input = input.trim();
-                if (input.length === 0) return false;
-                
-                // Email regex (simple)
-                var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                if (emailRegex.test(input)) return true;
-                
-                // Phone number regex (simple: checks for digits, spaces, hyphens, and parentheses)
-                var phoneRegex = /^[\s\d\-\(\)\+]{7,20}$/;
-                if (phoneRegex.test(input)) return true;
-                
-                return false;
-            };
-
-            // Replaces generateHash with cryptographically secure random values
-            var generateCryptoHash = function() {  
-                if (typeof window.crypto !== 'undefined' && typeof window.crypto.getRandomValues === 'function') {
-                    // Use Crypto API for better randomness (32 bytes = 64 hex chars)
-                    var buffer = new Uint8Array(32);
-                    window.crypto.getRandomValues(buffer);
-                    var hex = Array.prototype.map.call(buffer, function(x) {  
-                        return ('00' + x.toString(16)).slice(-2);
-                    }).join('');
-                    return "0x" + hex.toUpperCase();
-                }
-                // Fallback (less secure)
-                return "0x" + Array(64).fill(0).map(function() {
-                    return "0123456789ABCDEF"[Math.random()*16|0];
-                }).join('');
-            };
-
-            var calculateLiability = function(violations) {
-                var MAX_PENALTY_ANCHOR = 50000000;  
-                var totalFine = 0;
-
-                for (var i = 0; i < violations.length; i++) {
-                    var v = violations[i];
-                    var penalty = v.riskWeight * MAX_PENALTY_ANCHOR;  
-
-                    if (v.score === 0) {
-                        totalFine += penalty;  
-                    } else if (v.score === 50) {
-                        totalFine += penalty / 2;
-                    }
-                }
-                return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(totalFine);
-            };
-            
-            // Function to find an option label based on score
-            var getLabelByScore = function(score) {
-                var option = OPTIONS.find(function(o) { return o.score === score; });
-                return option ? option.label : 'N/A';
-            };
-
-
-            // --- PDF EXPORT FUNCTION (Phase II) ---
-            var exportPdfReport = function(finalHash, userInfo) {
-                if (!window.jspdf || !window.html2canvas) {
-                    alert("PDF libraries failed to load. Please try refreshing the page.");
-                    return;
-                }
-
-                var { jsPDF } = window.jspdf;
-                var reportElement = document.getElementById('report-container');
-                
-                // Temporarily clone the element to clean up non-printable styles for the screenshot
-                var clone = reportElement.cloneNode(true);
-                clone.style.backgroundColor = 'white';
-                clone.style.color = 'black';
-                clone.querySelectorAll('.neon-text').forEach(function(el) {
-                    el.style.textShadow = 'none';
-                    el.style.color = 'black';
-                });
-                clone.querySelectorAll('.text-slate-500, .text-slate-400, .text-slate-300').forEach(function(el) {
-                    el.style.color = 'black';
-                });
-                clone.querySelectorAll('.bg-slate-950, .bg-slate-900\\/50').forEach(function(el) {
-                    el.style.backgroundColor = 'white';
-                });
-                clone.querySelectorAll('.border-slate-700, .border-slate-800').forEach(function(el) {
-                    el.style.borderColor = 'lightgray';
-                });
-                
-                // Hide buttons for printing
-                clone.querySelectorAll('.no-print').forEach(function(el) {
-                    el.style.display = 'none';
-                });// --- STEP 1: LEGAL DISCLAIMER INTEGRATION ---
-                // Append the required Legal Disclaimer to the clone before rendering to PDF
-                var disclaimerDiv = document.createElement('div');
-                disclaimerDiv.innerHTML = '<div style="font-size: 8px; margin-top: 20px; padding: 10px; border-top: 1px solid #ccc; color: black; text-align: center;">LEGAL DISCLAIMER: The IMSSS AI Risk Assessor is provided "AS IS" without warranty of any kind. You assume the entire risk of using this tool for audit or compliance purposes. The authors and providers disclaim all liability for any damages arising from its use. This is a basic, preliminary report; a final legal opinion or compliance strategy requires consultation with a qualified professional.</div>';
-                clone.appendChild(disclaimerDiv);
-                // ---------------------------------------------
-
-                // Prepend the current date and hash to the PDF
-                var headerDiv = document.createElement('div');
-                headerDiv.innerHTML = '<div style="padding: 15px; border-bottom: 1px solid #ccc; font-family: monospace; font-size: 10px; color: black;">' +
-                                            'IMSSS AUDIT REPORT - GENERATED: ' + new Date().toLocaleString() + 
-                                            '<br>USER CONTACT: ' + (userInfo || 'N/A') + // Include user info
-                                            '<br>IMMUTABLE HASH: ' + finalHash +
-                                            '</div>';
-                
-                document.body.appendChild(headerDiv);
-                document.body.appendChild(clone);
-                
-                // Generate the canvas from the clean clone
-                html2canvas(clone, { 
-                    scale: 2, 
-                    useCORS: true, 
-                    logging: false,
-                    scrollY: -window.scrollY
-                }).then(canvas => {
-                    var imgData = canvas.toDataURL('image/png');
-                    var pdf = new jsPDF('p', 'mm', 'a4');
-                    var imgWidth = 210; 
-                    var pageHeight = 295;  
-                    var imgHeight = canvas.height * imgWidth / canvas.width;
-                    var heightLeft = imgHeight;
-                    var position = 0;
-
-                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-                    heightLeft -= pageHeight;
-
-                    while (heightLeft >= 0) {
-                        position = heightLeft - imgHeight; 
-                        pdf.addPage();
-                        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-                        heightLeft -= pageHeight;
-                    }
-                    
-                    pdf.save("IMSSS_AI_Audit_Report_" + new Date().toISOString().slice(0, 10) + ".pdf");
-                    
-                    // Clean up temporary elements
-                    document.body.removeChild(clone);
-                    document.body.removeChild(headerDiv);
-
-                }).catch(function(error) {
-                    console.error("PDF Export Failed:", error);
-                    alert("PDF Generation failed: " + error.message);
-                    
-                    // Attempt to clean up even on failure
-                    if (document.body.contains(clone)) document.body.removeChild(clone);
-                    if (document.body.contains(headerDiv)) document.body.removeChild(headerDiv);
-                });
-            };
-
-
-            // --- 5. COMPONENTS & CORE LOGIC ---
-
-            var RiskRadar = function(_ref) {
-                var scores = _ref.scores,
-                    labels = _ref.labels;
-
-                var size = 180; var center = size / 2; var radius = 70;
-                var domains = ["gov", "sec", "risk", "data", "docs"];  
-
-                var points = domains.map(function(d, i) {
-                    var angle = (Math.PI * 2 * i) / 5 - Math.PI / 2;  
-                    var value = (scores[d] || 0) / 100;  
-                    return (center + radius * value * Math.cos(angle)) + "," + (center + radius * value * Math.sin(angle));
-                }).join(" ");
-
-                return e('div', { className: "relative flex justify-center py-4", role: "img", "aria-label": "AI Risk Radar Chart" },
-                    e('svg', { width: size, height: size, className: "overflow-visible" },
-                        // Background grid line (3 layers for better depth)
-                        e('circle', { cx: center, cy: center, r: radius * 0.33, fill: "none", stroke: "#334155", strokeDasharray: "4 4" }),
-                        e('circle', { cx: center, cy: center, r: radius * 0.66, fill: "none", stroke: "#334155", strokeDasharray: "4 4" }),
-                        e('circle', { cx: center, cy: center, r: radius, fill: "none", stroke: "#334155" }),
-
-                        // Domain Spokes
-                        domains.map(function(d, i) {
-                            var angle = (Math.PI * 2 * i) / 5 - Math.PI / 2;
-                            var x2 = center + radius * Math.cos(angle);
-                            var y2 = center + radius * Math.sin(angle);
-                            return e('line', { key: 'line-' + d, x1: center, y1: center, x2: x2, y2: y2, stroke: "#334155" });
-                        }),
-
-                        // Risk Polygon
-                        e('polygon', { points: points, fill: "rgba(59, 130, 246, 0.4)", stroke: "#3b82f6", strokeWidth: 2 }),
-
-                        // Domain Labels (ES5 compatible map)
-                        domains.map(function(d, i) {
-                            var angle = (Math.PI * 2 * i) / 5 - Math.PI / 2;
-                            var x = center + (radius + 28) * Math.cos(angle);
-                            var y = center + (radius + 20) * Math.sin(angle);
-                            var getLabel = function(key) { return labels[key]; };
-                            return e('text', { 
-                                key: d, x: x, y: y, 
-                                textAnchor: "middle", 
-                                fill: "#94a3b8", 
-                                fontSize: "10",
-                                className: "uppercase font-bold"
-                            }, getLabel(d));
-                        })
-                    )
-                );
-            };  
-
-            var HashStream = function(_ref2) {  
-                var hash = _ref2.hash;
-                return e('div', { className: "font-mono text-[10px] text-emerald-500/60", "aria-live": "polite" }, hash.substring(0,20)+"...");
-            };
-
-            // Language Selector Component
-            var LangSwitcher = function(_ref3) {
-                var current = _ref3.current,
-                    setLang = _ref3.setLang,
-                    ttsEnabled = _ref3.ttsEnabled,
-                    setTtsEnabled = _ref3.setTtsEnabled;
-
-                var languageButtons = Object.keys(LANGUAGES).map(function(code) {
-                    var langData = LANGUAGES[code];
-                    var className = "px-3 py-1 rounded text-xs font-bold transition-all border " + (current === code ? 'bg-blue-600 border-blue-400 text-white' : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white');
-
-                    return e('button', {
-                        key: code,
-                        onClick: function() { setLang(code); },
-                        className: className,
-                        "aria-pressed": current === code
-                    }, langData.name);
-                });
-                
-                // TTS Toggle Button
-                var TTSToggle = function() {
-                        
-                    var toggle = function() {
-                        stopSpeaking(); // Stop speaking immediately on toggle
-                        setTtsEnabled(!ttsEnabled); // Update state and trigger persistence
-                    };
-
-                    var icon = ttsEnabled ? "Volume2" : "VolumeX";
-                    var btnClass = ttsEnabled ? 'bg-emerald-600/50 hover:bg-emerald-500/50 border-emerald-500/50' : 'bg-red-600/50 hover:bg-red-500/50 border-red-500/50';
-
-                    return e('button', {
-                        onClick: toggle,
-                        className: "px-2 py-1 rounded text-xs font-bold transition-all border " + btnClass,
-                        "aria-label": ttsEnabled ? "Turn off text to speech" : "Turn on text to speech"
-                    }, 
-                        e('span', { 'data-lucide': icon, className: "w-4 h-4 text-white" })
-                    );
-                };
-
-
-                // Ensure the selector is on the top layer and positioned absolutely 
-                return e('div', { className: "absolute top-4 right-4 z-[9999] flex space-x-2 no-print" }, 
-                    e(TTSToggle, null), // Added TTS toggle 
-                    languageButtons
-                );
-            };
-
-
-            // --- SCREEN: TERMS OF SERVICE (Phase X) ---
-            var ScreenTOS = function(_ref4) {
-                var languageText = _ref4.languageText,
-                    setAgreed = _ref4.setAgreed,
-                    ttsEnabled = _ref4.ttsEnabled,
-                    langCode = _ref4.langCode;
-
-                useEffect(function() {
-                    if (ttsEnabled) {
-                        speakText(languageText.tosTitle + ". " + languageText.tosBody, langCode);
-                    }
-                }, [ttsEnabled, langCode, languageText]);
-
-                // Function to handle disagreement
-                var handleDisagree = function() {
-                    stopSpeaking();
-                    alert("You must agree to the Terms of Service to use the IMSSS AI Risk Assessor. The page will now close.");
-                    // For a GitHub Pages hosted app, we'll just stop the process visually
-                    var rootDiv = document.getElementById('root');
-                    if (rootDiv) {
-                        rootDiv.innerHTML = '<div class="flex items-center justify-center min-h-[50vh]"><div class="text-white p-6 bg-red-900/50 glass-panel rounded-lg shadow-xl text-center"><h2 class="text-2xl font-bold">Session Ended</h2><p class="mt-4">You disagreed with the Terms of Service. Application closed.</p></div></div>';
-                    }
-                    if (typeof ReactDOM.unmountComponentAtNode === 'function') {
-                        // Attempt to unmount the React component tree
-                        ReactDOM.unmountComponentAtNode(document.getElementById('root'));
-                    }
-                };
-
-                return e('div', { className: "flex items-center justify-center min-h-screen p-4" },
-                    e('div', { className: "glass-panel w-full max-w-lg p-8 rounded-xl shadow-2xl text-white " + LANGUAGES[langCode].font, dir: LANGUAGES[langCode].dir },
-                        e('h2', { className: "text-2xl font-bold neon-text border-b border-slate-700 pb-3 mb-6 text-center" }, languageText.tosTitle),
-                        e('p', { className: "text-slate-300 text-sm mb-8 leading-relaxed" }, languageText.tosBody),
-                        e('div', { className: "space-y-4" },
-                            e('button', { 
-                                className: "w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors shadow-lg",
-                                onClick: function() { setAgreed(true); } 
-                            }, languageText.tosAgree),
-                            e('button', { 
-                                className: "w-full bg-red-600/50 hover:bg-red-700/70 text-white font-bold py-3 px-4 rounded-lg transition-colors shadow-lg",
-                                onClick: handleDisagree
-                            }, languageText.tosDisagree)
-                        )
-                    )
-                );
-            };
-
-            // --- SCREEN: USER CONTACT INFO (Phase X) ---
-            var ScreenUserInfo = function(_ref5) {
-                var languageText = _ref5.languageText,
-                    langCode = _ref5.langCode,
-                    ttsEnabled = _ref5.ttsEnabled,
-                    setUserInfo = _ref5.setUserInfo,
-                    setStep = _ref5.setStep,
-                    setHash = _ref5.setHash,
-                    resetSession = _ref5.resetSession;
-
-                var [contact, setContact] = useState(loadState(LS_KEY_USERINFO, ''));
-                var [error, setError] = useState('');
-                
-                useEffect(function() {
-                    if (ttsEnabled) {
-                        speakText(languageText.userInfoTitle + ". " + languageText.userInfoBody, langCode);
-                    }
-                }, [ttsEnabled, langCode, languageText]);
-
-                var handleSubmit = function() {
-                    stopSpeaking();
-                    if (!isValidContact(contact)) {
-                        setError(languageText.userInfoInvalid);
-                        return;
-                    }
-                    setError('');
-                    saveState(LS_KEY_USERINFO, contact);
-                    setUserInfo(contact);
-                    setStep('question');
-                    setHash(generateCryptoHash()); // Generate hash on first submission
-                };
-
-                return e('div', { className: "flex items-center justify-center min-h-screen p-4" },
-                    e('div', { className: "glass-panel w-full max-w-lg p-8 rounded-xl shadow-2xl text-white " + LANGUAGES[langCode].font, dir: LANGUAGES[langCode].dir },
-                        e('h2', { className: "text-2xl font-bold neon-text border-b border-slate-700 pb-3 mb-6 text-center" }, languageText.userInfoTitle),
-                        e('p', { className: "text-slate-300 text-sm mb-6 leading-relaxed text-center" }, languageText.userInfoBody),
-
-                        // Input Field
-                        e('div', { className: "mb-6" },
-                            // --- Placeholder for Google Sign-in if feature were active ---
-                            e('div', { className: "mb-4 text-center" },
-                                e('button', {
-                                    className: "w-full bg-white text-black font-bold py-3 px-4 rounded-lg shadow-md opacity-50 cursor-not-allowed",
-                                    disabled: true
-                                }, "Continue with Gmail / Google"),
-                                e('p', { className: "text-slate-500 text-xs mt-2" }, "OR")
-                            ),
-                            // --- End Placeholder ---
-                            e('input', {
-                                type: "text",
-                                value: contact,
-                                onChange: function(e) { setContact(e.target.value); setError(''); },
-                                placeholder: languageText.userInfoInput,
-                                className: "w-full bg-slate-800 border border-slate-700 text-white p-3 rounded-lg focus:outline-none focus:border-blue-500",
-                                'aria-invalid': error ? 'true' : 'false',
-                                'aria-describedby': error ? 'contact-error' : null
-                            }),
-                            error && e('p', { id: "contact-error", className: "mt-2 text-red-400 text-sm text-center" }, error)
-                        ),
-
-                        // Continue Button
-                        e('button', { 
-                            className: "w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors shadow-lg",
-                            onClick: handleSubmit 
-                        }, languageText.userInfoContinue),
-                        
-                        // Troubleshoot Reset
-                        e('button', { 
-                            className: "mt-4 w-full text-xs text-slate-500 hover:text-red-500 transition-colors no-print",
-                            onClick: resetSession
-                        }, languageText.troubleshootReset)
-                    )
-                );
-            };
-
-            // --- SCREEN: INTRO ---
-            var ScreenIntro = function(_ref6) {
-                var languageText = _ref6.languageText,
-                    setStep = _ref6.setStep,
-                    resetSession = _ref6.resetSession,
-                    langCode = _ref6.langCode,
-                    ttsEnabled = _ref6.ttsEnabled;
-
-                useEffect(function() {
-                    if (ttsEnabled) {
-                        speakText(languageText.ttsPrompt, langCode);
-                    }
-                }, [ttsEnabled, langCode, languageText]);
-                
-                var handleStart = function() {
-                    stopSpeaking();
-                    setStep('tos'); 
-                };
-
-                return e('div', { className: "flex items-center justify-center min-h-screen p-4" },
-                    e('div', { className: "glass-panel w-full max-w-md p-8 rounded-xl shadow-2xl text-white text-center " + LANGUAGES[langCode].font, dir: LANGUAGES[langCode].dir },
-                        e('div', { className: "flex justify-center mb-6" },
-                            e('span', { 'data-lucide': 'ShieldCheck', className: "w-16 h-16 text-blue-400 neon-text" })
-                        ),
-                        e('h1', { className: "text-3xl font-bold mb-2 neon-text" }, languageText.title),
-                        e('p', { className: "text-xl text-slate-400 mb-8" }, languageText.subtitle),
-                        e('button', { 
-                            className: "w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-4 rounded-lg transition-colors text-lg shadow-lg",
-                            onClick: handleStart,
-                            'aria-live': 'off'
-                        }, languageText.startBtn),
-                        e('button', { 
-                            className: "mt-4 w-full text-xs text-slate-500 hover:text-red-500 transition-colors",
-                            onClick: resetSession
-                        }, languageText.troubleshootReset)
-                    )
-                );
-            };
-
-
-            // --- SCREEN: QUESTION ---
-            var ScreenQuestion = function(_ref7) {
-                var questions = _ref7.questions,
-                    currentQIndex = _ref7.currentQIndex,
-                    setQIndex = _ref7.setQIndex,
-                    answers = _ref7.answers,
-                    setAnswers = _ref7.setAnswers,
-                    setStep = _ref7.setStep,
-                    langCode = _ref7.langCode,
-                    ttsEnabled = _ref7.ttsEnabled;
-
-                var q = questions[currentQIndex];
-                var languageText = LANGUAGES[langCode].text;
-                var questionText = q[LANGUAGES[langCode].code] || q.en;
-
-                useEffect(function() {
-                    if (ttsEnabled) {
-                        speakText("Question " + (currentQIndex + 1) + ". " + questionText, langCode);
-                    }
-                }, [ttsEnabled, langCode, currentQIndex, questionText]);
-
-
-                var handleAnswer = function(score, label) {
-                    stopSpeaking();
-                    var newAnswers = answers.slice();
-                    newAnswers[currentQIndex] = { id: q.id, score: score, label: label, domain: q.domain, question: q.en };
-                    setAnswers(newAnswers);
-                    
-                    // Move to the next question or review screen
-                    if (currentQIndex < questions.length - 1) {
-                        setQIndex(currentQIndex + 1);
-                    } else {
-                        setStep('review');
-                    }
-                };
-
-                return e('div', { className: "flex items-center justify-center min-h-screen p-4" },
-                    e('div', { className: "glass-panel w-full max-w-3xl p-8 rounded-xl shadow-2xl text-white " + LANGUAGES[langCode].font, dir: LANGUAGES[langCode].dir },
-                        // Header
-                        e('div', { className: "flex justify-between items-center border-b border-slate-700 pb-4 mb-8" },
-                            e('p', { className: "text-lg text-blue-400 font-mono" }, "QUESTION " + (currentQIndex + 1) + " OF " + questions.length),
-                            e('p', { className: "text-lg font-bold uppercase text-slate-400" }, languageText[q.domain])
-                        ),
-
-                        // Question Body
-                        e('p', { className: "text-2xl font-bold mb-10 leading-snug" }, questionText),
-
-                        // Answer Options
-                        e('div', { className: "space-y-4" },
-                            OPTIONS.map(function(option) {
-                                var isSelected = answers[currentQIndex] && answers[currentQIndex].score === option.score;
-                                var baseClass = "w-full font-bold py-4 px-4 rounded-lg transition-all text-lg shadow-lg text-center hover:scale-[1.01]";
-                                var colorClass = '';
-
-                                if (isSelected) {
-                                    colorClass = 'bg-blue-600 border-2 border-blue-400';
-                                } else if (option.score === 100) {
-                                    colorClass = 'bg-emerald-600/20 hover:bg-emerald-600/50 border-2 border-emerald-600/50';
-                                } else if (option.score === 50) {
-                                    colorClass = 'bg-yellow-600/20 hover:bg-yellow-600/50 border-2 border-yellow-600/50';
-                                } else {
-                                    colorClass = 'bg-red-600/20 hover:bg-red-600/50 border-2 border-red-600/50';
-                                }
-
-                                return e('button', {
-                                    key: option.score,
-                                    className: baseClass + " " + colorClass,
-                                    onClick: function() { handleAnswer(option.score, option.label); },
-                                    'aria-pressed': isSelected
-                                }, option.label);
-                            })
-                        )
-                    )
-                );
-            };
-
-
-            // --- SCREEN: REVIEW ---
-            var ScreenReview = function(_ref8) {
-                var answers = _ref8.answers,
-                    setQIndex = _ref8.setQIndex,
-                    setStep = _ref8.setStep,
-                    questions = _ref8.questions,
-                    langCode = _ref8.langCode;
-
-                var languageText = LANGUAGES[langCode].text;
-
-                var finalizeAudit = function() {
-                    setStep('report');
-                };
-
-                return e('div', { className: "flex items-center justify-center min-h-screen p-4" },
-                    e('div', { className: "glass-panel w-full max-w-4xl p-8 rounded-xl shadow-2xl text-white " + LANGUAGES[langCode].font, dir: LANGUAGES[langCode].dir },
-                        e('h2', { className: "text-3xl font-bold neon-text border-b border-slate-700 pb-3 mb-4 text-center" }, languageText.reviewTitle),
-                        e('p', { className: "text-slate-400 text-center mb-8" }, languageText.reviewSub),
-
-                        // Review List
-                        e('div', { className: "space-y-6 mb-8" },
-                            answers.map(function(answer, index) {
-                                var q = questions.find(function(q) { return q.id === answer.id; });
-                                var domainLabel = languageText[q.domain];
-                                var colorClass = answer.score === 100 ? 'text-emerald-400' : answer.score === 50 ? 'text-yellow-400' : 'text-red-400';
-                                var btnColorClass = answer.score === 100 ? 'bg-emerald-700/50 hover:bg-emerald-700' : answer.score === 50 ? 'bg-yellow-700/50 hover:bg-yellow-700' : 'bg-red-700/50 hover:bg-red-700';
-
-                                return e('div', { key: answer.id, className: "p-4 border border-slate-700 rounded-lg flex justify-between items-start space-x-4" },
-                                    e('div', { className: "flex-1" },
-                                        e('p', { className: "text-lg font-bold" }, 
-                                            domainLabel, 
-                                            e('span', { className: "text-slate-500 font-normal ml-2 text-sm" }, ' - ' + (q[LANGUAGES[langCode].code] || q.en))
-                                        ),
-                                        e('p', { className: "text-sm font-mono mt-1 uppercase" }, 
-                                            "YOUR ANSWER: ", 
-                                            e('span', { className: colorClass }, answer.label)
-                                        )
-                                    ),
-                                    e('button', {
-                                        className: "flex-shrink-0 text-sm py-2 px-4 rounded-lg font-bold transition-colors text-white " + btnColorClass,
-                                        onClick: function() { 
-                                            var targetQIndex = questions.findIndex(function(q) { return q.id === answer.id; });
-                                            setQIndex(targetQIndex);
-                                            setStep('question');
-                                        }
-                                    }, languageText.editBtn)
-                                );
-                            })
-                        ),
-
-                        // Finalize Button
-                        e('button', { 
-                            className: "w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-4 rounded-lg transition-colors text-lg shadow-lg",
-                            onClick: finalizeAudit
-                        }, languageText.continueBtn)
-                    )
-                );
-            };
-
-
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Copy, RefreshCw, Download, Zap } from 'lucide-react';
-// Alias React.createElement to 'e' to match the user's provided style
-const e = React.createElement;
-
-// --- MOCK DATA AND UTILITIES (To make the component runnable) ---
-
-// 1. Languages and Translations
-const LANGUAGES = {
-    'en': {
-        dir: 'ltr',
-        font: 'font-sans',
-        text: {
-            // General
-            report: "AI Compliance Report",
-            monitoring: "Monitoring and Risk Assessment for AI Systems.",
-            copied: "Hash copied to clipboard",
-            anchor: "Copy Integrity Hash",
-            // Metrics
-            confidenceScore: "Confidence Score",
-            liability: "Projected Liability (Risk Weighted)",
-            integrity: "Immutable Integrity Hash",
-            metrics: "Domain Metrics",
-            complianceSummary: "Compliance Violations & Remediation",
-            iso: "ISO 42001",
-            eu: "EU AI Act",
-            us: "NIST AI RMF",
-            PARTIAL: "PARTIAL",
-            FAIL: "FAIL",
-            // Domains
-            data: "Data Quality",
-            model: "Model Governance",
-            bias: "Bias & Fairness",
-            transparency: "Transparency",
-            security: "Security",
-            // Buttons
-            downloadPdf: "DOWNLOAD BASIC PDF REPORT",
-            upgrade: "UPGRADE TO PREMIUM AUDIT",
-            newSession: "START NEW SESSION"
-        }
-    }
-    // Add other languages as needed
-};
-
-// 2. Initial Scores (Used in the user's code, defined here for completeness)
-const initialScores = {
-    data: 0,
-    model: 0,
-    bias: 0,
-    transparency: 0,
-    security: 0
-};
-
-// 3. Mock Questions and Answers (to simulate a completed assessment)
-const mockQuestions = [
-    { id: 'q1', domain: 'data', riskWeight: 10, en: "Is training data free of PII?", remediation: { en: "Implement PII scrubbing pipeline.", AR: "AR remediation 1" }, references: { ISO: '1.1', EU: 'A.1', US: 'C.1' } },
-    { id: 'q2', domain: 'data', riskWeight: 5, en: "Are data sources documented?", remediation: { en: "Create a formal data provenance ledger.", AR: "AR remediation 2" }, references: { ISO: '1.2', EU: 'A.2', US: 'C.2' } },
-    { id: 'q3', domain: 'model', riskWeight: 15, en: "Is model versioning managed?", remediation: { en: "Adopt MLops framework with git-based versioning.", AR: "AR remediation 3" }, references: { ISO: '2.1', EU: 'B.1', US: 'D.1' } },
-    { id: 'q4', domain: 'bias', riskWeight: 20, en: "Was bias detection performed?", remediation: { en: "Run fairness audits using demographic parity metrics.", AR: "AR remediation 4" }, references: { ISO: '3.1', EU: 'C.1', US: 'E.1' } },
-    { id: 'q5', domain: 'transparency', riskWeight: 10, en: "Is the model's purpose clearly stated?", remediation: { en: "Add an 'Intended Use' section to the model card.", AR: "AR remediation 5" }, references: { ISO: '4.1', EU: 'D.1', US: 'F.1' } },
-    { id: 'q6', domain: 'security', riskWeight: 5, en: "Are model endpoints protected from unauthorized access?", remediation: { en: "Implement API key rotation and rate limiting.", AR: "AR remediation 6" }, references: { ISO: '5.1', EU: 'E.1', US: 'G.1' } },
-];
-
-const mockAnswers = [
-    { id: 'q1', domain: 'data', score: 50 }, // PARTIAL
-    { id: 'q2', domain: 'data', score: 100 }, // PASS
-    { id: 'q3', domain: 'model', score: 0 }, // FAIL
-    { id: 'q4', domain: 'bias', score: 50 }, // PARTIAL
-    { id: 'q5', domain: 'transparency', score: 100 }, // PASS
-    { id: 'q6', domain: 'security', score: 100 }, // PASS
-];
-
-// 4. Utility Functions
-const calculateLiability = (violations) => {
-    // Risk is calculated based on total weight of failed/partial items
-    const totalRiskWeight = violations.reduce((sum, v) => sum + v.riskWeight, 0);
-    if (totalRiskWeight > 35) return "HIGH RISK";
-    if (totalRiskWeight > 15) return "MODERATE RISK";
-    return "LOW RISK";
-};
-
-// 5. Radar Chart Component (Simplified)
-const RiskRadar = ({ scores, labels }) => {
-    const data = Object.keys(initialScores).map(domain => ({
-        subject: labels[domain], 
-        A: scores[domain], // Actual Score
-        fullMark: 100,
-        domainKey: domain, // Added for unique key in the list map
-    }));
-
-    return e('div', { className: "w-full h-64 flex flex-col justify-center items-center" },
-        e('div', { className: "relative w-full h-full max-w-xs space-y-2" },
-            // Simplified visualization using a div block structure
-            data.map((item) => {
-                const color = item.A > 80 ? 'bg-emerald-600' : item.A > 50 ? 'bg-yellow-600' : 'bg-red-600';
-                return e('div', { 
-                    key: item.domainKey, // <-- PRIMARY FIX: Key applied to the outermost element in the map
-                    className: "text-xs p-1 rounded transition-all flex justify-between items-center shadow-md",
-                    style: {
-                        width: '100%',
-                    }
-                }, [
-                    // Secondary Fix: Added keys to static children of the array to resolve the React warning
-                    e('span', { key: 'subject-name', className: "text-slate-200 w-1/2" }, item.subject), 
-                    e('div', { key: 'score-bar', className: "w-1/2 flex justify-end" }, 
-                        e('div', { 
-                            className: `h-3 rounded-full ${color} transition-all duration-500`, 
-                            style: { width: `${item.A}%`, maxWidth: '100%', minWidth: '10px' } 
-                        }),
-                        e('span', { className: "ml-2 text-slate-200 font-mono" }, `${Math.round(item.A)}%`)
-                    )
-                ]);
-            })
-        ),
-        e('p', { className: "text-xs text-slate-500 mt-2" }, "Visual representation of domain-specific compliance.")
-    );
-};
-
-
-// --- SCREEN: REPORT ---
-const ScreenReport = ({ answers, questions, finalHash, langCode, resetSession }) => {
-    const languageText = LANGUAGES[langCode].text;
-
-    // State for Toast Notification
-    const [toast, setToast] = useState({ message: '', visible: false, isError: false });
-
-    // Calculate Scores and Violations using useMemo for efficiency
-    const { totalConfidence, liability, violations, radarScores } = useMemo(() => {
-        const totalScore = answers.reduce((sum, a) => sum + a.score, 0);
-        const totalMax = questions.length * 100;
-        const totalConfidence = totalMax > 0 ? (totalScore / totalMax) * 100 : 0;
-
-        // Filter only the questions that scored less than 100 (FAIL or PARTIAL)
-        const violations = questions
-            .map(q => {
-                const answer = answers.find(a => a.id === q.id);
-                const score = answer ? answer.score : 0;
-                return {
-                    id: q.id,
-                    domain: q.domain,
-                    score,
-                    remediation: q.remediation[langCode] || q.remediation.en,
-                    references: q.references,
-                    riskWeight: q.riskWeight
-                };
-            })
-            .filter(v => v.score < 100);
-
-        const liability = calculateLiability(violations);
-
-        // Score for Radar Chart (max 100 for each domain)
-        const radarScores = {};
-        Object.keys(initialScores).forEach(domain => {
-            const domainAnswers = answers.filter(a => a.domain === domain);
-            const domainTotalScore = domainAnswers.reduce((sum, a) => sum + a.score, 0);
-            const domainTotalMax = domainAnswers.length * 100;
-            radarScores[domain] = domainTotalMax > 0 ? (domainTotalScore / domainTotalMax) * 100 : 0;
-        });
-
-        return { totalConfidence, liability, violations, radarScores };
-    }, [answers, questions, langCode]);
-
-    // Custom Toast/Notification logic
-    useEffect(() => {
-        if (toast.visible) {
-            const timer = setTimeout(() => setToast(prev => ({ ...prev, visible: false })), 3000);
-            return () => clearTimeout(timer);
-        }
-    }, [toast.visible]);
-
-    const showToast = useCallback((message, isError = false) => {
-        setToast({ message, visible: true, isError });
-    }, []);
-
-    // Function to handle clipboard copying, ensuring NO alert() is used
-    const copyHash = useCallback(() => {
-        // Fallback copy logic
-        const fallbackCopy = (text) => {
-            const textArea = document.createElement("textarea");
-            textArea.value = text;
-            textArea.style.position = "fixed"; 
-            textArea.style.opacity = "0"; 
-            document.body.appendChild(textArea);
-            textArea.focus();
-            textArea.select();
-            try {
-                document.execCommand('copy');
-                // FIX: Using showToast instead of alert()
-                showToast(languageText.copied + ": " + finalHash.substring(0, 10) + "...", false);
-            } catch (err) {
-                console.error('Fallback: Oops, unable to copy', err);
-                showToast("Copy failed: Please copy manually.", true);
-            }
-            document.body.removeChild(textArea);
-        };
-
-        // Use modern clipboard API
-        if (navigator.clipboard && window.isSecureContext) {
-            navigator.clipboard.writeText(finalHash).then(() => {
-                // FIX: Using showToast instead of alert()
-                showToast(languageText.copied + ": " + finalHash.substring(0, 10) + "...", false);
-            }, (err) => {
-                console.error('Could not copy hash: ', err);
-                fallbackCopy(finalHash);
-            });
-        } else {
-            fallbackCopy(finalHash);
-        }
-    }, [finalHash, languageText.copied, showToast]);
-
-    // Mock functions for button clicks
-    const exportPdfReport = () => showToast("Preparing PDF... (Mock function)", false);
-    const handleUpgradeClick = () => showToast("Redirecting to Premium Upgrade page... (Mock function)", false);
-
-    return e('div', { className: "flex flex-col items-center justify-center min-h-screen p-4 bg-slate-900" },
-        // Toast Notification
-        e('div', {
-            className: `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg transition-opacity duration-300 ${toast.visible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'} ${toast.isError ? 'bg-red-600' : 'bg-emerald-600'} text-white`
-        }, toast.message),
-
-        e('div', { id: "report-container", className: "glass-panel w-full max-w-5xl p-8 rounded-xl shadow-2xl text-white backdrop-blur-md bg-slate-800/80 " + LANGUAGES[langCode].font, dir: LANGUAGES[langCode].dir },
-            // Header Section
-            e('div', { className: "border-b border-slate-700 pb-4 mb-6 text-center" },
-                e('h2', { className: "text-3xl font-bold text-cyan-400" }, languageText.report),
-                e('p', { className: "text-slate-400 mt-2" }, languageText.monitoring)
-            ),
-
-            // Score Metrics
-            e('div', { className: "grid grid-cols-1 md:grid-cols-3 gap-4 mb-8" },
-                // Confidence Score
-                e('div', { className: "p-4 bg-slate-700/50 rounded-lg text-center shadow-inner" },
-                    e('p', { className: "text-xs uppercase text-slate-300" }, languageText.confidenceScore),
-                    e('p', { className: "text-4xl font-mono mt-2 text-emerald-400 font-extrabold" }, Math.round(totalConfidence) + "%")
-                ),
-                
-                // Projected Liability
-                e('div', { 
-                    className: "p-4 rounded-lg text-center shadow-inner " + (
-                        liability === "HIGH RISK" ? "bg-red-700/50" : 
-                        liability === "MODERATE RISK" ? "bg-yellow-700/50" : 
-                        "bg-green-700/50"
-                    )
-                },
-                    e('p', { className: "text-xs uppercase text-white" }, languageText.liability),
-                    e('p', { className: "text-2xl font-mono mt-2 text-white font-bold" }, liability)
-                ),
-                
-                // Immutable Hash
-                e('div', { className: "p-4 bg-slate-700/50 rounded-lg text-center relative shadow-inner" },
-                    e('p', { className: "text-xs uppercase text-slate-300" }, languageText.integrity),
-                    e('p', { className: "text-xs font-mono mt-2 text-blue-400 font-bold break-all px-6" }, finalHash),
-                    e('button', {
-                        className: "absolute top-2 right-2 p-2 rounded-full text-slate-400 hover:text-white hover:bg-slate-600 transition-colors",
-                        onClick: copyHash,
-                        title: languageText.anchor
-                    }, e(Copy, { className: "w-4 h-4" }))
-                )
-            ),
-
-            // Radar and Compliance Summary
-            e('div', { className: "grid grid-cols-1 md:grid-cols-2 gap-8 mb-8" },
-                // Domain Metrics
-                e('div', { className: "bg-slate-900/50 p-6 rounded-xl flex flex-col items-center shadow-2xl" },
-                    e('p', { className: "text-xl font-bold text-slate-200 mb-4" }, languageText.metrics),
-                    e(RiskRadar, { scores: radarScores, labels: languageText }) 
-                ),
-                // Compliance Summary
-                e('div', { className: "bg-slate-900/50 p-6 rounded-xl shadow-2xl" },
-                    e('p', { className: "text-xl font-bold text-slate-200 mb-4" }, languageText.complianceSummary),
-                    e('div', { className: "max-h-80 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-slate-800 space-y-4 pr-2" },
-                        violations.length > 0 ? (
-                            violations.map(v => {
-                                const isPartial = v.score === 50;
-                                const status = isPartial ? languageText.PARTIAL : languageText.FAIL;
-                                const colorClass = isPartial ? "border-yellow-500 bg-yellow-900/20" : "border-red-500 bg-red-900/20";
-                                const textColor = isPartial ? "text-yellow-400" : "text-red-400";
-
-                                return e('div', { key: v.id, className: `border-l-4 ${colorClass} p-3 rounded-md` },
-                                    e('p', { className: `font-bold text-sm uppercase ${textColor}` }, `${languageText[v.domain]} - ${status}`),
-                                    e('p', { className: "text-xs text-slate-300 mt-1" }, `ACTION REQUIRED: ${v.remediation}`),
-                                    e('p', { className: "text-[10px] text-slate-500 mt-1" },
-                                        `Ref: ${languageText.iso} ${v.references.ISO}, ${languageText.eu} ${v.references.EU}, ${languageText.us} ${v.references.US}`
-                                    )
-                                );
-                            })
-                        ) : (
-                            e('div', { className: "text-center py-10 bg-emerald-900/20 rounded-lg border border-emerald-700" },
-                                e('p', { className: "text-emerald-400 text-lg font-bold" }, "NO VIOLATIONS DETECTED"),
-                                e('p', { className: "text-sm text-emerald-300 mt-1" }, "FULL COMPLIANCE ACHIEVED.")
-                            )
-                        )
-                    )
-                )
-            ),
-
-            // Action Buttons (No Print)
-            e('div', { className: "flex flex-col space-y-4 mt-8 no-print" },
-                e('div', {
-                    className: "p-4 text-center rounded-lg border border-blue-600 bg-blue-900/20 text-slate-300 text-sm"
-                }, 'The PDF report contains a Basic Remediation Summary. A ', e('strong', { className: "text-white" }, 'Premium Audit Report'), ' with detailed implementation guidance, expert review, and dedicated consultation is available for purchase.'),
-
-                // Use the correct grid layout and component functions
-                e('div', { className: "grid grid-cols-1 md:grid-cols-3 gap-4 mt-4" },
-                    e('button', {
-                        onClick: exportPdfReport, // Correctly calling the local function
-                        className: "flex items-center justify-center bg-green-700 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg text-lg transition duration-200 shadow-xl transform hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-green-500/50"
-                    }, e(Download, { className: "w-5 h-5 mr-2" }), languageText.downloadPdf),
-
-                    e('button', {
-                        onClick: handleUpgradeClick, // Correctly calling the local function
-                        className: "flex items-center justify-center bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-6 rounded-lg text-lg transition duration-200 shadow-xl transform hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-blue-500/50"
-                    }, e(Zap, { className: "w-5 h-5 mr-2" }), languageText.upgrade),
-
-                    e('button', {
-                        onClick: resetSession, // Correctly calling the prop function
-                        className: "flex items-center justify-center bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 px-6 rounded-lg text-sm transition duration-200 shadow-md"
-                    }, e(RefreshCw, { className: "w-4 h-4 mr-2" }), languageText.newSession)
-                )
-            )
-        )
-    );
-};
-
-
-// --- MAIN APP COMPONENT ---
-// This component manages the state and provides the context for ScreenReport.
-const App = () => {
-    // Mock State for a full session
-    const [sessionState, setSessionState] = useState({
-        answers: mockAnswers,
-        questions: mockQuestions,
-        finalHash: 'a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0',
-        langCode: 'en',
-    });
-
-    const resetSession = () => {
-        // Resetting state for a new session (mocking navigation and state clear)
-        setSessionState({
-            answers: [],
-            questions: mockQuestions,
-            finalHash: 'NEW_SESSION_STARTED',
-            langCode: 'en',
-        });
-        console.log("Session cleared. Starting new assessment.");
-    };
-
-    // Only render the report screen with mock data
-    return e(ScreenReport, {
-        answers: sessionState.answers,
-        questions: sessionState.questions,
-        finalHash: sessionState.finalHash,
-        langCode: sessionState.langCode,
-        resetSession: resetSession,
-        // userInfo is currently unused but can be added if needed
-    });
-};
-
-export default App;
-                          1. STATE INITIALIZATION ---
-                var [langCode, setLangCode] = useState(loadState(LS_KEY_LANG, 'EN'));
-                var [answers, setAnswers] = useState(loadState(LS_KEY_ANSWERS, []));
-                var [userInfo, setUserInfo] = useState(loadState(LS_KEY_USERINFO, ''));
-                var [finalHash, setFinalHash] = useState(loadState(LS_KEY_HASH, generateCryptoHash()));
-                var [ttsEnabled, setTtsEnabled] = useState(loadState(LS_KEY_TTS, false));
-
-                // NEW PHASE X STATES
-                var [tosAgreed, setTosAgreed] = useState(loadState(LS_KEY_AGREED, false));
-                
-                // --- CRITICAL FIX: GitHub Pages Routing Logic ---
-                
-                // Map the URL path segments to your application's steps
-                var pathMap = {
-                    'intro': 'intro',
-                    'tos': 'tos',
-                    'userinfo': 'userinfo',
-                    'questions': 'question', 
-                    'review': 'review',
-                    'report': 'report'
-                };
-                
-                var initialStep = 'intro'; // Default step
-
-                // 1. Check for the redirect path stored by the 404.html file
-                var redirectedPath = sessionStorage.getItem('redirectPath');
-                sessionStorage.removeItem('redirectPath'); // Clean up immediately
-
-                if (redirectedPath) {
-                    // Remove leading slash and grab the first path segment (e.g., 'review')
-                    var pathSegment = redirectedPath.toLowerCase().replace(/^\/+/g, '').split('/')[0];
-                    
-                    // If the path segment maps to a known step, use it for the initial step.
-                    initialStep = pathMap[pathSegment] || 'intro';
-                } else {
-                    // 2. Fall back to stored progress if no redirect was needed
-                    initialStep = loadState(LS_KEY_PROGRESS, 'intro');
-                }
-                
-                // 3. Apply phase X logic to the initial step
-                if (initialStep === 'intro' || initialStep === 'tos' || initialStep === 'userinfo') {
-                    if (!tosAgreed) {
-                        initialStep = 'tos';
-                    } else if (!userInfo) {
-                        initialStep = 'userinfo';
-                    } else {
-                        // Check if a session already exists
-                        if (answers.length === AUDIT_QUESTIONS.length && finalHash && initialStep !== 'report') {
-                            initialStep = 'report'; // Automatically go to report if audit is complete
-                        }
-                    }
-                }
-
-
-                var [currentStep, setCurrentStep] = useState(initialStep); // The current step/view
-                var [currentQIndex, setCurrentQIndex] = useState(0);
-
-                var languageText = LANGUAGES[langCode].text;
-
-                // --- 2. EFFECT HOOKS FOR PERSISTENCE ---
-
-                // Save the current step/progress and update the URL
-                var setStep = function(step) {
-                    setCurrentStep(step);
-                    saveState(LS_KEY_PROGRESS, step);
-                    
-                    // Update the URL path for visual feedback
-                    var repoName = '/imsss-sync-services'; 
-                    var pathSegment = step === 'intro' ? '' : step;
-                    
-                    // Use history.pushState to update the URL without triggering a full page reload
-                    // This is key to displaying the correct URL path without full page refreshes
-                    window.history.pushState({}, '', repoName + '/' + pathSegment);
-                };
-
-                // Save the language preference
-                useEffect(function() {
-                    saveState(LS_KEY_LANG, langCode);
-                    document.body.dir = LANGUAGES[langCode].dir;
-                    document.body.className = LANGUAGES[langCode].font;
-                }, [langCode]);
-
-                // Save the TTS preference
-                useEffect(function() {
-                    saveState(LS_KEY_TTS, ttsEnabled);
-                    if (!ttsEnabled) {
-                        stopSpeaking();
-                    }
-                }, [ttsEnabled]);
-                
-                // Save answers on change
-                useEffect(function() {
-                    saveState(LS_KEY_ANSWERS, answers);
-                    // After saving answers, calculate scores
-                    var newScores = calculateScores(answers);
-                    saveState(LS_KEY_SCORES, newScores);
-                }, [answers]);
-                
-                // Save hash
-                useEffect(function() {
-                    saveState(LS_KEY_HASH, finalHash);
-                }, [finalHash]);
-                
-                // Save TOS agreement
-                useEffect(function() {
-                    saveState(LS_KEY_AGREED, tosAgreed);
-                    if (tosAgreed && currentStep === 'tos') {
-                        setStep('userinfo'); // Auto-advance to user info if agreed
-                    }
-                }, [tosAgreed]);
-
-
-                // --- 3. CORE LOGIC / RESET ---
-
-                var calculateScores = function(currentAnswers) {
-                    var scores = Object.assign({}, initialScores);
-                    currentAnswers.forEach(function(a) {
-                        // Check if the domain key exists before adding
-                        if (scores.hasOwnProperty(a.domain)) {
-                            scores[a.domain] += a.score;
-                        }
-                    });
-                    return scores;
-                };
-
-                var resetSession = function() {
-                    if (!window.confirm("Are you sure you want to start a new session? All stored progress will be deleted.")) {
-                        return;
-                    }
-                    stopSpeaking();
-                    
-                    // Clear all stored data
-                    localStorage.removeItem(LS_KEY_ANSWERS);
-                    localStorage.removeItem(LS_KEY_SCORES);
-                    localStorage.removeItem(LS_KEY_PROGRESS);
-                    localStorage.removeItem(LS_KEY_HASH);
-                    localStorage.removeItem(LS_KEY_AGREED);
-                    localStorage.removeItem(LS_KEY_USERINFO); // Clear user info as well
-
-                    // Reset React state
-                    setAnswers([]);
-                    setUserInfo('');
-                    setFinalHash(generateCryptoHash()); // Generate a new hash
-                    setTosAgreed(false);
-                    setCurrentQIndex(0);
-                    setStep('intro'); // Start from the beginning
-                };
-
-
-                // --- 4. RENDERER ---
-                var renderScreen = function() {
-                    var scores = calculateScores(answers);
-
-                    // --- FLOW CONTROL (Phase X integrated) ---
-                    if (!tosAgreed && currentStep !== 'tos') {
-                        return e(ScreenTOS, { languageText: languageText, setAgreed: setTosAgreed, ttsEnabled: ttsEnabled, langCode: langCode });
-                    }
-                    
-                    if (tosAgreed && !userInfo && currentStep !== 'userinfo' && currentStep !== 'tos') {
-                        return e(ScreenUserInfo, { languageText: languageText, langCode: langCode, ttsEnabled: ttsEnabled, setUserInfo: setUserInfo, setStep: setStep, setHash: setFinalHash, resetSession: resetSession });
-                    }
-
-
-                    switch (currentStep) {
-                        case 'tos':
-                            return e(ScreenTOS, { languageText: languageText, setAgreed: setTosAgreed, ttsEnabled: ttsEnabled, langCode: langCode });
-                        case 'userinfo':
-                            return e(ScreenUserInfo, { languageText: languageText, langCode: langCode, ttsEnabled: ttsEnabled, setUserInfo: setUserInfo, setStep: setStep, setHash: setFinalHash, resetSession: resetSession });
-                        case 'question':
-                            return e(ScreenQuestion, { questions: AUDIT_QUESTIONS, currentQIndex: currentQIndex, setQIndex: setCurrentQIndex, answers: answers, setAnswers: setAnswers, setStep: setStep, langCode: langCode, ttsEnabled: ttsEnabled });
-                        case 'review':
-                            return e(ScreenReview, { answers: answers, setQIndex: setCurrentQIndex, setStep: setStep, questions: AUDIT_QUESTIONS, langCode: langCode });
-                        case 'report':
-                            return e(ScreenReport, { answers: answers, scores: scores, questions: AUDIT_QUESTIONS, resetSession: resetSession, finalHash: finalHash, userInfo: userInfo, langCode: langCode });
-                        case 'intro':
-                        default:
-                            return e(ScreenIntro, { languageText: languageText, setStep: setStep, resetSession: resetSession, langCode: langCode, ttsEnabled: ttsEnabled });
-                    }
-                };
-                
-                var currentLangData = LANGUAGES[langCode];
-
-                return e(React.Fragment, null, 
-                    e(LangSwitcher, { current: langCode, setLang: setLangCode, ttsEnabled: ttsEnabled, setTtsEnabled: setTtsEnabled }),
-                    e('div', { className: "app-container " + currentLangData.font, dir: currentLangData.dir, key: langCode }, 
-                        renderScreen()
-                    )
-                );
-            };
-
-
-            // --- RENDER APPLICATION ---
-            ReactDOM.render(e(App, null), document.getElementById('root'), function() {
-                // Ensure Lucide icons are rendered after initial React render
-                if (typeof lucide !== 'undefined' && typeof lucide.createIcons === 'function') {
-                    lucide.createIcons();
-                }
-            });
-            
-        }
-        </script>
+            <!-- Mobile Menu Button (Hamburger) -->
+            <button class="md:hidden p-2 rounded-md hover:bg-slate-800 focus:outline-none focus:ring-2 ring-emerald-400" onclick="toggleMenu()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-400"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            </button>
+        </div>
+        <!-- Mobile Menu Drawer -->
+        <div id="mobile-menu" class="md:hidden hidden">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 flex flex-col items-center">
+                <a href="#mission" onclick="toggleMenu()" class="block w-full text-center py-2 px-3 rounded-md text-base font-medium hover:bg-slate-700">Our Mission</a>
+                <a href="#assessor-tool" onclick="toggleMenu()" class="block w-full text-center py-2 px-3 rounded-md text-base font-medium hover:bg-slate-700">Assessor Tool</a>
+                <a href="#features" onclick="toggleMenu()" class="block w-full text-center py-2 px-3 rounded-md text-base font-medium hover:bg-slate-700">Compliance</a>
+                <a href="#contact" onclick="toggleMenu()" class="block w-full text-center py-2 px-3 rounded-md text-base font-medium hover:bg-slate-700">Contact</a>
+                <!-- Link directly to the index.html file -->
+                <a href="index.html" id="launch-app-btn-mobile" class="w-full text-center mt-3 cta-button text-white font-semibold py-2 px-4 rounded-full text-base">Launch Assessor Demo</a>
+            </div>
+        </div>
+    </header>
+
+    <main>
         
-        <script>
-        // Initial Icon rendering attempt for load screen
-        if (typeof lucide !== 'undefined' && typeof lucide.createIcons === 'function') {
-            lucide.createIcons();
+        <!-- Hero Section: AI Governance & Risk -->
+        <section class="hero-section text-center py-24 sm:py-32">
+            <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+                <h1 class="text-5xl sm:text-7xl font-extrabold tracking-tight text-white mb-6 leading-tight">
+                    <span class="logo-text">Governance</span> at the Speed of AI.
+                </h1>
+                <p class="text-xl sm:text-2xl text-slate-300 font-light mb-10 max-w-3xl mx-auto">
+                    Navigate the complexity of global AI regulations (EU AI Act, ISO 42001, NIST) with our automated compliance solutions.
+                </p>
+                <!-- Link directly to the index.html file -->
+                <a href="index.html" class="cta-button inline-flex items-center text-white font-bold py-4 px-10 rounded-full text-xl uppercase tracking-wider transition duration-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mr-3"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><line x1="10" y1="9" x2="8" y2="9"></line></svg>
+                    Start Risk Assessment
+                </a>
+            </div>
+        </section>
+
+        <!-- Mission Section -->
+        <section id="mission" class="py-16 sm:py-24 bg-slate-800/50">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <h2 class="text-4xl font-extrabold text-white mb-4">Our Mission: Trust and Innovation</h2>
+                <p class="text-xl text-slate-400 max-w-4xl mx-auto mb-12">
+                    IMSSSPAKISTAN is dedicated to building the infrastructure for ethical, compliant, and trustworthy AI adoption globally. We bridge the gap between innovation and regulation.
+                </p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
+                    <div class="p-6 rounded-xl feature-card shadow-lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-400 mb-3"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                        <h3 class="text-xl font-bold mb-2 text-white">Global Reach</h3>
+                        <p class="text-slate-400 text-sm">Providing compliance coverage across the EU, US, and emerging Asian markets, making complex laws actionable.</p>
+                    </div>
+                    <div class="p-6 rounded-xl feature-card shadow-lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-400 mb-3"><path d="M12 2v20M17 5H7l5 5-5 5h10l-5-5z"></path></svg>
+                        <h3 class="text-xl font-bold mb-2 text-white">Automation First</h3>
+                        <p class="text-slate-400 text-sm">Our tools automate the tedious parts of audit and documentation, saving engineering and legal teams thousands of hours.</p>
+                    </div>
+                    <div class="p-6 rounded-xl feature-card shadow-lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-400 mb-3"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2z"></path><path d="M12 8v4l3 3"></path></svg>
+                        <h3 class="text-xl font-bold mb-2 text-white">Real-Time Risk</h3>
+                        <p class="text-slate-400 text-sm">Continuous monitoring and Risk-Weighted Liability Scoring help you mitigate issues before they become liabilities.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- AI Assessor Tool Section -->
+        <section id="assessor-tool" class="py-16 sm:py-24">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <span class="inline-block py-1 px-3 mb-4 text-xs font-semibold uppercase rounded-full bg-emerald-700/50 text-emerald-300 border border-emerald-500">
+                    Product Demo
+                </span>
+                <h2 class="text-4xl font-extrabold text-white mb-4">The AI Compliance Assessor Tool</h2>
+                <p class="text-xl text-slate-400 max-w-3xl mx-auto mb-10">
+                    Instantly determine your AI system's compliance level against mandatory High-Risk requirements. Get a verifiable **Risk-Weighted Liability Score** in under five minutes.
+                </p>
+
+                <div class="bg-slate-800 p-8 rounded-xl shadow-2xl max-w-3xl mx-auto text-left border border-emerald-600/50">
+                    <h3 class="text-2xl font-bold text-emerald-400 mb-4">Core Assessment Domains:</h3>
+                    <ul class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-lg text-slate-300">
+                        <li class="flex items-center"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-400 mr-2"><path d="M12 20h0v-4h0v-4h0"></path><path d="M18 20h0v-4h0"></path><path d="M6 20h0v-4h0v-8h0"></path></svg>Data Quality & Provenance</li>
+                        <li class="flex items-center"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-400 mr-2"><path d="M12 20h0v-4h0v-4h0v-4h0"></path><path d="M18 20h0v-4h0v-8h0"></path><path d="M6 20h0v-4h0"></path></svg>Model Governance & Versioning</li>
+                        <li class="flex items-center"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-400 mr-2"><path d="M12 20h0v-4h0v-4h0"></path><path d="M18 20h0v-4h0v-8h0v-4h0"></path><path d="M6 20h0v-4h0v-8h0v-4h0"></path></svg>Bias & Algorithmic Fairness</li>
+                        <li class="flex items-center"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-400 mr-2"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2z"></path><path d="M12 8v4l3 3"></path></svg>Transparency & Explainability</li>
+                        <li class="flex items-center"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-400 mr-2"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect><path d="M7 7h10v10H7z"></path></svg>Security & Adversarial Robustness</li>
+                    </ul>
+                </div>
+                
+                <!-- Link directly to the index.html file -->
+                <a href="index.html" class="cta-button inline-flex items-center text-white font-bold py-3 px-8 rounded-full text-xl mt-10 hover:ring-2 ring-emerald-400/50">
+                    Try the Live Assessor Demo
+                </a>
+                <p class="text-sm text-slate-500 mt-3">No sign-up required. View the report instantly.</p>
+            </div>
+        </section>
+
+        <!-- Compliance Frameworks Section -->
+        <section id="features" class="py-16 sm:py-24 bg-slate-800/50">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <h2 class="text-3xl font-extrabold text-white mb-10 text-center">Built on Global Regulatory Standards</h2>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- EU AI Act -->
+                    <div class="p-6 rounded-xl feature-card">
+                        <span class="text-lg font-bold text-emerald-400 mb-2 block">EU AI Act</span>
+                        <h3 class="text-2xl font-bold mb-3 text-white">High-Risk Focus</h3>
+                        <p class="text-slate-400 mb-4 text-sm">
+                            Mandatory compliance with the nine core requirements for High-Risk systems (e.g., in employment, critical infrastructure). Our tool ensures traceability and conformity assessment readiness.
+                        </p>
+                        <ul class="list-disc list-inside text-sm text-slate-300 space-y-1">
+                            <li>Risk Management System</li>
+                            <li>Data Governance & Bias Mitigation</li>
+                            <li>Technical Robustness & Accuracy</li>
+                        </ul>
+                    </div>
+
+                    <!-- ISO 42001 -->
+                    <div class="p-6 rounded-xl feature-card">
+                        <span class="text-lg font-bold text-emerald-400 mb-2 block">ISO/IEC 42001:2023</span>
+                        <h3 class="text-2xl font-bold mb-3 text-white">AI Management System</h3>
+                        <p class="text-slate-400 mb-4 text-sm">
+                            The first international standard for AI Management Systems (AIMS). We help you define, implement, and continually improve your governance model for AI systems.
+                        </p>
+                        <ul class="list-disc list-inside text-sm text-slate-300 space-y-1">
+                            <li>AIMS Documentation</li>
+                            <li>AI System Development Life Cycle</li>
+                            <li>Contextual & Legal Requirements</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- NIST AI RMF -->
+                    <div class="p-6 rounded-xl feature-card">
+                        <span class="text-lg font-bold text-emerald-400 mb-2 block">NIST AI RMF</span>
+                        <h3 class="text-2xl font-bold mb-3 text-white">Risk Management Framework</h3>
+                        <p class="text-slate-400 mb-4 text-sm">
+                            Aligning with the U.S. voluntary framework for managing risks across the AI lifecycle. Focuses on Govern, Map, Measure, and Manage functions for reliable AI.
+                        </p>
+                        <ul class="list-disc list-inside text-sm text-slate-300 space-y-1">
+                            <li>Impact Assessment</li>
+                            <li>Continuous Monitoring</li>
+                            <li>Human-AI Teaming & Trustworthiness</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section (UPDATED with Form and Firebase Integration) -->
+        <section id="contact" class="py-16 sm:py-24 text-center">
+            <div class="max-w-xl mx-auto px-4 sm:px-6 lg:px-8 bg-slate-800 p-8 rounded-xl shadow-2xl border border-emerald-600/50">
+                <h2 class="text-4xl font-extrabold text-white mb-4">Ready to Achieve Full AI Compliance?</h2>
+                <p class="text-lg text-slate-400 mb-8">
+                    Contact our AI governance experts today. Your inquiry will be securely saved.
+                </p>
+                
+                <!-- Contact Form -->
+                <form id="inquiryForm" class="space-y-4 text-left" onsubmit="event.preventDefault(); submitInquiry();">
+                    
+                    <div>
+                        <label for="name" class="block text-sm font-medium text-slate-300 mb-1">Your Name</label>
+                        <input type="text" id="name" required
+                               class="w-full px-4 py-2 rounded-lg bg-slate-900 border border-slate-700 text-white focus:border-emerald-500 focus:ring focus:ring-emerald-500/50 transition"
+                               placeholder="John Doe">
+                    </div>
+
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-slate-300 mb-1">Your Email</label>
+                        <input type="email" id="email" required
+                               class="w-full px-4 py-2 rounded-lg bg-slate-900 border border-slate-700 text-white focus:border-emerald-500 focus:ring focus:ring-emerald-500/50 transition"
+                               placeholder="you@company.com">
+                    </div>
+
+                    <div>
+                        <label for="message" class="block text-sm font-medium text-slate-300 mb-1">Your Message or Inquiry</label>
+                        <textarea id="message" rows="4" required
+                                  class="w-full px-4 py-2 rounded-lg bg-slate-900 border border-slate-700 text-white focus:border-emerald-500 focus:ring focus:ring-emerald-500/50 transition"
+                                  placeholder="I am interested in an audit for a high-risk system..."></textarea>
+                    </div>
+
+                    <button type="submit" id="submitBtn" class="cta-button w-full inline-flex items-center justify-center text-white font-bold py-3 px-8 rounded-full text-lg mt-4 transition duration-300">
+                        <span id="buttonText">Send Inquiry</span>
+                        <div id="loadingSpinner" class="hidden animate-spin rounded-full h-5 w-5 border-b-2 border-white ml-2"></div>
+                    </button>
+
+                    <p id="formMessage" class="mt-4 text-center text-sm font-medium"></p>
+                </form>
+            </div>
+        </section>
+        
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 border-t border-emerald-600/30 py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm text-slate-400">
+            <p>&copy; 2025 IMSSSPAKISTAN. All rights reserved. | <a href="#" class="hover:text-emerald-400">Privacy Policy</a> | <a href="#" class="hover:text-emerald-400">Terms of Service</a></p>
+        </div>
+    </footer>
+
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, addDoc, collection, serverTimestamp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global Firebase variables
+        let app;
+        let db;
+        let auth;
+        let userId = 'anonymous';
+
+        // Get environment variables
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        // UI elements
+        const formMessage = document.getElementById('formMessage');
+        const submitBtn = document.getElementById('submitBtn');
+        const buttonText = document.getElementById('buttonText');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+
+        // --- Firebase Initialization and Authentication ---
+        async function initFirebase() {
+            if (!firebaseConfig) {
+                console.error("Firebase configuration not found.");
+                formMessage.textContent = "Error: System setup failed. Cannot send inquiry.";
+                formMessage.className = "mt-4 text-center text-sm font-medium text-red-500";
+                return;
+            }
+
+            try {
+                // setLogLevel('debug'); // Enable for debugging
+                app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+                
+                // Ensure persistence for the session
+                await setPersistence(auth, browserLocalPersistence);
+
+                // Authenticate user
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                userId = auth.currentUser?.uid || 'anonymous';
+                console.log("Firebase initialized. User ID:", userId);
+
+            } catch (error) {
+                console.error("Error initializing Firebase or authenticating:", error);
+                formMessage.textContent = "Error: Authentication failed. Inquiry cannot be saved.";
+                formMessage.className = "mt-4 text-center text-sm font-medium text-red-500";
+            }
         }
-        </script>
+
+        // --- Inquiry Submission Logic ---
+        window.submitInquiry = async function() {
+            if (!db || !userId) {
+                console.error("Database not ready or user not authenticated.");
+                formMessage.textContent = "Error: Please wait for system initialization and try again.";
+                formMessage.className = "mt-4 text-center text-sm font-medium text-yellow-500";
+                return;
+            }
+
+            const name = document.getElementById('name').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const message = document.getElementById('message').value.trim();
+            
+            if (!name || !email || !message) {
+                formMessage.textContent = "Please fill in all fields.";
+                formMessage.className = "mt-4 text-center text-sm font-medium text-yellow-500";
+                return;
+            }
+
+            // UI feedback: Loading
+            submitBtn.disabled = true;
+            buttonText.textContent = "Sending...";
+            loadingSpinner.classList.remove('hidden');
+            formMessage.textContent = "";
+
+            try {
+                // Path: /artifacts/{appId}/public/data/inquiries
+                const collectionPath = `artifacts/${appId}/public/data/inquiries`;
+                
+                await addDoc(collection(db, collectionPath), {
+                    submitterId: userId,
+                    name: name,
+                    email: email,
+                    message: message,
+                    timestamp: serverTimestamp(),
+                    status: 'New'
+                });
+
+                // Success feedback
+                formMessage.textContent = "Thank you! Your inquiry has been sent and will be reviewed shortly.";
+                formMessage.className = "mt-4 text-center text-sm font-medium text-emerald-400";
+                document.getElementById('inquiryForm').reset(); // Clear form
+                
+            } catch (error) {
+                console.error("Error adding document: ", error);
+                formMessage.textContent = "An error occurred while submitting. Please try again later.";
+                formMessage.className = "mt-4 text-center text-sm font-medium text-red-500";
+                
+            } finally {
+                // UI feedback: Reset
+                submitBtn.disabled = false;
+                buttonText.textContent = "Send Inquiry";
+                loadingSpinner.classList.add('hidden');
+            }
+        }
+
+        // --- General Utility ---
+        function toggleMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        // Expose toggleMenu globally for inline HTML click handler
+        window.toggleMenu = toggleMenu;
+
+        // Initialize Firebase when the window loads
+        window.onload = initFirebase;
+    </script>
+
 </body>
 </html>
