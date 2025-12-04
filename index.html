@@ -983,37 +983,37 @@ var handleUpgradeClick = function() {
                             )
                         ),
 
-                        // Radar and Metrics
-                        e('div', { className: "grid md:grid-cols-2 gap-8 mb-8" },
-                            e('div', { className: "bg-slate-900/50 p-4 rounded-xl flex flex-col items-center" },
-                                e('p', { className: "text-lg font-bold text-slate-300 mb-4" }, languageText.metrics),
-                                e(RiskRadar, { scores: radarScores, labels: languageText }) // Pass the translation object
-                            ),
-                            e('div', { className: "bg-slate-900/50 p-4 rounded-xl" },
-                                e('p', { className: "text-lg font-bold text-slate-300 mb-4" }, languageText.complianceSummary),
-                                e('div', { className: "scrollable-summary space-y-3" },
-                                    violations.length > 0 ? (
-                                        violations.map(function(v) {
-                                            var status = v.score === 50 ? "PARTIAL" : "FAIL";
-                                            var color = v.score === 50 ? "text-yellow-400" : "text-red-400";
-                                            return e('div', { key: v.id, className: "border-l-4 border-slate-700 pl-3 py-1" },
-                                                e('p', { className: "font-bold text-sm uppercase " + color }, languageText[v.domain] + " - " + status),
-                                                e('p', { className: "text-xs text-slate-300 mt-1" }, "ACTION REQUIRED: " + v.remediation),
-                                                e('p', { className: "text-[10px] text-slate-500 mt-1" }, 
-                                                    "Ref: " + languageText.iso + " " + v.references.ISO + ", " + 
-                                                    languageText.eu + " " + v.references.EU + ", " + 
-                                                    languageText.us + " " + v.references.US 
-                                                )
-                                            );
-                                        })
-                                    ) : (
-                                        e('p', { className: "text-emerald-400 text-center py-10 text-lg font-bold" }, "NO VIOLATIONS DETECTED. FULL COMPLIANCE ACHIEVED.")
-                                    )
-                                )
-                            )
-                        ),
+// Radar and Metrics
+e('div', { className: "grid md:grid-cols-2 gap-8 mb-8" }, [ // <-- ADDED OPENING BRACKET [
+    e('div', { className: "bg-slate-900/50 p-4 rounded-xl flex flex-col items-center" },
+        e('p', { className: "text-lg font-bold text-slate-300 mb-4" }, languageText.metrics),
+        e(RiskRadar, { scores: radarScores, labels: languageText }) // Pass the translation object
+    ), // <-- ENSURE COMMA IS HERE FOR NEXT ARGUMENT
+    e('div', { className: "bg-slate-900/50 p-4 rounded-xl" },
+        e('p', { className: "text-lg font-bold text-slate-300 mb-4" }, languageText.complianceSummary),
+        e('div', { className: "scrollable-summary space-y-3" },
+            violations.length > 0 ? (
+                violations.map(function(v) {
+                    var status = v.score === 50 ? "PARTIAL" : "FAIL";
+                    var color = v.score === 50 ? "text-yellow-400" : "text-red-400";
+                    return e('div', { key: v.id, className: "border-l-4 border-slate-700 pl-3 py-1" },
+                        e('p', { className: "font-bold text-sm uppercase " + color }, languageText[v.domain] + " - " + status),
+                        e('p', { className: "text-xs text-slate-300 mt-1" }, "ACTION REQUIRED: " + v.remediation),
+                        e('p', { className: "text-[10px] text-slate-500 mt-1" }, 
+                            "Ref: " + languageText.iso + " " + v.references.ISO + ", " + 
+                            languageText.eu + " " + v.references.EU + ", " + 
+                            languageText.us + " " + v.references.US 
+                        )
+                    );
+                })
+            ) : (
+                e('p', { className: "text-emerald-400 text-center py-10 text-lg font-bold" }, "NO VIOLATIONS DETECTED. FULL COMPLIANCE ACHIEVED.")
+            )
+        )
+    )
+]), // <-- ADDED CLOSING BRACKET ] AND CLOSED e()
 
- // Action Buttons (No Print)
+// Action Buttons (No Print)
 e('div', { className: "flex flex-col space-y-4 mt-8 no-print" }, [
     
     e('div', {
@@ -1039,9 +1039,9 @@ e('div', { className: "flex flex-col space-y-4 mt-8 no-print" }, [
         
     ])
     
-])
+]) // Outer div closed
 
-var App = function() {
+var App = function() {                   
                 // --- 1. STATE INITIALIZATION ---
                 var [langCode, setLangCode] = useState(loadState(LS_KEY_LANG, 'EN'));
                 var [answers, setAnswers] = useState(loadState(LS_KEY_ANSWERS, []));
